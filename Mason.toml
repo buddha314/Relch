@@ -5,3 +5,4 @@ version = "0.1.0"
 chplVersion = "1.17.0"
 
 [dependencies]
+NumSuch = '0.2.2'
