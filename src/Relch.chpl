@@ -1,4 +1,9 @@
 /* Documentation for Relch */
 module Relch {
-  writeln("New library: Relch");
+  use NumSuch;
+  use qlearn;
+  
+  proc main() {
+    writeln("New library: Relch");
+  }
 }
