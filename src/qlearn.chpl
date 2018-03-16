@@ -37,24 +37,36 @@ class Qoutcome {
     this.action = action;
     this.reward = reward;
   }
+
+  proc writeThis() {
+    var m: string = "state, action, reward:  %8s  %8s  %{#.###}".format(this.state, this.action, this.reward);
+    return m;
+  }
 }
 
 proc qlearn() {
+  qReport();
   for step in 1..nSteps {
     shuffle(rstates);
     var state = rstates[1];
     var action = policy(state);
-    history.push_back(new Qoutcome(state=state, action=action, reward=Q.get(state, action)));
-    updateQ(state, action, Q.get(state, action));
+    var o = new Qoutcome(state=state, action=action, reward=Q.get(state, action));
+    history.push_back(o);
+    updateQ(o);
   }
   report();
   return 0;
 }
 
-proc updateQ(state: string, action: string, reward: real) {
-    const m = Q.rowMax(state);
-    var r = (1-learningRate) * Q.get(state, action) + learningRate * (reward + discountFactor * m);
-    Q.set(state, action, w=r);
+//proc updateQ(state: string, action: string, reward: real) {
+proc updateQ(outcome: Qoutcome) {
+    const j = Q.rowArgMax(outcome.state)[2];
+    var m: real = 0;
+    if j > 0 {
+      m = Q.rowMax(j);
+    }
+    var r = (1-learningRate) * Q.get(outcome.state, outcome.action) + learningRate * (outcome.reward + discountFactor * m);
+    Q.set(outcome.state, outcome.action, w=r);
 }
 
 /*
@@ -72,15 +84,42 @@ proc policy(state: string) {
   return action;
 }
 
+proc historyReport() {
+  writeln("\nHistory\n");
+  for h in history {
+    //h.writeThis();
+    writeln(h.writeThis());
+  }
+}
+
+proc qReport() {
+  write("          ");
+  for action in actions {
+    write("%8s".format(action));
+  }
+  writeln();
+  for state in states {
+    write("%8s".format(state));
+    for action in actions {
+      write("    %{#.###}".format(Q.get(state, action)));
+    }
+    writeln();
+  }
+  writeln();
+
+}
+
 proc report() {
   writeln("about to report");
   for state in states {
     const j = Q.rowArgMax(state)[2];
     if j > 0 {
       const action = actions[Q.rowArgMax(state)[2]];
-      writeln(" ** state best action %s -> %s (%r)".format(state, action, Q.get(state, action)));
+      writeln(" ** state best action %s -> %s (%n)".format(state, action, Q.get(state, action)));
     } else {
       writeln(" ** state %s has no best action".format(state));
     }
   }
+  historyReport();
+  qReport();
 }
