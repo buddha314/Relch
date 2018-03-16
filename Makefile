@@ -13,4 +13,4 @@ default: $(SRCDIR)/Relch.chpl
 	$(CC) $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o $(BINDIR)/$(EXEC) $<
 
 run:
-	./$(BINDIR)/$(EXEC)
+	./$(BINDIR)/$(EXEC) -f qlearn.cfg
