@@ -6,7 +6,8 @@ config const nSteps: int = 3,
              discountFactor: real = 0.5;
 
 var states: [1..0] string,
-    actions: [1..0] string;
+    actions: [1..0] string,
+    history: [1..0] Qoutcome;
 
 states.push_back("rainy");
 states.push_back("cloudy");
@@ -43,7 +44,8 @@ proc qlearn() {
     shuffle(rstates);
     var state = rstates[1];
     var action = policy(state);
-    updateQ(state, action, 3.0);
+    history.push_back(new Qoutcome(state=state, action=action, reward=Q.get(state, action)));
+    updateQ(state, action, Q.get(state, action));
   }
   report();
   return 0;
@@ -73,7 +75,12 @@ proc policy(state: string) {
 proc report() {
   writeln("about to report");
   for state in states {
-    const action = actions[Q.rowArgMax(state)[2]];
-    writeln(" ** state best action %s -> %s (%r)".format(state, action, Q.get(state, action)));
+    const j = Q.rowArgMax(state)[2];
+    if j > 0 {
+      const action = actions[Q.rowArgMax(state)[2]];
+      writeln(" ** state best action %s -> %s (%r)".format(state, action, Q.get(state, action)));
+    } else {
+      writeln(" ** state %s has no best action".format(state));
+    }
   }
 }
