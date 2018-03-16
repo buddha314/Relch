@@ -38,9 +38,8 @@ class Qoutcome {
     this.reward = reward;
   }
 
-  proc writeThis() {
-    var m: string = "state, action, reward:  %8s  %8s  %{#.###}".format(this.state, this.action, this.reward);
-    return m;
+  proc readWriteThis(f) {
+    f <~> "state, action, reward:  %8s  %8s  %{#.###}".format(this.state, this.action, this.reward);
   }
 }
 
@@ -88,7 +87,7 @@ proc historyReport() {
   writeln("\nHistory\n");
   for h in history {
     //h.writeThis();
-    writeln(h.writeThis());
+    writeln(h);
   }
 }
 
