@@ -15,17 +15,14 @@ proc main() {
   const initialState = "A1";
   for ep in 1..N_EPISODES {
     var currentState = initialState;
-    var alive: bool = true;
     var path: [1..0] string;
     path.push_back(currentState);
-    while alive {
+    do {
       var adjacentStates = B.neighbors(currentState).keys;
       var choice = policy(adjacentStates);
       path.push_back(choice);
-      //writeln("Here is my choice: %s".format(choice));
       currentState=choice;
-      if terminalStates.member(choice) then alive = false;
-    }
+    } while !terminalStates.member(choice);
     writeln("path: ", path);
     //writeln("Options: ", adjacentStates);
   }
