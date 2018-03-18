@@ -1,26 +1,37 @@
 use Relch,
-    Random,
-    Chingon, NumSuch;
+    Random;
 
 proc main() {
-  var n: int = 7;
+  var n: int = 4;
   writeln("N_EPISODES %n".format(N_EPISODES));
-  var B = new GameBoard(7);
+  var B = new GameBoard(n);
 
-  const actions = ["N", "E", "W", "S"];
+  var terminalStates: domain(string);
+  terminalStates += "B2";
+  terminalStates += "B4";
+  terminalStates += "C4";
+  terminalStates += "D1";
 
   const initialState = "A1";
-  var currentState = initialState;
   for ep in 1..N_EPISODES {
-    var adjacentStates = B.neighbors(currentState).keys;
-    var choice = policy(adjacentStates);
-    writeln("Here is my choice: %s".format(choice));
-    currentState=choice;
+    var currentState = initialState;
+    var alive: bool = true;
+    var path: [1..0] string;
+    path.push_back(currentState);
+    while alive {
+      var adjacentStates = B.neighbors(currentState).keys;
+      var choice = policy(adjacentStates);
+      path.push_back(choice);
+      //writeln("Here is my choice: %s".format(choice));
+      currentState=choice;
+      if terminalStates.member(choice) then alive = false;
+    }
+    writeln("path: ", path);
     //writeln("Options: ", adjacentStates);
   }
 
   proc policy(states: domain(string)) {
-    writeln("My options are: ", states);
+    //writeln("My options are: ", states);
     //completely random policy
     var rs: [1..0] string;
     for s in
