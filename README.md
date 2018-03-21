@@ -136,3 +136,7 @@ On-Policy update SARSA($\lambda$) update
 ### Exploration and Explotation
 
 ### RL in Classic Games
+
+# Examples
+
+Okay, maybe we can try Sutton's Grid World examined in [this paper](http://web.eecs.umich.edu/~baveja/Papers/ICML98_LS.pdf)
