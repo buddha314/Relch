@@ -1,6 +1,6 @@
 /* Documentation for Relch */
 module Relch {
-  use Chingon;
+  use worlds;
   //use qlearn;
   //use frozenLake;
   config const N_EPISODES: int,
