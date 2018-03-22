@@ -26,7 +26,9 @@ class GridWorld : GameBoard {
 
   proc takeAction(currentState: string, action: string) {
     var currentStateId: int = this.verts.get(currentState),
-        newStateId: int;
+        newStateId: int,
+        reward: real = 0,
+        episodeEnd: bool = false;
     if action == "N" {
       newStateId = currentStateId - this.cols;
     } else if action == "E" {
@@ -37,9 +39,12 @@ class GridWorld : GameBoard {
       newStateId = currentStateId + this.cols;
     }
     var newState = this.verts.get(newStateId);
-    writeln(action, " means moving from %s to %s".format(currentState, newState));
-    return new Observation(state=newState
-      ,reward=1, halt=!this.absorbingStates.keys.member(newState));
+    //writeln(action, " means moving from %s to %s".format(currentState, newState));
+    if this.absorbingStates.keys.member(newState) {
+      episodeEnd = true;
+      reward = this.absorbingStates.get(newState);
+    }
+    return new Observation(state=newState,reward=reward, episodeEnd = episodeEnd);
   }
 
 }
@@ -76,11 +81,11 @@ class Episode {
 class Observation {
   var state: string, // S'
       reward: real,    // Reward
-      halt: bool;
+      episodeEnd: bool;
 
-  proc init(state: string, reward: real, halt: bool=false ) {
+  proc init(state: string, reward: real, episodeEnd: bool=false ) {
     this.state = state;
     this.reward = reward;
-    this.halt = halt;
+    this.episodeEnd = episodeEnd;
   }
 }
