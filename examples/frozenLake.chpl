@@ -24,13 +24,13 @@ proc main() {
    */
   var rs: [1..ss.size * aa.size] real;
   fillRandom(rs);
+  //writeln("random seed: ", rs);
   for i in 1..ss.size {
     for j in 1..aa.size {
-      Q.SD += (i,j);
       Q.set(i,j, rs[Q.grid2seq(i,j)]);
     }
   }
-  //writeln(Q);
+  pprint(Q);
 
 
   const initialState = "A1";
@@ -40,7 +40,6 @@ proc main() {
     var E = new NamedMatrix(rownames=ss, colnames=aa);
     for i in 1..ss.size {
       for j in 1..aa.size {
-        E.SD += (i,j);
         E.set(i,j,0);
       }
     }
@@ -57,7 +56,14 @@ proc main() {
 
       var obs = B.takeAction(currentState, choice);  // Take action, Observe R, S'
       var delta = obs.reward + DISCOUNT_FACTOR * Q.get(obs.state, choice) - Q.get(currentState, currentAction);
-      E.update(currentState, currentAction, 1);
+      if abs(delta) > 10 {
+        writeln("  big delta: ", delta, "  current state: ", currentState, "  currentAction: ", currentAction);
+        pprint(Q);
+        writeln("  obs.reward: ", obs.reward, "  DISCOUNT_FACTOR: ", DISCOUNT_FACTOR
+          ,"  Q future: ", Q.get(obs.state, choice), "  Q.current: ", Q.get(currentState, currentAction));
+        //writeln(" * %s -- %s --> %s   (%n)".format(currentState, choice, obs.state, obs.reward));
+      }
+      E.update(currentState, currentAction, 1.0);
       for a in B.actions.keys {
         for s in B.states.keys {
           Q.update(currentState, currentAction, LEARNING_RATE * delta * E.get(currentState, currentAction));
@@ -65,14 +71,16 @@ proc main() {
       }
 
       episode.path.push_back(obs);
-      writeln(" * %s -- %s --> %s   (%n)".format(currentState, choice, obs.state, obs.reward));
+      //writeln(" * %s -- %s --> %s   (%n)".format(currentState, choice, obs.state, obs.reward));
       currentState=obs.state;
       currentAction=choice;
       episodeEnd = obs.episodeEnd;
     } while !episodeEnd;
+    //writeln("current E");
+    //pprint(E);
     episodes.push_back(episode);
   }
-  report(episodes);
+  //report(episodes);
 
   /*
   Accepts the current states and list of possible states. Then makes a choice
@@ -109,4 +117,20 @@ proc main() {
     for e in episodes do writeln(e);
   }
 
+  pprint(Q);
+}
+
+proc pprint(Q: NamedMatrix) {
+  write("     ");
+  for c in Q.cols.keys {
+    write("   %5s  |".format(c));
+  }
+  write("\n");
+  for i in 1..Q.nrows() {
+    write(" %3s ".format(Q.rows.get(i)));
+    for j in 1..Q.ncols() {
+      write(" %7.3er ".format(Q.get(i,j)));
+    }
+    write("\n");
+  }
 }
