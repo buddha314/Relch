@@ -13,6 +13,9 @@ proc main() {
   var ss: [1..0] string; for k in B.verts.keys do ss.push_back(k);
   var aa: [1..0] string; for k in B.actions.keys do aa.push_back(k);
   var Q = new NamedMatrix(rownames=ss, colnames=aa);
+  //writeln("Q rows 1 ", Q.rows.get(1));
+  //writeln("Q cols 1 ", Q.cols.get(1));
+
 
   /*
    Have to do this because
@@ -31,13 +34,14 @@ proc main() {
 
 
   const initialState = "A1";
-  const initialAction: string = policy(B.availableActions(initialState));
+  const initialAction: string = policy(initialState, B.availableActions(initialState));
   for k in 1..N_EPISODES {
     // We need the Eligibility Trace E
     var E = new NamedMatrix(rownames=ss, colnames=aa);
     for i in 1..ss.size {
       for j in 1..aa.size {
-        Q.SD += (i,j);
+        E.SD += (i,j);
+        E.set(i,j,0);
       }
     }
 
@@ -48,10 +52,9 @@ proc main() {
     var episodeEnd = false;
     // Now run through the steps
     do {
-      var options = B.availableActions(currentState);
-      var choice = policy(options);  // For now, just random
+      var actionOptions = B.availableActions(currentState);
+      var choice = policy(currentState, actionOptions);  // For now, just random
 
-      //writeln("choice: ", choice);
       var obs = B.takeAction(currentState, choice);  // Take action, Observe R, S'
       var delta = obs.reward + DISCOUNT_FACTOR * Q.get(obs.state, choice) - Q.get(currentState, currentAction);
       E.update(currentState, currentAction, 1);
@@ -61,8 +64,8 @@ proc main() {
         }
       }
 
-      //writeln("obs ", obs);
       episode.path.push_back(obs);
+      writeln(" * %s -- %s --> %s   (%n)".format(currentState, choice, obs.state, obs.reward));
       currentState=obs.state;
       currentAction=choice;
       episodeEnd = obs.episodeEnd;
@@ -71,11 +74,31 @@ proc main() {
   }
   report(episodes);
 
-  proc policy(states: domain(string)) {
-    var s: [1..0] string;
-    for t in states do s.push_back(t);
-    var rs = choice(s);
-    return rs[1];
+  /*
+  Accepts the current states and list of possible states. Then makes a choice
+  of actions
+   */
+  proc policy(currentState: string, actionOptions: domain(string)) {
+    var ps: [1..1] real;
+    var returnedAction: string;
+    fillRandom(ps);
+    if ps[1] < 1 - GREEDY_EPSILON {
+      var actionMap = new BiMap();
+      var actionQValues: [1..0] real;
+      var k: int = 1;
+      for o in actionOptions {
+        actionMap.add(o, k);
+        actionQValues.push_back(Q.get(currentState, o));
+        k += 1;
+      }
+      returnedAction = actionMap.get(argmax(actionQValues));
+    } else {
+      var s: [1..0] string;
+      for t in actionOptions do s.push_back(t);
+      var tmp = choice(s);
+      returnedAction = tmp[1];
+    }
+    return returnedAction;
   }
 
   proc step(action) {

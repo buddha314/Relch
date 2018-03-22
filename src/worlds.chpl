@@ -44,7 +44,6 @@ class GridWorld : GameBoard {
       newStateId = currentStateId + this.width;
     }
     var newState = this.verts.get(newStateId);
-    //writeln(action, " means moving from %s to %s".format(currentState, newState));
     if this.absorbingStates.keys.member(newState) {
       episodeEnd = true;
       reward = this.absorbingStates.get(newState);

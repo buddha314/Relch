@@ -5,6 +5,7 @@ module Relch {
                LEARNING_RATE: real,   // alpha
                DISCOUNT_FACTOR: real, // gamma
                LEARNING_STEPS: int,
-               TRACE_DECAY: real;     // lambda
+               TRACE_DECAY: real,     // lambda
+               GREEDY_EPSILON: real;  // epsilon
 
 }
