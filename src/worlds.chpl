@@ -30,13 +30,13 @@ class GridWorld : GameBoard {
         reward: real = 0,
         episodeEnd: bool = false;
     if action == "N" {
-      newStateId = currentStateId - this.cols;
+      newStateId = currentStateId - this.ncols;
     } else if action == "E" {
       newStateId = currentStateId + 1;
     } else if action == "W" {
       newStateId = currentStateId - 1;
     } else if action == "S" {
-      newStateId = currentStateId + this.cols;
+      newStateId = currentStateId + this.ncols;
     }
     var newState = this.verts.get(newStateId);
     //writeln(action, " means moving from %s to %s".format(currentState, newState));
@@ -88,4 +88,22 @@ class Observation {
     this.reward = reward;
     this.episodeEnd = episodeEnd;
   }
+}
+
+class Qoutcome {
+ var agent: int,
+     state: string,
+     action: string,
+     reward: real;
+
+ proc init(agent:int =1, state:string, action:string, reward: real) {
+   this.agent = agent;
+   this.state = state;
+   this.action = action;
+   this.reward = reward;
+ }
+
+ proc readWriteThis(f) {
+   f <~> "state, action, reward:  %8s  %8s  %{#.###}".format(this.state, this.action, this.reward);
+ }
 }

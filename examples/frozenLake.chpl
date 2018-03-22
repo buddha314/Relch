@@ -3,10 +3,15 @@ use Relch,
 
 
 proc main() {
-  var episodes: [1..0] Episode;
-  var n: int = 4;
+  var episodes: [1..0] Episode,
+      n: int = 4;
   writeln("N_EPISODES %n".format(N_EPISODES));
   var B = new GridWorld(n);
+  var ss: [1..0] string; for k in B.verts.keys do ss.push_back(k);
+  var aa: [1..0] string; for k in B.actions.keys do aa.push_back(k);
+  var Q = new NamedMatrix(rownames=ss, colnames=aa);
+
+
 
   const initialState = "A1";
   for k in 1..N_EPISODES {
