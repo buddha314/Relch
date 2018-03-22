@@ -16,6 +16,9 @@ I have to get handle on all these ideas in RL. I'll start with Silver's lectures
 
 ## Glossary-ish Things
 
+* $\gamma$ is the DISCOUNT_FACTOR
+* $\alpha$ is the LEARNING_RATE
+* $\lambda$ is TRACE_DECAY
 * "Control" -> policies $\pi$
 * A policy is a distribution of actions over states $\pi(a|s)$
 * the _action-value_ function is the expected return of the state, action pair $q_{\pi}(s,a) = \mathbb{E}_{\pi}[G_t | S_t=s, A_t=a]$

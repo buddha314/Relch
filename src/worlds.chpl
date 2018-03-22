@@ -11,16 +11,21 @@ class World {
 Will have rewards and stuff eventually
  */
 class GridWorld : GameBoard {
-  var absorbingStates: BiMap;
+  var absorbingStates: BiMap,
+      states: BiMap;
 
   proc init(r:int) {
-    super.init(r=r);
+    super.init(w=r);
     this.absorbingStates = new BiMap();
     this.absorbingStates.add("B2", -1);
     this.absorbingStates.add("B4", -1);
     this.absorbingStates.add("C4", -1);
     this.absorbingStates.add("D1", -1);
     this.absorbingStates.add("D4", 1);
+    this.states = new BiMap();
+    for e in this.verts.entries() {
+      this.states.add(e[1], e[2]);
+    }
     this.complete();
   }
 
@@ -30,13 +35,13 @@ class GridWorld : GameBoard {
         reward: real = 0,
         episodeEnd: bool = false;
     if action == "N" {
-      newStateId = currentStateId - this.ncols;
+      newStateId = currentStateId - this.width;
     } else if action == "E" {
       newStateId = currentStateId + 1;
     } else if action == "W" {
       newStateId = currentStateId - 1;
     } else if action == "S" {
-      newStateId = currentStateId + this.ncols;
+      newStateId = currentStateId + this.width;
     }
     var newState = this.verts.get(newStateId);
     //writeln(action, " means moving from %s to %s".format(currentState, newState));
