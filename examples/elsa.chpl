@@ -18,6 +18,7 @@ proc main() {
     B.addWall("E3", "E4");
     //
     writeln(B);
+    writeln("Am I terminal? ", B.isTerminalState(GOAL_STATE));
     //pprint(B);
     //writeln("verts:\n",B.verts);
     //writeln("actions:\n",B.actions);

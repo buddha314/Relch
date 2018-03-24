@@ -110,10 +110,16 @@ class GridWorld : GameBoard {
       writeln("current neighbors: ", this.neighbors(currentState).keys);
       halt();
     }
+    /*
     if this.isTerminalState(currentState) {
       reward = terminalStates.get(currentState);
       writeln("I just terminated %s -> %n".format(currentState, reward));
+    } */
+    if this.isTerminalState(newState) {
+      reward = terminalStates.get(newState);
+      //writeln("I just terminated %s -> %n".format(newState, reward));
     }
+
 
     return (reward, newState);
   }
