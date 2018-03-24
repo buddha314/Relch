@@ -2,6 +2,7 @@
 module Relch {
   use worlds;
   config const N_EPISODES: int,
+               PRINT_PATHS: bool=false,
                LEARNING_STEPS: int,
                BOARD_WIDTH: int,
                BOARD_HEIGHT: int,

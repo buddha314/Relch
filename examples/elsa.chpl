@@ -65,7 +65,9 @@ proc main() {
         currentAction = nextAction;
         path.push_back(currentState);
       } while !B.isTerminalState(currentState);
-      writeln(k, ": ", path);
+      if PRINT_PATHS {
+        writeln(k, ": ", path);
+      }
     }
     Q.pprint();
 }
