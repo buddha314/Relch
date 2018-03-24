@@ -1,4 +1,5 @@
 use Relch,
+    Sort,
     Random;
 
 
@@ -8,6 +9,14 @@ use Relch,
 proc main() {
   var episodes: [1..0] Episode,
       n: int = 4;
+  var l = """
+   1 2 3 4
+A  f f f f
+B  f H f H
+C  f f f H
+D  H f f G
+  """;
+  writeln(l);
   writeln("N_EPISODES %n".format(N_EPISODES));
   var B = new GridWorld(n);
   var ss: [1..0] string; for k in B.verts.keys do ss.push_back(k);
@@ -27,7 +36,7 @@ proc main() {
   //writeln("random seed: ", rs);
   for i in 1..ss.size {
     for j in 1..aa.size {
-      Q.set(i,j, rs[Q.grid2seq(i,j)]);
+      Q.set(i,j, rs[Q.grid2seq(i,j)] - 0.5);
     }
   }
   pprint(Q);
@@ -56,17 +65,14 @@ proc main() {
 
       var obs = B.takeAction(currentState, choice);  // Take action, Observe R, S'
       var delta = obs.reward + DISCOUNT_FACTOR * Q.get(obs.state, choice) - Q.get(currentState, currentAction);
-      if abs(delta) > 10 {
-        writeln("  big delta: ", delta, "  current state: ", currentState, "  currentAction: ", currentAction);
-        pprint(Q);
-        writeln("  obs.reward: ", obs.reward, "  DISCOUNT_FACTOR: ", DISCOUNT_FACTOR
-          ,"  Q future: ", Q.get(obs.state, choice), "  Q.current: ", Q.get(currentState, currentAction));
-        //writeln(" * %s -- %s --> %s   (%n)".format(currentState, choice, obs.state, obs.reward));
-      }
+
       E.update(currentState, currentAction, 1.0);
       for a in B.actions.keys {
         for s in B.states.keys {
-          Q.update(currentState, currentAction, LEARNING_RATE * delta * E.get(currentState, currentAction));
+          const qsa = Q.get(s, a);
+          const esa = E.get(s, a);
+          Q.update(s, a, LEARNING_RATE * delta * esa);
+          E.set(s, a, LEARNING_RATE * DISCOUNT_FACTOR * esa);
         }
       }
 
@@ -76,8 +82,6 @@ proc main() {
       currentAction=choice;
       episodeEnd = obs.episodeEnd;
     } while !episodeEnd;
-    //writeln("current E");
-    //pprint(E);
     episodes.push_back(episode);
   }
   //report(episodes);
@@ -118,19 +122,4 @@ proc main() {
   }
 
   pprint(Q);
-}
-
-proc pprint(Q: NamedMatrix) {
-  write("     ");
-  for c in Q.cols.keys {
-    write("   %5s  |".format(c));
-  }
-  write("\n");
-  for i in 1..Q.nrows() {
-    write(" %3s ".format(Q.rows.get(i)));
-    for j in 1..Q.ncols() {
-      write(" %7.3er ".format(Q.get(i,j)));
-    }
-    write("\n");
-  }
 }

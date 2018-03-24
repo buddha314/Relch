@@ -1,4 +1,5 @@
-use Chingon;
+use Chingon,
+    Random;
 
 /*
  Probably too abstract
@@ -11,44 +12,110 @@ class World {
 Will have rewards and stuff eventually
  */
 class GridWorld : GameBoard {
-  var absorbingStates: BiMap,
-      states: BiMap;
+  //var absorbingStates: BiMap,
+  var states: BiMap,
+      terminalStates: BiMap,
+      stepPenalty: int,
+      deathPenalty: int,
+      goalReward: int,
+      initialState: string;
 
-  proc init(r:int) {
-    super.init(w=r);
-    this.absorbingStates = new BiMap();
-    this.absorbingStates.add("B2", -1);
-    this.absorbingStates.add("B4", -1);
-    this.absorbingStates.add("C4", -1);
-    this.absorbingStates.add("D1", -1);
-    this.absorbingStates.add("D4", 1);
+  proc init(w:int, h:int, terminalStates: BiMap) {
+    super.init(w=w, h=h);
+
     this.states = new BiMap();
-    for e in this.verts.entries() {
-      this.states.add(e[1], e[2]);
-    }
+    this.states = this.verts;
+
+    this.terminalStates = new BiMap();
+    this.terminalStates = terminalStates;
+
     this.complete();
   }
 
-  proc takeAction(currentState: string, action: string) {
-    var currentStateId: int = this.verts.get(currentState),
-        newStateId: int,
-        reward: real = 0,
-        episodeEnd: bool = false;
+  proc writeThis(f) {
+    const EMPTY_CELL = " * ",
+          GOAL_CELL = " G ",
+          START_CELL = " S ",
+          TERMINAL_CELL = " X ",
+          HALLWAY = "-",
+          H_WALL = " | ";
+
+    f <~> this.X.domain.dims() <~> "\n";
+    for x in 1..this.verts.size() {
+      //f <~> this.seq2grid(x) <~> " ";
+      if this.terminalStates.keys.member(this.verts.get(x)) {
+        f <~> TERMINAL_CELL;
+      } else if this.verts.get(x) == this.initialState {
+        f <~> START_CELL;
+      } else {
+        f <~> EMPTY_CELL;
+      }
+      if this.SD.member(x, x+1) {
+        f <~> HALLWAY;
+      } else {
+        f <~> " ";
+      }
+      if x % this.width == 0 {
+        f <~> "\n";
+        // back track to do the separating rows
+        if x < this.verts.size() {
+          for k in (x-this.width + 1)..x {
+            if this.SD.member(k, k + this.width) {
+              f <~> H_WALL;
+            } else {
+              f <~> "   ";
+            }
+            f <~> " ";
+          }
+          f <~> "\n";
+        }
+      }
+
+    }
+    /*
+    for i in 1..this.height {
+      for j in 1..this.width {
+        f <~> (i,j) <~> " ";
+        f <~> this.grid2seq((i,j));
+        f <~> " ";
+        f <~> this.verts.get(grid2seq(i,j));
+        if this.terminalStates.keys.member(this.verts.get(grid2seq(i,j))) {
+          f <~> START_CELL;
+        } else {
+          f <~> EMPTY_CELL;
+        }
+      }
+      f <~> "\n";
+    } */
+  }
+
+  proc isTerminalState(state: string): bool {
+    return this.terminalStates.keys.member(state);
+  }
+
+  proc step(currentState: string, action: string) {
+    var reward: real = this.stepPenalty;
+    var newState: string;
     if action == "N" {
-      newStateId = currentStateId - this.width;
+        newState = this.verts.get(this.verts.get(currentState) - this.width);
     } else if action == "E" {
-      newStateId = currentStateId + 1;
+        newState = this.verts.get(this.verts.get(currentState) + 1);
     } else if action == "W" {
-      newStateId = currentStateId - 1;
+        newState = this.verts.get(this.verts.get(currentState) - 1);
     } else if action == "S" {
-      newStateId = currentStateId + this.width;
+        newState = this.verts.get(this.verts.get(currentState) + this.width);
     }
-    var newState = this.verts.get(newStateId);
-    if this.absorbingStates.keys.member(newState) {
-      episodeEnd = true;
-      reward = this.absorbingStates.get(newState);
+    if !this.neighbors(currentState).keys.member(newState) {
+      writeln("Illegal State chosen!  %s is not a neighbor of %s".format(newState, currentState));
+      writeln("current neighbors: ", this.neighbors(currentState).keys);
+      halt();
     }
-    return new Observation(state=newState,reward=reward, episodeEnd = episodeEnd);
+    if this.isTerminalState(currentState) {
+      reward = terminalStates.get(currentState);
+      writeln("I just terminated %s -> %n".format(currentState, reward));
+    }
+
+    return (reward, newState);
   }
 
 }
@@ -110,4 +177,19 @@ class Qoutcome {
  proc readWriteThis(f) {
    f <~> "state, action, reward:  %8s  %8s  %{#.###}".format(this.state, this.action, this.reward);
  }
+}
+
+proc initializeStateActionRandom(states: BiMap, actions: BiMap) {
+  var D = {1..states.size(), 1..actions.size()},
+      Y: [D] real = 0.5,
+      X: [D] real;
+  fillRandom(X);
+  const Z: [D] real = X-Y;
+  return new NamedMatrix(X=Z, rows=states, cols=actions);
+}
+
+proc initializeEligibilityTrace(states: BiMap, actions: BiMap) {
+  var D = {1..states.size(), 1..actions.size()},
+      X: [D] real = 0;
+  return new NamedMatrix(X=X, rows=states, cols=actions);
 }
