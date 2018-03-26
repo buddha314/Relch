@@ -2,7 +2,7 @@
 module Relch {
   use worlds;
   config const N_EPISODES: int,
-               PRINT_PATHS: bool=false,
+               PRINT_PATHS: bool,
                LEARNING_STEPS: int,
                BOARD_WIDTH: int,
                BOARD_HEIGHT: int,
@@ -13,7 +13,6 @@ module Relch {
                GOAL_STATE: string,
                LEARNING_RATE: real,   // alpha
                DISCOUNT_FACTOR: real, // gamma
-               TRACE_DECAY: real,     // lambda
-               GREEDY_EPSILON: real;  // epsilon
+               TRACE_DECAY: real;     // lambda
 
 }

@@ -10,7 +10,7 @@ BINDIR=bin
 TESTDIR=test
 EXEC=relch
 
-default: elsa run-elsa
+default: dungeon run-dungeon
 
 run-fl: frozenLake.chpl
 	$(CC) -M../src $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o fl $< ; \
@@ -23,3 +23,10 @@ elsa: elsa.chpl
 
 run-elsa:
 	./elsa -f elsa.cfg
+
+dungeon: dungeon.chpl
+	rm dungeon; \
+	$(CC) -M../src $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o dungeon $<
+
+run-dungeon:
+	./dungeon -f dungeon.cfg

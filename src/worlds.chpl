@@ -1,6 +1,10 @@
 use Chingon,
     Random;
 
+
+config const GREEDY_EPSILON: real;  // epsilon
+
+
 /*
  Probably too abstract
  */
@@ -72,21 +76,6 @@ class GridWorld : GameBoard {
       }
 
     }
-    /*
-    for i in 1..this.height {
-      for j in 1..this.width {
-        f <~> (i,j) <~> " ";
-        f <~> this.grid2seq((i,j));
-        f <~> " ";
-        f <~> this.verts.get(grid2seq(i,j));
-        if this.terminalStates.keys.member(this.verts.get(grid2seq(i,j))) {
-          f <~> START_CELL;
-        } else {
-          f <~> EMPTY_CELL;
-        }
-      }
-      f <~> "\n";
-    } */
   }
 
   proc isTerminalState(state: string): bool {
@@ -110,17 +99,10 @@ class GridWorld : GameBoard {
       writeln("current neighbors: ", this.neighbors(currentState).keys);
       halt();
     }
-    /*
-    if this.isTerminalState(currentState) {
-      reward = terminalStates.get(currentState);
-      writeln("I just terminated %s -> %n".format(currentState, reward));
-    } */
     if this.isTerminalState(newState) {
       reward = terminalStates.get(newState);
       //writeln("I just terminated %s -> %n".format(newState, reward));
     }
-
-
     return (reward, newState);
   }
 
@@ -198,4 +180,29 @@ proc initializeEligibilityTrace(states: BiMap, actions: BiMap) {
   var D = {1..states.size(), 1..actions.size()},
       X: [D] real = 0;
   return new NamedMatrix(X=X, rows=states, cols=actions);
+}
+
+proc policy(currentState: string, B: GridWorld, Q: NamedMatrix) {
+  const options = B.availableActions(currentState);
+
+  var ps: [1..1] real;
+  var returnedAction: string;
+  fillRandom(ps);
+  if ps[1] < 1 - GREEDY_EPSILON {
+    var actionMap = new BiMap();
+    var actionQValues: [1..0] real;
+    var k: int = 1;
+    for o in options {
+      actionMap.add(o, k);
+      actionQValues.push_back(Q.get(currentState, o));
+      k += 1;
+    }
+    returnedAction = actionMap.get(argmax(actionQValues));
+  } else {
+    var s: [1..0] string;
+    for t in options do s.push_back(t);
+    var tmp = choice(s);
+    returnedAction = tmp[1];
+  }
+  return returnedAction;
 }
