@@ -30,3 +30,8 @@ dungeon: dungeon.chpl
 
 run-dungeon:
 	./dungeon -f dungeon.cfg
+
+circle: circle_nn.chpl
+	$(CC) -M../src $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o circle $< ; \
+	./circle; \
+	rm ./circle
