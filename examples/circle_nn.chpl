@@ -1,7 +1,7 @@
 use NumSuch, Random, Norm;
 const nCircles: int = 50,  // of each typ
-      radius1: real = 0.6,
-      radius2: real = 1.2,
+      radius1: real = 0.8,
+      radius2: real = 1.6,
       momentum: real = 0.9,
       learningRate: real = 0.02,
       randomSeed: int = 17;
@@ -37,9 +37,9 @@ proc softmax(z:[]) {
   c = exp(rowSums(z));
   //writeln("softmax c: ", c);
   for i in 1..z.shape(1) {
-    v[i,..] = for x in v[i,..] do exp(x) / c[i];
+    v[i,..] = exp(z[i,..]) / c[i];
   }
-  //writeln("softmax is returning: ", v);
+  //writeln("\nsoftmax is returning: ", v);
   return v;
 }
 
@@ -159,7 +159,7 @@ var Vbh: [bh.domain] real = 0,
     Vbo: [bo.domain] real = 0,
     VWo: [Wo.domain] real = 0;
 
-const nIterations: int = 30;
+const nIterations: int = 2;
 var lrUpdate = learningRate / nIterations,  // Is not used in original code
     lsCosts: [1..0] real;
 
