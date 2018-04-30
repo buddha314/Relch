@@ -33,5 +33,7 @@ run-dungeon:
 
 circle: circle_nn.chpl
 	$(CC) -M../src $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o circle $< ; \
-	./circle; \
-	rm ./circle
+	./circle -f circle_nn.cfg ; \
+
+run-circle:
+	./circle -f circle_nn.cfg

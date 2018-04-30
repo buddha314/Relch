@@ -1,28 +1,35 @@
 use NumSuch, Random, Norm;
-const nCircles: int = 50,  // of each typ
-      radius1: real = 0.8,
-      radius2: real = 1.6,
-      momentum: real = 0.9,
-      learningRate: real = 0.02,
-      randomSeed: int = 17;
+config const RANDOM_SEED: int,
+             N_CIRCLES_EACH_TYPE: int,
+             RADIUS1: real,
+             RADIUS2: real,
+             MOMENTUM: real,
+             LEARNING_RATE: real,
+             N_ITERATIONS: int;
+
 
 
 proc makeCircles(nCircles: int, radius1: real, radius2: real) {
-  var   X:[1..2*nCircles, 1..2] real,
-        T:[1..2*nCircles, 1..2] real;
+  var   X:[1..nCircles, 1..2] real,
+        T:[1..nCircles, 1..2] real;
   fillRandom(X);
+  // assign each one randomly
   for i in 1..nCircles {
-    X[i,..] = radius1 * X[i, ..];
-    X[i+nCircles,..] = radius2 * X[i+nCircles,..];
-    T[i,..] = [1.0, 0.0];
-    T[i+nCircles, ..] = [0.0, 1.0];
-
+    var p = rand(a=0, b=1);
+    if p > 0.5 {
+      X[i,..] = radius1 * X[i,..];
+      T[i,..] = [1.0, 0.0];
+    } else {
+      X[i,..] = radius2 * X[i,..];
+      T[i,..] = [0.0, 1.0];
+    }
   }
   return (X,T);
 }
 
-var X = makeCircles(nCircles, radius1, radius2)[1],
-    T = makeCircles(nCircles, radius1, radius2)[2];
+var XY = makeCircles(N_CIRCLES_EACH_TYPE, RADIUS1, RADIUS2),
+    X = XY[1],
+    T = XY[2];
 
 proc logistic(z) {
   var x:[z.domain] real;
@@ -143,7 +150,7 @@ var bh: [1..1, 1..3] real,
     bo: [1..1, 1..2] real,
     Wo: [1..3, 1..2] real;
 // Chapel needs a few more lines at the moment
-fillRandom(bh, randomSeed);
+fillRandom(bh, RANDOM_SEED);
 fillRandom(Wh);
 fillRandom(bo);
 fillRandom(Wo);
@@ -160,20 +167,19 @@ var Vbh: [bh.domain] real = 0,
     JWh: [Wh.domain] real = 0,
     Jbo: [bo.domain] real = 0,
     JWo: [Wo.domain] real = 0;
-const nIterations: int = 300;
-var lrUpdate = learningRate / nIterations,  // Is not used in original code
+var lrUpdate = LEARNING_RATE / N_ITERATIONS,  // Is not used in original code
     lsCosts: [1..0] real;
 
 lsCosts.push_back(cost(nn(X, Wh, bh, Wo, bo), T));
 
 writeln("colSums(X) ", colSums(X));
 
-for i in 1..nIterations {
+for i in 1..N_ITERATIONS {
   writeln("starting iter ", i);
   var Vs = updateVelocity(X=X, T=T, Wh=Wh, bh=bh, Wo=Wo, bo=bo,
     VWh=VWh, Vbh=Vbh, VWo=VWo, Vbo=Vbo,
     JWh=JWh, Jbh=Jbh, JWo=JWo, Jbo=Jbo,
-    momentum=momentum, learningRate=learningRate);
+    momentum=MOMENTUM, learningRate=LEARNING_RATE);
   printJNorms(JWh, Jbh, JWo, Jbo);
   printVNorms(VWh, Vbh, VWo, Vbo);
   var Ps = updateParams(Wh=Wh, bh=bh, Wo=Wo, bo=bo,
