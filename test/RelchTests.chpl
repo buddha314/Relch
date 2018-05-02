@@ -22,6 +22,13 @@ class RelchTest : UnitTest {
     var whiteBoyTyler = new LinearTiler(nbins=7, x1=0, x2=100, overlap=0.1, wrap=false);
     assertIntArrayEquals(msg="White boys can't wrap", expected=eo2, actual=whiteBoyTyler.bin(-0.05));
 
+    var na = 5;
+    var angler = new AngleTiler(nbins=na, overlap=0.05);
+    var ao:[1..na] int = [1,0,0,0,1];
+    var ao2:[1..na] int = [0,0,1,0,0];
+    assertIntArrayEquals(msg="Angler sees -pi correctly", expected=ao, actual=angler.bin(-pi));
+    assertIntArrayEquals(msg="Angler sees origin correctly", expected=ao2, actual=angler.bin(0));
+
   }
 
   proc run() {

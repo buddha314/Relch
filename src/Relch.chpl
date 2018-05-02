@@ -1,6 +1,6 @@
 /* Documentation for Relch */
 module Relch {
-  use NumSuch;
+  use Math, NumSuch;
   /*
   use worlds;
   config const N_EPISODES: int,
@@ -197,6 +197,17 @@ module Relch {
       return v;
     }
 
+  }
+
+  /*
+  I don't want to freak out engineers, but this works in radians and goes the
+  positive (counter-clockwise) direction.
+   */
+  class AngleTiler : LinearTiler {
+    proc init(nbins: int, overlap:real=-1, theta0: real =-pi , theta1: real = pi) {
+      super.init(nbins=nbins, x1=theta0, x2=theta1, overlap=overlap, wrap=true);
+      this.complete();
+    }
   }
 
 }
