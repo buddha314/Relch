@@ -143,3 +143,16 @@ On-Policy update SARSA($\lambda$) update
 # Examples
 
 Okay, maybe we can try Sutton's Grid World examined in [this paper](http://web.eecs.umich.edu/~baveja/Papers/ICML98_LS.pdf)
+
+# Making things
+
+You will need a filed called `local.mk` that looks something like
+
+```
+CHINGON_HOME=$(HOME)/git/chingon
+NUMSUCH_HOME=$(HOME)/git/numsuch
+CDO_HOME=$(HOME)/git/cdo
+CDOEXTRAS_HOME=$(HOME)/git/cdo-extras
+CHARCOAL_HOME=$(HOME)/git/Charcoal
+BLAS_HOME=/usr/include/
+```

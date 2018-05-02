@@ -168,15 +168,35 @@ module Relch {
 
     proc makeBins(x1: real, x2: real) {
       const width = (x2-x1)/this.nbins;
-      var o = 0.0;
-      if this.overlap > 0 {
-        o = this.overlap;
+      if this.overlap <= 0 {
+        this.overlap = 0;
+      } else {
+        this.overlap = this.overlap * width;
       }
       for i in 1..this.nbins {
-        this.bins[i, 1] = x1 + (i-1)*(width) - o;
-        this.bins[i, 2] = x1 + (i)*(width) + o;
+        this.bins[i, 1] = x1 + (i-1)*(width) - this.overlap;
+        this.bins[i, 2] = x1 + (i)*(width) + this.overlap;
       }
     }
+
+    proc bin(x: real) {
+      var v:[1..this.nbins] int = 0;
+      for i in 1..this.nbins {
+        if x >= this.bins[i,1] && x <= this.bins[i,2] {
+            v[i] = 1;
+          }
+      }
+      if this.wrap {
+        // Note the right bracket already has this.overlap added
+        if x >= this.bins[this.nbins,2] - 2* this.overlap && x <= this.bins[this.nbins,2] {
+          v[1] = 1;
+        } else if x >= this.bins[1,1]  && x <= this.bins[1,1] + 2*this.overlap {
+          v[this.nbins] = 1;
+        }
+      }
+      return v;
+    }
+
   }
 
 }
