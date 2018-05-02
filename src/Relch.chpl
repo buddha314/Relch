@@ -39,6 +39,11 @@ module Relch {
     iter run() {
       for i in 1..this.epochs {
         for a in this.agents {
+          // DM presents options
+          // A chooses an action
+          // DM rewards
+          // A logs the reward
+          // Return A
           yield a;
         }
       }
@@ -72,7 +77,6 @@ module Relch {
       this.complete();
       var m: int = 1;  // collects the total size of the feature space
       var n: int = 0;
-      /*
       for f in internalFeatures {
         this.internalFeatures.push_back(f);
         n += f.size;
@@ -80,10 +84,13 @@ module Relch {
       for f in worldFeatures {
         this.worldFeatures.push_back(f);
         n += f.size;
-      }*/
+      }
       this.d = {1..m, 1..n};
-      //fillRandom(this.Q);
-      //fillRandom(this.E);
+      var X:[d] real;
+      fillRandom(X);
+      var nm = new NamedMatrix(X=X);
+      fillRandom(this.Q);
+      fillRandom(this.E);
       this.position=position;
     }
 
@@ -117,6 +124,10 @@ module Relch {
     proc evaluateAction(agent: Agent) {
       return 0;
     }
+
+    proc presentOptions(agent: Agent) {
+      return 0;
+    }
   }
 
   class Feature {
@@ -127,6 +138,44 @@ module Relch {
     proc v(me: Agent, them:[] Agent) {
       var v:[1..size] int;
       return v;
+    }
+  }
+
+  class Tiler {
+    var nbins: int,
+        ndims: int,
+        dom: domain(2),
+        bins: [dom] real,
+        overlap: real,
+        wrap: bool;
+
+    proc init(nbins:int, ndims: int, overlap: real, wrap:bool) {
+      this.nbins = nbins;
+      this.dom = {1..nbins, 1..2*ndims};
+      this.overlap = overlap;
+      this.wrap = wrap;
+    }
+
+    proc makeBins() {}
+  }
+
+  class LinearTiler : Tiler {
+    proc init(nbins: int, x1: real, x2: real, overlap:real=-1, wrap:bool=false) {
+      super.init(nbins=nbins, ndims=1, overlap=overlap, wrap=wrap);
+      this.complete();
+      this.makeBins(x1: real, x2: real);
+    }
+
+    proc makeBins(x1: real, x2: real) {
+      const width = (x2-x1)/this.nbins;
+      var o = 0.0;
+      if this.overlap > 0 {
+        o = this.overlap;
+      }
+      for i in 1..this.nbins {
+        this.bins[i, 1] = x1 + (i-1)*(width) - o;
+        this.bins[i, 2] = x1 + (i)*(width) + o;
+      }
     }
   }
 

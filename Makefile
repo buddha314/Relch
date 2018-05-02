@@ -8,9 +8,16 @@ SRCDIR=src
 BINDIR=bin
 TESTDIR=test
 EXEC=relch
+TEST_MODULES=-M$(CHARCOAL_HOME)/src -M$(SRCDIR)
 
 default: $(SRCDIR)/Relch.chpl
 	$(CC) $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o $(BINDIR)/$(EXEC) $<
 
 run:
 	./$(BINDIR)/$(EXEC) -f qlearn.cfg
+
+
+test: $(SRCDIR)/Relch.chpl $(TESTDIR)/RelchTests.chpl
+	$(CC) $(MODULES) $(TEST_MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o $(TESTDIR)/test $(TESTDIR)/RelchTests.chpl ;\
+	./$(TESTDIR)/test ; \
+	rm $(TESTDIR)/test
