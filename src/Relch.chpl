@@ -63,26 +63,26 @@ module Relch {
   class Agent {
     var name: string,
         position: Position,
-        internalFeatures: [1..0] Feature,
-        worldFeatures: [1..0] Feature,
+        internalSensors: [1..0] Sensor,
+        worldSensors: [1..0] Sensor,
         d: domain(2),
         Q: [d] real,
         E: [d] real;
 
     proc init(name:string
-        , internalFeatures:[] Feature
-        , worldFeatures: [] Feature
+        , internalSensors:[] Sensor
+        , worldSensors: [] Sensor
         , position:Position = new Position()) {
       this.name=name;
       this.complete();
       var m: int = 1;  // collects the total size of the feature space
       var n: int = 0;
-      for f in internalFeatures {
-        this.internalFeatures.push_back(f);
+      for f in internalSensors{
+        this.internalSensors.push_back(f);
         n += f.size;
       }
-      for f in worldFeatures {
-        this.worldFeatures.push_back(f);
+      for f in worldSensors{
+        this.worldSensors.push_back(f);
         n += f.size;
       }
       this.d = {1..m, 1..n};
@@ -130,7 +130,7 @@ module Relch {
     }
   }
 
-  class Feature {
+  class Sensor {
     var size: int; // How long is the return vector
     proc init(size: int) {
       this.size = size;

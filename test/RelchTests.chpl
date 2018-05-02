@@ -28,12 +28,16 @@ class RelchTest : UnitTest {
     var ao2:[1..na] int = [0,0,1,0,0];
     assertIntArrayEquals(msg="Angler sees -pi correctly", expected=ao, actual=angler.bin(-pi));
     assertIntArrayEquals(msg="Angler sees origin correctly", expected=ao2, actual=angler.bin(0));
+  }
+
+  proc testAgentRelativeMethods() {
 
   }
 
   proc run() {
     super.run();
     testTilers();
+    testAgentRelativeMethods();
     return 0;
   }
 }
