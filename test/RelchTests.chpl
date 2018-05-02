@@ -31,7 +31,23 @@ class RelchTest : UnitTest {
   }
 
   proc testAgentRelativeMethods() {
-
+    var catSensor = new Sensor(size=7);
+    var dogSensor = new Sensor(size=7);
+    var is: [1..0] Sensor;
+    var ws: [1..0] Sensor;
+    is.push_back(catSensor);
+    ws.push_back(catSensor);
+    var dog = new Agent(name="dog"
+      , internalSensors=is, worldSensors=ws
+      , position=new Position(x=25, y=25));
+    var cat = new Agent(name="cat"
+      , internalSensors=is, worldSensors=ws
+      , position=new Position(x=50, y=50));
+    var d: real = 35.3553;
+    assertRealApproximates(msg="Distance from dog to cat is correct"
+      , expected=d, actual=dog.distanceFromMe(cat)
+      , error=1.0e-3);
+    //writeln(dog.distanceFromMe(cat));
   }
 
   proc run() {

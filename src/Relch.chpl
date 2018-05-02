@@ -102,6 +102,13 @@ module Relch {
       return this;
     }
 
+    /*
+     This really need to be abstracted
+     */
+    proc distanceFromMe(you: Agent) {
+      return sqrt((this.position.x - you.position.x)**2 + (this.position.y - you.position.y)**2);
+    }
+
     proc readWriteThis(f) throws {
       f <~> "%25s".format(this.name) <~> " "
         <~> "%4r".format(this.position.x) <~> " "
