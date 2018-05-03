@@ -109,6 +109,10 @@ module Relch {
       return sqrt((this.position.x - you.position.x)**2 + (this.position.y - you.position.y)**2);
     }
 
+    proc angleFromMe(you: Agent) {
+      return atan2((you.position.y - this.position.y) , (you.position.x - this.position.x));
+    }
+
     proc readWriteThis(f) throws {
       f <~> "%25s".format(this.name) <~> " "
         <~> "%4r".format(this.position.x) <~> " "

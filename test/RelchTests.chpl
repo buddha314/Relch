@@ -47,7 +47,18 @@ class RelchTest : UnitTest {
     assertRealApproximates(msg="Distance from dog to cat is correct"
       , expected=d, actual=dog.distanceFromMe(cat)
       , error=1.0e-3);
-    //writeln(dog.distanceFromMe(cat));
+
+    // cat starts at (50, 50)
+    assertRealApproximates(msg="Angle to cat is pi/4", expected=pi/4, actual = dog.angleFromMe(cat));
+    // 2nd Q (0, 50)
+    cat.position.x = 0.0;
+    assertRealApproximates(msg="Angle to cat is 3pi/4", expected=3*pi/4, actual = dog.angleFromMe(cat));
+    // 3rd Q (0,0)
+    cat.position.y = 0;
+    assertRealApproximates(msg="Angle to cat is -3pi/4", expected=-3*pi/4, actual = dog.angleFromMe(cat));
+    // 4th Q (50, 0)
+    cat.position.x = 50;
+    assertRealApproximates(msg="Angle to cat is -pi/4", expected=-pi/4, actual = dog.angleFromMe(cat));
   }
 
   proc run() {
