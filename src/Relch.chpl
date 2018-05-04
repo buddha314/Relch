@@ -164,6 +164,10 @@ module Relch {
       return v;
     }
 
+    proc v(me: Agent, them: Agent) {
+      return this.v(me=me, them=them.position);
+    }
+
     proc dim() {
       var n: int = 0;
       if this.angleTiler != nil {
@@ -281,8 +285,30 @@ module Relch {
         p.y = y/n;
         return p;
     }
+
+    proc findNearestMember(me: Agent, agents: [] Agent) {
+      var p = new Position(),
+          d: real = -1;
+      for agent in agents {
+        if agent:this.species != nil {
+          const dd = dist(me, agent);
+          if dd < d || d < 0 {
+            p.x = agent.position.x;
+            p.y = agent.position.y;
+            d = dd;
+          }
+        }
+      }
+      return p;
+    }
   }
 
+  proc dist(me: Agent, you: Agent) {
+    return dist(me.position, you.position);
+  }
+  proc dist(me: Agent, you: Position) {
+    return dist(me.position, you);
+  }
   proc dist(origin: Position, target: Position) {
     return sqrt((origin.x - target.x)**2 + (origin.y - target.y)**2);
   }

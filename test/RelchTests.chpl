@@ -61,8 +61,15 @@ class RelchTest : UnitTest {
     s1.add(angler);
     s1.target = aflocka;
     var s1out: [1..14] int = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0];
+    var s2out: [1..14] int = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0];
     assertIntArrayEquals("Sensor 1 picks up angle and distance", expected=s1out, actual=s1.v(mike, aflocka.findCentroid(sim.agents)));
+    assertIntArrayEquals("Sensor 1 picks up angle and distance to gord"
+      , expected=s2out, actual=s1.v(mike, gord));
 
+    var dog = new Agent(name="dog", position=new Position(x=25, y=25));
+    var nn = aflocka.findNearestMember(dog, sim.agents);
+    assertRealEquals("Sensor finds that mike is closest to dog (x)", expected=100.0,actual=nn.x);
+    assertRealEquals("Sensor finds that mike is closest to dog (y)", expected=100.0,actual=nn.y);
     return 0;
   }
 
