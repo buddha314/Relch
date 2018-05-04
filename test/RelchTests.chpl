@@ -31,8 +31,38 @@ class RelchTest : UnitTest {
   }
 
   proc TestSensors() {
-    var hundredYardTiler = new LinearTiler(nbins=7, x1=0, x2=100, overlap=0.1, wrap=true);
-    var s1 = new Sensor();
+
+    const WORLD_WIDTH: int = 800,
+          WORLD_HEIGHT: int = 500;
+    var sim = new Simulation(name="simulation amazing", epochs=10);
+    sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+
+    class Seagull : Agent {
+      proc init(name:string, position: Position) {
+          super.init( name=name,position=position );
+          this.complete();
+      }
+    }
+    var mike = new Seagull(name="mike", position=new Position(x=100, y=100));
+    var pondo = new Seagull(name="pando", position=new Position(x=110, y=110));
+    var kevin = new Seagull(name="kevin", position=new Position(x=100, y=110));
+    var gord = new Seagull(name="gord", position=new Position(x=100, y=110));
+
+    sim.add(mike);
+    sim.add(pondo);
+    sim.add(kevin);
+    sim.add(gord);
+    var aflocka = new Herd(name="aflocka", position=new Position(), species=Seagull);
+
+    var hundredYardTiler = new LinearTiler(nbins=7, x1=0, x2=100, overlap=0.1, wrap=true),
+        angler = new AngleTiler(nbins=7, overlap=0.05),
+        s1 = new Sensor();
+    s1.add(hundredYardTiler);
+    s1.add(angler);
+    s1.target = aflocka;
+    var s1out: [1..14] int = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0];
+    assertIntArrayEquals("Sensor 1 picks up angle and distance", expected=s1out, actual=s1.v(mike, aflocka.findCentroid(sim.agents)));
+
     return 0;
   }
 

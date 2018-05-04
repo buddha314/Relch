@@ -1,6 +1,7 @@
 /* Documentation for Relch */
 module Relch {
   use Math, NumSuch;
+
   /*
   use worlds;
   config const N_EPISODES: int,
@@ -112,11 +113,11 @@ module Relch {
      This really need to be abstracted
      */
     proc distanceFromMe(you: Agent) {
-      return sqrt((this.position.x - you.position.x)**2 + (this.position.y - you.position.y)**2);
+      return dist(this.position, you.position);
     }
 
     proc angleFromMe(you: Agent) {
-      return atan2((you.position.y - this.position.y) , (you.position.x - this.position.x));
+      return angle(this.position, you.position);
     }
 
     proc readWriteThis(f) throws {
@@ -141,13 +142,37 @@ module Relch {
         angleTiler: Tiler,
         target: Perceivable;
     proc init() {}
-      
+
     proc init(size: int) {
       this.size = size;
     }
-    proc v(me: Agent, them:[] Agent) {
-      var v:[1..size] int;
+
+    proc add(tiler: Tiler) {
+      if tiler: AngleTiler != nil {
+        this.angleTiler = tiler;
+      } else if tiler : LinearTiler != nil {
+        this.distanceTiler = tiler;
+      }
+    }
+    proc v(me: Agent, them: Position) {
+      var v:[1..this.dim()] int,
+          d: real =  dist(me.position, them),
+          a: real =  angle(me.position, them);
+      v[1..this.distanceTiler.nbins] = this.distanceTiler.bin(d);
+      v[this.distanceTiler.nbins+1..this.dim()] = this.angleTiler.bin(a);
+      //return this.distanceTiler.bin(d);
       return v;
+    }
+
+    proc dim() {
+      var n: int = 0;
+      if this.angleTiler != nil {
+        n += this.angleTiler.nbins;
+      }
+      if this.distanceTiler != nil {
+        n += this.distanceTiler.nbins;
+      }
+      return n;
     }
   }
 
@@ -165,6 +190,8 @@ module Relch {
       this.overlap = overlap;
       this.wrap = wrap;
     }
+
+    proc bin(x: real) {return [0];}
 
     proc makeBins() {}
   }
@@ -254,5 +281,13 @@ module Relch {
         p.y = y/n;
         return p;
     }
+  }
+
+  proc dist(origin: Position, target: Position) {
+    return sqrt((origin.x - target.x)**2 + (origin.y - target.y)**2);
+  }
+
+  proc angle(origin: Position, target: Position) {
+    return atan2((target.y - origin.y) , (target.x - origin.x));
   }
 }
