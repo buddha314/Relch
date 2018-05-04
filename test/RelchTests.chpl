@@ -30,6 +30,12 @@ class RelchTest : UnitTest {
     assertIntArrayEquals(msg="Angler sees origin correctly", expected=ao2, actual=angler.bin(0));
   }
 
+  proc TestSensors() {
+    var hundredYardTiler = new LinearTiler(nbins=7, x1=0, x2=100, overlap=0.1, wrap=true);
+    var s1 = new Sensor();
+    return 0;
+  }
+
   proc testAgentRelativeMethods() {
     var catSensor = new Sensor(size=7);
     var dogSensor = new Sensor(size=7);
@@ -37,12 +43,8 @@ class RelchTest : UnitTest {
     var ws: [1..0] Sensor;
     is.push_back(catSensor);
     ws.push_back(catSensor);
-    var dog = new Agent(name="dog"
-      , internalSensors=is, worldSensors=ws
-      , position=new Position(x=25, y=25));
-    var cat = new Agent(name="cat"
-      , internalSensors=is, worldSensors=ws
-      , position=new Position(x=50, y=50));
+    var dog = new Agent(name="dog", position=new Position(x=25, y=25));
+    var cat = new Agent(name="cat", position=new Position(x=50, y=50));
     var d: real = 35.3553;
     assertRealApproximates(msg="Distance from dog to cat is correct"
       , expected=d, actual=dog.distanceFromMe(cat)
@@ -71,22 +73,15 @@ class RelchTest : UnitTest {
     var ifs:[1..0] Sensor,
         wfs:[1..0] Sensor;
 
-    var dog = new Agent(name="dog"
-      , internalSensors=ifs, worldSensors=wfs
-      , position=new Position(x=25, y=25));
-    var cat = new Agent(name="cat"
-      , internalSensors=ifs, worldSensors=wfs
-      , position=new Position(x=50, y=50));
+    var dog = new Agent(name="dog", position=new Position(x=25, y=25));
+    var cat = new Agent(name="cat", position=new Position(x=50, y=50));
 
     sim.add(dog);
     sim.add(cat);
 
     class Seagull : Agent {
       proc init(name:string, position: Position) {
-          var ifs: [1..0] Sensor,
-              wfs: [1..0] Sensor;
-          super.init( name=name, internalSensors=ifs , worldSensors=wfs
-            , position=position );
+          super.init( name=name,position=position );
           this.complete();
       }
     }
@@ -108,6 +103,7 @@ class RelchTest : UnitTest {
   proc run() {
     super.run();
     testTilers();
+    TestSensors();
     testAgentRelativeMethods();
     testBuildSim();
     return 0;

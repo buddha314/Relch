@@ -25,7 +25,7 @@ module Relch {
         //dm: DungeonMaster,
         world: World,
         agents: [1..0] Agent,
-        landarks: [1..0] Landmark;
+        perceivables: [1..0] Perceivable;
 
     proc init(name: string, epochs:int) {
       this.name=name;
@@ -37,8 +37,8 @@ module Relch {
         this.agents.push_back(agent);
     }
 
-    proc add(landmark: Landmark) {
-      this.landmarks.push_back(landmark);
+    proc add(perceivable: Perceivable) {
+      this.perceivables.push_back(perceivable);
     }
 
     proc presentOptions(player: Agent) {
@@ -72,26 +72,31 @@ module Relch {
   class Agent {
     var name: string,
         position: Position,
-        internalSensors: [1..0] Sensor,
-        worldSensors: [1..0] Sensor,
+        sensors: [1..0] Sensor,
         d: domain(2),
         Q: [d] real,
-        E: [d] real;
+        E: [d] real,
+        compiled : bool = false;
 
     proc init(name:string
-        , internalSensors:[] Sensor
-        , worldSensors: [] Sensor
         , position:Position = new Position()) {
       this.name=name;
       this.complete();
+      this.position=position;
+    }
+
+    proc add(sensor : Sensor) {
+      this.sensors.push_back(sensor);
+    }
+
+    proc act(rabbits:[] Agent) {
+      return this;
+    }
+
+    proc compile() {
       var m: int = 1;  // collects the total size of the feature space
       var n: int = 0;
-      for f in internalSensors{
-        this.internalSensors.push_back(f);
-        n += f.size;
-      }
-      for f in worldSensors{
-        this.worldSensors.push_back(f);
+      for f in this.sensors{
         n += f.size;
       }
       this.d = {1..m, 1..n};
@@ -100,15 +105,7 @@ module Relch {
       var nm = new NamedMatrix(X=X);
       fillRandom(this.Q);
       fillRandom(this.E);
-      this.position=position;
-    }
-
-    proc act(rabbits:[] Agent) {
-      /*
-      for f in this.internalFeatures {
-        var v = f.v(this, rabbits);
-      } */
-      return this;
+      this.compiled = true;
     }
 
     /*
@@ -138,21 +135,13 @@ module Relch {
     }
   }
 
-  /*
-  class DungeonMaster {
-    proc init() {}
-
-    proc evaluateAction(agent: Agent) {
-      return 0;
-    }
-
-    proc presentOptions(agent: Agent) {
-      return 0;
-    }
-  }*/
-
   class Sensor {
-    var size: int; // How long is the return vector
+    var size: int, // How long is the return vector
+        distanceTiler: Tiler,
+        angleTiler: Tiler,
+        target: Perceivable;
+    proc init() {}
+      
     proc init(size: int) {
       this.size = size;
     }
@@ -231,7 +220,7 @@ module Relch {
     }
   }
 
-  class Landmark {
+  class Perceivable {
     var name: string,
         position: Position;
     proc init(name: string, position: Position) {
@@ -240,7 +229,7 @@ module Relch {
     }
   }
 
-  class Herd:Landmark {
+  class Herd : Perceivable {
     type species;
     proc init(name: string, position: Position, type species) {
       super.init(name=name, position=new Position());
@@ -254,6 +243,7 @@ module Relch {
             n: int = 0;
         var p = new Position();
         for agent in agents {
+          // Make sure we have the correct target agent class
           if agent:this.species != nil {
             x += agent.position.x;
             y += agent.position.y;
