@@ -61,10 +61,55 @@ class RelchTest : UnitTest {
     assertRealApproximates(msg="Angle to cat is -pi/4", expected=-pi/4, actual = dog.angleFromMe(cat));
   }
 
+  proc testBuildSim() {
+    const WORLD_WIDTH: int = 800,
+          WORLD_HEIGHT: int = 500;
+    var sim = new Simulation(name="simulation amazing", epochs=10);
+    sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+
+    /* Build some sensor arrays */
+    var ifs:[1..0] Sensor,
+        wfs:[1..0] Sensor;
+
+    var dog = new Agent(name="dog"
+      , internalSensors=ifs, worldSensors=wfs
+      , position=new Position(x=25, y=25));
+    var cat = new Agent(name="cat"
+      , internalSensors=ifs, worldSensors=wfs
+      , position=new Position(x=50, y=50));
+
+    sim.add(dog);
+    sim.add(cat);
+
+    class Seagull : Agent {
+      proc init(name:string, position: Position) {
+          var ifs: [1..0] Sensor,
+              wfs: [1..0] Sensor;
+          super.init( name=name, internalSensors=ifs , worldSensors=wfs
+            , position=position );
+          this.complete();
+      }
+    }
+    var mike = new Seagull(name="mike", position=new Position(x=100, y=100));
+    var pondo = new Seagull(name="pando", position=new Position(x=110, y=110));
+    var kevin = new Seagull(name="kevin", position=new Position(x=100, y=110));
+    var gord = new Seagull(name="gord", position=new Position(x=100, y=110));
+
+    sim.add(mike);
+    sim.add(pondo);
+    sim.add(kevin);
+    sim.add(gord);
+    var aflocka = new Herd(name="aflocka", position=new Position(), species=Seagull);
+    var centroid = aflocka.findCentroid(sim.agents);
+    assertRealEquals("centroid has correct x", expected=102.5, actual=centroid.x);
+    assertRealEquals("centroid has correct y", expected=107.5, actual=centroid.y);
+  }
+
   proc run() {
     super.run();
     testTilers();
     testAgentRelativeMethods();
+    testBuildSim();
     return 0;
   }
 }

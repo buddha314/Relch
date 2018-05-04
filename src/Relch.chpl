@@ -22,18 +22,27 @@ module Relch {
   class Simulation {
     var name: string,
         epochs: int,
-        dm: DungeonMaster,
+        //dm: DungeonMaster,
         world: World,
-        agents: [1..0] Agent;
+        agents: [1..0] Agent,
+        landarks: [1..0] Landmark;
 
     proc init(name: string, epochs:int) {
       this.name=name;
       this.epochs=epochs;
-      this.dm = new DungeonMaster();
+      //this.dm = new DungeonMaster();
     }
 
     proc add(agent: Agent) {
         this.agents.push_back(agent);
+    }
+
+    proc add(landmark: Landmark) {
+      this.landmarks.push_back(landmark);
+    }
+
+    proc presentOptions(player: Agent) {
+
     }
 
     iter run() {
@@ -129,6 +138,7 @@ module Relch {
     }
   }
 
+  /*
   class DungeonMaster {
     proc init() {}
 
@@ -139,7 +149,7 @@ module Relch {
     proc presentOptions(agent: Agent) {
       return 0;
     }
-  }
+  }*/
 
   class Sensor {
     var size: int; // How long is the return vector
@@ -221,4 +231,38 @@ module Relch {
     }
   }
 
+  class Landmark {
+    var name: string,
+        position: Position;
+    proc init(name: string, position: Position) {
+      this.name = name;
+      this.position = position;
+    }
+  }
+
+  class Herd:Landmark {
+    type species;
+    proc init(name: string, position: Position, type species) {
+      super.init(name=name, position=new Position());
+      this.species = species;
+      this.complete();
+    }
+
+    proc findCentroid(agents: [] Agent) {
+        var x: real = 0.0,
+            y: real = 0.0,
+            n: int = 0;
+        var p = new Position();
+        for agent in agents {
+          if agent:this.species != nil {
+            x += agent.position.x;
+            y += agent.position.y;
+            n += 1;
+          }
+        }
+        p.x = x/n;
+        p.y = y/n;
+        return p;
+    }
+  }
 }
