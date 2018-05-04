@@ -15,6 +15,7 @@ class RelchTest : UnitTest {
     var eo3:[1..7] int = [1,0,0,0,0,0,1];
     assertIntArrayEquals(msg="LinearTiler correctly sees overlaps", expected=eo, actual=hundredYardTiler.bin(14.2));
     assertIntArrayEquals(msg="LinearTiler correctly sees non-overlaps", expected=eo2, actual=hundredYardTiler.bin(3.14));
+    assertRealApproximates(msg="LinearTiler correcly unbins x", expected=7.14286, actual=hundredYardTiler.unbin(eo));
     assertIntArrayEquals(msg="LinearTiler correctly sees right wrap correctly", expected=eo3, actual=hundredYardTiler.bin(100.05));
     assertIntArrayEquals(msg="LinearTiler correctly sees left wrap correctly", expected=eo3, actual=hundredYardTiler.bin(0.05));
     assertIntArrayEquals(msg="LinearTiler correctly sees left wrap correctly (negative)", expected=eo3, actual=hundredYardTiler.bin(-0.05));
@@ -26,8 +27,10 @@ class RelchTest : UnitTest {
     var angler = new AngleTiler(nbins=na, overlap=0.05);
     var ao:[1..na] int = [1,0,0,0,1];
     var ao2:[1..na] int = [0,0,1,0,0];
+    var ao3:[1..na] int = [0,0,0,0,1];
     assertIntArrayEquals(msg="Angler sees -pi correctly", expected=ao, actual=angler.bin(-pi));
     assertIntArrayEquals(msg="Angler sees origin correctly", expected=ao2, actual=angler.bin(0));
+    assertRealApproximates(msg="Angler unbins correctly", expected=2.51327, actual=angler.unbin(ao3));
   }
 
   proc TestSensors() {

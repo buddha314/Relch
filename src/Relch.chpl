@@ -196,6 +196,7 @@ module Relch {
     }
 
     proc bin(x: real) {return [0];}
+    proc unbin(x:[] int) {return 0.0;}
 
     proc makeBins() {}
   }
@@ -219,7 +220,6 @@ module Relch {
         this.bins[i, 2] = x1 + (i)*(width) + this.overlap;
       }
     }
-
     proc bin(x: real) {
       var v:[1..this.nbins] int = 0;
       for i in 1..this.nbins {
@@ -236,6 +236,19 @@ module Relch {
         }
       }
       return v;
+    }
+
+    /* go from bins back to a value, typically the mid point */
+    proc unbin(x:[] int) {
+      var r: real;
+      for i in x.domain {
+        if x[i] == 1 {
+          // return the mid point
+          r = (this.bins[i,1] + this.bins[i,2]) / 2 ;
+          break;
+        }
+      }
+      return r;
     }
 
   }
