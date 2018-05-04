@@ -67,9 +67,11 @@ class RelchTest : UnitTest {
       , expected=s2out, actual=s1.v(mike, gord));
 
     var dog = new Agent(name="dog", position=new Position(x=25, y=25));
-    var nn = aflocka.findNearestMember(dog, sim.agents);
+    var nn = aflocka.findPositionOfNearestMember(dog, sim.agents);
     assertRealEquals("Sensor finds that mike is closest to dog (x)", expected=100.0,actual=nn.x);
     assertRealEquals("Sensor finds that mike is closest to dog (y)", expected=100.0,actual=nn.y);
+    var nm = aflocka.findNearestMember(dog, sim.agents);
+    assertStringEquals("Sensor finds that mike is closest to dog (agent)", expected="mike",actual=nm.name);
     return 0;
   }
 

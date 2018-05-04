@@ -286,7 +286,7 @@ module Relch {
         return p;
     }
 
-    proc findNearestMember(me: Agent, agents: [] Agent) {
+    proc findPositionOfNearestMember(me: Agent, agents: [] Agent) {
       var p = new Position(),
           d: real = -1;
       for agent in agents {
@@ -300,6 +300,21 @@ module Relch {
         }
       }
       return p;
+    }
+
+    proc findNearestMember(me: Agent, agents: [] Agent) {
+      var a: Agent,
+          d: real = -1;
+      for agent in agents {
+        if agent:this.species != nil {
+          const dd = dist(me, agent);
+          if dd < d || d < 0 {
+            a = agent;
+            d = dd;
+          }
+        }
+      }
+      return a;
     }
   }
 
