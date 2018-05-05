@@ -70,10 +70,8 @@ module Relch {
   }
 
   // Should be abstracted to something like DQNAgent
-  class Agent {
-    var name: string,
-        speed: real,
-        position: Position,
+  class Agent : Perceivable {
+    var speed: real,
         sensors: [1..0] Sensor,
         d: domain(2),
         Q: [d] real,
@@ -81,12 +79,11 @@ module Relch {
         compiled : bool = false;
 
     proc init(name:string
-        , speed: real = 3.0
-        , position:Position = new Position()) {
-      this.name=name;
-      this.speed=speed;
+        , position:Position = new Position()
+        , speed: real = 3.0 ) {
+      super.init(name=name, position=position);
       this.complete();
-      this.position=position;
+      this.speed=speed;
     }
 
     proc add(sensor : Sensor) {

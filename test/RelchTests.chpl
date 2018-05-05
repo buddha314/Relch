@@ -146,12 +146,29 @@ class RelchTest : UnitTest {
     assertRealEquals("centroid has correct y", expected=107.5, actual=centroid.y);
   }
 
+  proc testDogChaseCat() {
+    var dog = new Agent(name="dog", position=new Position(x=25, y=25)),
+        cat = new Agent(name="cat", position=new Position(x=50, y=50)),
+        angler = new AngleTiler(nbins=7, overlap=0.05),
+        whereDatCat = new Sensor();
+    
+    whereDatCat.target = cat;
+    whereDatCat.add(angler);
+
+    /* Note, dog has no sensors for this test */
+    for e in 1..10 {
+      writeln("e = ", e);
+    }
+
+  }
+
   proc run() {
     super.run();
     testTilers();
     TestSensors();
     testAgentRelativeMethods();
     testBuildSim();
+    testDogChaseCat();
     return 0;
   }
 }
