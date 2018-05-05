@@ -72,6 +72,7 @@ module Relch {
   // Should be abstracted to something like DQNAgent
   class Agent {
     var name: string,
+        speed: real,
         position: Position,
         sensors: [1..0] Sensor,
         d: domain(2),
@@ -80,8 +81,10 @@ module Relch {
         compiled : bool = false;
 
     proc init(name:string
+        , speed: real = 3.0
         , position:Position = new Position()) {
       this.name=name;
+      this.speed=speed;
       this.complete();
       this.position=position;
     }
@@ -118,6 +121,12 @@ module Relch {
 
     proc angleFromMe(you: Agent) {
       return angle(this.position, you.position);
+    }
+
+    /* Move along an angle */
+    proc moveAlong(theta: real) {
+      this.position.x += this.speed * cos(theta);
+      this.position.y += this.speed * sin(theta);
     }
 
     proc readWriteThis(f) throws {

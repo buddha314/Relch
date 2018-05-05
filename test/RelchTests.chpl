@@ -103,6 +103,10 @@ class RelchTest : UnitTest {
     // 4th Q (50, 0)
     cat.position.x = 50;
     assertRealApproximates(msg="Angle to cat is -pi/4", expected=-pi/4, actual = dog.angleFromMe(cat));
+
+    cat.moveAlong(pi/6);
+    assertRealApproximates(msg="Cat moved along pi/6 (x)", expected=52.5981, actual=cat.position.x, error=1e-03);
+    assertRealApproximates(msg="Cat moved along pi/6 (y)", expected=1.5, actual=cat.position.y);
   }
 
   proc testBuildSim() {
