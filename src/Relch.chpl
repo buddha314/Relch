@@ -42,8 +42,18 @@ module Relch {
       this.perceivables.push_back(perceivable);
     }
 
-    proc presentOptions(player: Agent) {
-
+    proc presentOptions(agent: Agent) {
+      /* Constructing options is kinda hard, right now just 1 for every
+         element of the sensors */
+      var options = eye(agent.optionDimension(), int);
+      var state: [1..agent.sensorDimension()] int;
+      var k: int = 1;
+      for sensor in agent.sensors {
+          //writeln("I am the DM looking at sensor ", sensor.name);
+          state[k..sensor.dim()] = sensor.v(me=agent);
+          k = sensor.dim() +1;
+      }
+      return (options, state);
     }
 
     iter run() {
@@ -97,6 +107,15 @@ module Relch {
       return this;
     }
 
+    /* Expects an integer array of options */
+    proc policy(options: [] int, state: [] int) {
+        // Right now pick a random row
+        var c = randInt(1,options.shape[1]);
+        const choice = options[c,..];
+        // Going to need to save the choice and reward
+        return act(choice);
+    }
+
     proc act(choice:[] int) {
       for servo in this.servos {
         servo.f(agent=this, choice=choice);
@@ -136,6 +155,23 @@ module Relch {
       this.position.y += this.speed * sin(theta);
     }
 
+    proc optionDimension() {
+      var n: int = 0;
+      for servo in this.servos {
+        n += servo.tiler.nbins;
+      }
+      return n;
+    }
+
+    proc sensorDimension() {
+      var n: int = 0;
+      for sensor in this.sensors {
+        n += sensor.dim();
+      }
+      return n;
+    }
+
+
     proc readWriteThis(f) throws {
       f <~> "%25s".format(this.name) <~> " "
         <~> "%4r".format(this.position.x) <~> " "
@@ -153,13 +189,17 @@ module Relch {
   }
 
   class Sensor {
-    var size: int, // How long is the return vector
+    var name: string,
+        size: int, // How long is the return vector
         distanceTiler: Tiler,
         angleTiler: Tiler,
         target: Perceivable;
-    proc init() {}
+    proc init(name:string) {
+      this.name=name;
+    }
 
-    proc init(size: int) {
+    proc init(name:string, size: int) {
+      this.name = name;
       this.size = size;
     }
 
@@ -183,6 +223,10 @@ module Relch {
 
     proc v(me: Agent, you: Agent) {
       return this.v(me=me, you=you.position);
+    }
+
+    proc v(me: Agent) {
+      return this.v(me=me, you=this.target.position);
     }
 
     proc dim() {
@@ -357,9 +401,7 @@ module Relch {
     }
 
     proc f(agent: Agent, choice: [] int) {
-      var c: [1..7] int;
-      c = choice[8..14];
-      const d: real = this.tiler.unbin(c);
+      const d: real = this.tiler.unbin(choice);
       agent.moveAlong(d);
       return agent;
     }

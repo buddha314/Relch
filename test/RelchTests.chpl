@@ -59,7 +59,7 @@ class RelchTest : UnitTest {
 
     var hundredYardTiler = new LinearTiler(nbins=7, x1=0, x2=100, overlap=0.1, wrap=true),
         angler = new AngleTiler(nbins=7, overlap=0.05),
-        s1 = new Sensor();
+        s1 = new Sensor(name="s1");
     s1.add(hundredYardTiler);
     s1.add(angler);
     s1.target = aflocka;
@@ -79,8 +79,8 @@ class RelchTest : UnitTest {
   }
 
   proc testAgentRelativeMethods() {
-    var catSensor = new Sensor(size=7);
-    var dogSensor = new Sensor(size=7);
+    var catSensor = new Sensor(name="find the cat", size=7);
+    var dogSensor = new Sensor(name="find the dog", size=7);
     var is: [1..0] Sensor;
     var ws: [1..0] Sensor;
     is.push_back(catSensor);
@@ -147,15 +147,21 @@ class RelchTest : UnitTest {
   }
 
   proc testDogChaseCat() {
+    const WORLD_WIDTH: int = 800,
+          WORLD_HEIGHT: int = 500;
+    var sim = new Simulation(name="simulation amazing", epochs=10);
+    sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+
     var dog = new Agent(name="dog", position=new Position(x=25, y=25)),
         cat = new Agent(name="cat", position=new Position(x=50, y=50)),
         hundredYardTiler = new LinearTiler(nbins=7, x1=0, x2=100, overlap=0.1, wrap=true),
         angler = new AngleTiler(nbins=7, overlap=0.05),
-        whereDatCat = new Sensor();
+        whereDatCat = new Sensor(name="Where Dat Cat?");
 
     whereDatCat.target = cat;
     whereDatCat.add(hundredYardTiler);
     whereDatCat.add(angler);
+    dog.add(whereDatCat);
 
     var motionServo = new Servo(tiler=angler);
     dog.add(motionServo);
@@ -163,11 +169,25 @@ class RelchTest : UnitTest {
     /* Note, dog has no sensors for this test */
     for e in 1..25 {
       //writeln("whereDatCat? ", whereDatCat.v(me=dog, you=cat));
-      var option = whereDatCat.v(me=dog, you=cat);
-      dog.act(option);
-      writeln(dog.position);
+      var option = whereDatCat.v(me=dog); // This is wrong, that is sensor output
+      var opt = option[8..14];
+      dog.act(opt);
+      if dist(dog, cat) < 1.2 {
+        assertIntEquals(msg="Dog stops chasing cat at epoch 16", expected=16, actual=e);
+        break;
+      }
     }
 
+    /* Now run it with the policy, probably won't converge */
+    /* Get doggy back at the starting line */
+    dog.position.x = 25;
+    dog.position.y = 25;
+    for e in 1..25 {
+      var (options, state) = sim.presentOptions(dog);
+      var a = dog.policy(options, state);
+      writeln(dog.position);
+
+    }
   }
 
   proc run() {
