@@ -73,6 +73,7 @@ module Relch {
   class Agent : Perceivable {
     var speed: real,
         sensors: [1..0] Sensor,
+        servos: [1..0] Servo,
         d: domain(2),
         Q: [d] real,
         E: [d] real,
@@ -88,9 +89,18 @@ module Relch {
 
     proc add(sensor : Sensor) {
       this.sensors.push_back(sensor);
+      return this;
     }
 
-    proc act(rabbits:[] Agent) {
+    proc add(servo: Servo) {
+      this.servos.push_back(servo);
+      return this;
+    }
+
+    proc act(choice:[] int) {
+      for servo in this.servos {
+        servo.f(agent=this, choice=choice);
+      }
       return this;
     }
 
@@ -160,18 +170,19 @@ module Relch {
         this.distanceTiler = tiler;
       }
     }
-    proc v(me: Agent, them: Position) {
+
+    /* Note Bene: You have to have both tilers or it core dumps! */
+    proc v(me: Agent, you: Position) {
       var v:[1..this.dim()] int,
-          d: real =  dist(me.position, them),
-          a: real =  angle(me.position, them);
+          d: real =  dist(me.position, you),
+          a: real =  angle(me.position, you);
       v[1..this.distanceTiler.nbins] = this.distanceTiler.bin(d);
       v[this.distanceTiler.nbins+1..this.dim()] = this.angleTiler.bin(a);
-      //return this.distanceTiler.bin(d);
       return v;
     }
 
-    proc v(me: Agent, them: Agent) {
-      return this.v(me=me, them=them.position);
+    proc v(me: Agent, you: Agent) {
+      return this.v(me=me, you=you.position);
     }
 
     proc dim() {
@@ -334,6 +345,23 @@ module Relch {
         }
       }
       return a;
+    }
+  }
+
+  /* I really have no idea how I'm going to handle this yet */
+  class Servo {
+    var tiler: Tiler;
+    proc init() {}
+    proc init(tiler: Tiler) {
+      this.tiler=tiler;
+    }
+
+    proc f(agent: Agent, choice: [] int) {
+      var c: [1..7] int;
+      c = choice[8..14];
+      const d: real = this.tiler.unbin(c);
+      agent.moveAlong(d);
+      return agent;
     }
   }
 

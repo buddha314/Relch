@@ -149,15 +149,23 @@ class RelchTest : UnitTest {
   proc testDogChaseCat() {
     var dog = new Agent(name="dog", position=new Position(x=25, y=25)),
         cat = new Agent(name="cat", position=new Position(x=50, y=50)),
+        hundredYardTiler = new LinearTiler(nbins=7, x1=0, x2=100, overlap=0.1, wrap=true),
         angler = new AngleTiler(nbins=7, overlap=0.05),
         whereDatCat = new Sensor();
-    
+
     whereDatCat.target = cat;
+    whereDatCat.add(hundredYardTiler);
     whereDatCat.add(angler);
 
+    var motionServo = new Servo(tiler=angler);
+    dog.add(motionServo);
+
     /* Note, dog has no sensors for this test */
-    for e in 1..10 {
-      writeln("e = ", e);
+    for e in 1..25 {
+      //writeln("whereDatCat? ", whereDatCat.v(me=dog, you=cat));
+      var option = whereDatCat.v(me=dog, you=cat);
+      dog.act(option);
+      writeln(dog.position);
     }
 
   }
