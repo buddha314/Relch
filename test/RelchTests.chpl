@@ -33,7 +33,7 @@ class RelchTest : UnitTest {
     assertRealApproximates(msg="Angler unbins correctly", expected=2.51327, actual=angler.unbin(ao3));
   }
 
-  proc TestSensors() {
+  proc testSensors() {
 
     const WORLD_WIDTH: int = 800,
           WORLD_HEIGHT: int = 500;
@@ -184,19 +184,36 @@ class RelchTest : UnitTest {
     dog.position.y = 25;
     for e in 1..25 {
       var (options, state) = sim.presentOptions(dog);
-      var a = dog.policy(options, state);
+      var a = dog.choose(options, state);
       writeln(dog.position);
 
     }
   }
 
+  proc testPolicies() {
+      var p = new Policy();
+      var rp = new RandomPolicy();
+
+      var nActions: int = 4,
+          nStates :int = 5;
+      var qp = new QLearningPolicy(nActions=nActions, nStates=nStates);
+      var qstate: [1..nStates] int = 0,
+          qactions = eye(nActions, int);
+
+      qstate[3] = 1;  // Just doing state 3 now.
+      qactions[3,3] = 0;
+      var choice = qp.f(options=qactions, state=qstate);
+      writeln(choice);
+    }
+
   proc run() {
     super.run();
-    testTilers();
-    TestSensors();
-    testAgentRelativeMethods();
-    testBuildSim();
-    testDogChaseCat();
+    //testTilers();
+    //testSensors();
+    //testAgentRelativeMethods();
+    //testBuildSim();
+    //testDogChaseCat();
+    testPolicies();
     return 0;
   }
 }

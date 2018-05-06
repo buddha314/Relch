@@ -1,6 +1,7 @@
 /* Documentation for Relch */
 module Relch {
   use Math, NumSuch;
+  use policies;
 
   /*
   use worlds;
@@ -87,6 +88,7 @@ module Relch {
         d: domain(2),
         Q: [d] real,
         E: [d] real,
+        policy: Policy,
         compiled : bool = false;
 
     proc init(name:string
@@ -95,6 +97,7 @@ module Relch {
       super.init(name=name, position=position);
       this.complete();
       this.speed=speed;
+      this.policy = new RandomPolicy();
     }
 
     proc add(sensor : Sensor) {
@@ -108,11 +111,8 @@ module Relch {
     }
 
     /* Expects an integer array of options */
-    proc policy(options: [] int, state: [] int) {
-        // Right now pick a random row
-        var c = randInt(1,options.shape[1]);
-        const choice = options[c,..];
-        // Going to need to save the choice and reward
+    proc choose(options: [] int, state: [] int) {
+        const choice = this.policy.f(options=options, state=state);
         return act(choice);
     }
 
