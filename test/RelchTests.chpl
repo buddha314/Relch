@@ -112,7 +112,7 @@ class RelchTest : UnitTest {
   proc testBuildSim() {
     const WORLD_WIDTH: int = 800,
           WORLD_HEIGHT: int = 500;
-    var sim = new Simulation(name="simulation amazing", epochs=10);
+    var sim = new Simulation(name="simulation amazing", epochs=10, steps=10);
     sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
     /* Build some sensor arrays */
@@ -200,10 +200,20 @@ class RelchTest : UnitTest {
       var qstate: [1..nStates] int = 0,
           qactions = eye(nActions, int);
 
+      // Build a matrix so we know the answer
+      var Q = Matrix(
+          [0.1, 0.2, 0.1, 0.4, 0.5],
+          [0.3, 0.1, 0.9, 0.8, 0.1],
+          [0.6, 0.5, 0.6, 0.3, 0.1],
+          [0.4, 0.7, 0.5, 0.7, 0.4] );
+      qp.Q = Q;
+
       qstate[3] = 1;  // Just doing state 3 now.
       qactions[3,3] = 0;
       var choice = qp.f(options=qactions, state=qstate);
-      writeln(choice);
+      var c:[1..4] int = [0,1,0,0]; // Should pick the second option, it has max of 3rd Q col
+      assertIntArrayEquals(msg="Correct choice is taken", expected=c, actual=choice);
+      return 0;
     }
 
   proc run() {

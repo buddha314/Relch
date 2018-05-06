@@ -24,14 +24,16 @@ module Relch {
   class Simulation {
     var name: string,
         epochs: int,
+        steps: int,
         //dm: DungeonMaster,
         world: World,
         agents: [1..0] Agent,
         perceivables: [1..0] Perceivable;
 
-    proc init(name: string, epochs:int) {
+    proc init(name: string, epochs:int, steps: int) {
       this.name=name;
       this.epochs=epochs;
+      this.steps=steps;
       //this.dm = new DungeonMaster();
     }
 
@@ -57,19 +59,22 @@ module Relch {
       return (options, state);
     }
 
-    proc dispenseReward(agent: Agent, choice: [] int) {
+    proc dispenseReward(agent: Agent, choice: [] int) { }
 
-    }
 
     iter run() {
       for i in 1..this.epochs {
-        for a in this.agents {
-          // DM presents options
-          // A chooses an action
-          // DM rewards
-          // A logs the reward
-          // Return A
-          yield a;
+        newEpoch();
+        for step in 1..this.steps {
+
+          for a in this.agents {
+            // DM presents options
+            // A chooses an action
+            // DM rewards
+            // A logs the reward
+            // Return A
+            yield a;
+          }
         }
       }
     }

@@ -29,7 +29,7 @@ class QLearningPolicy : Policy {
     this.complete();
     this.d = {1..nActions, 1..nStates};
     fillRandom(this.Q);
-    fillRandom(this.E);
+    this.E = 0.0;
   }
   proc f(options:[] int, state:[] int) {
     /* Need to translate the options into discrete rows */
@@ -44,7 +44,6 @@ class QLearningPolicy : Policy {
         choices[r] = 0.0;
       }
     }
-    writeln(choices);
     return options[argmax(choices), ..];
   }
 
