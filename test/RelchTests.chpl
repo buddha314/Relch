@@ -8,6 +8,24 @@ class RelchTest : UnitTest {
     this.complete();
   }
 
+  proc testStep() {
+    var sim = new Environment(name="steppin out", epochs=1, steps=2);
+    var action: [1..3] int = [1,0,0];
+    var bond = new Agent(name="Bond, James Bond", position=new Position(x=7, y=7));
+    bond.policy = new RandomPolicy();
+    var (state, reward, done, position) = sim.step(agent=bond, action=action);
+    assertRealEquals(msg="Default reward is 10.0", expected=10.0, actual = reward);
+    assertBoolEquals(msg="Default done is false", expected=false, actual = done);
+  }
+
+  proc testRunDefault() {
+    var sim = new Environment(name="steppin out", epochs=2, steps=3);
+    var bond = new Agent(name="Bond, James Bond", position=new Position(x=7, y=7));
+    bond.policy = new RandomPolicy();
+    sim.add(bond);
+    sim.run();
+  }
+
   proc testTilers() {
     var hundredYardTiler = new LinearTiler(nbins=7, x1=0, x2=100, overlap=0.1, wrap=true);
     var eo:[1..7] int = [1,1,0,0,0,0,0];
@@ -37,7 +55,7 @@ class RelchTest : UnitTest {
 
     const WORLD_WIDTH: int = 800,
           WORLD_HEIGHT: int = 500;
-    var sim = new Simulation(name="simulation amazing", epochs=10);
+    var sim = new Environment(name="simulation amazing", epochs=10, steps=5);
     sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
     class Seagull : Agent {
@@ -112,7 +130,7 @@ class RelchTest : UnitTest {
   proc testBuildSim() {
     const WORLD_WIDTH: int = 800,
           WORLD_HEIGHT: int = 500;
-    var sim = new Simulation(name="simulation amazing", epochs=10, steps=10);
+    var sim = new Environment(name="simulation amazing", epochs=10, steps=10);
     sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
     /* Build some sensor arrays */
@@ -149,7 +167,7 @@ class RelchTest : UnitTest {
   proc testDogChaseCat() {
     const WORLD_WIDTH: int = 800,
           WORLD_HEIGHT: int = 500;
-    var sim = new Simulation(name="simulation amazing", epochs=10);
+    var sim = new Environment(name="simulation amazing", epochs=10, steps=5);
     sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
     var dog = new Agent(name="dog", position=new Position(x=25, y=25)),
@@ -194,6 +212,7 @@ class RelchTest : UnitTest {
       var p = new Policy();
       var rp = new RandomPolicy();
 
+
       var nActions: int = 4,
           nStates :int = 5;
       var qp = new QLearningPolicy(nActions=nActions, nStates=nStates);
@@ -210,6 +229,9 @@ class RelchTest : UnitTest {
 
       qstate[3] = 1;  // Just doing state 3 now.
       qactions[3,3] = 0;
+      var pc = p.f(options=qactions, state=qstate);
+      var rc = rp.f(options=qactions, state=qstate);
+
       var choice = qp.f(options=qactions, state=qstate);
       var c:[1..4] int = [0,1,0,0]; // Should pick the second option, it has max of 3rd Q col
       assertIntArrayEquals(msg="Correct choice is taken", expected=c, actual=choice);
@@ -218,10 +240,12 @@ class RelchTest : UnitTest {
 
   proc run() {
     super.run();
-    //testTilers();
-    //testSensors();
-    //testAgentRelativeMethods();
-    //testBuildSim();
+    testStep();
+    testRunDefault();
+    testTilers();
+    testSensors();
+    testAgentRelativeMethods();
+    testBuildSim();
     //testDogChaseCat();
     testPolicies();
     return 0;

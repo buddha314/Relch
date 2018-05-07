@@ -1,9 +1,15 @@
 use NumSuch;
 
 class Policy {
-  proc init() {}
+  proc init() {
+    this.complete();
+  }
 
-  proc f(options:[] int, state:[] int) { return [1]; }
+  proc f(options:[] int, state:[] int) {
+    var r:[1..1] int;
+    r[1] = 1;
+    return r;
+  }
 }
 
 class RandomPolicy : Policy {
@@ -44,7 +50,9 @@ class QLearningPolicy : Policy {
         choices[r] = 0.0;
       }
     }
-    return options[argmax(choices), ..];
+    var opt:[1..options.shape[1]] int;
+    opt = options[argmax(choices), ..];
+    return opt;
   }
 
 }

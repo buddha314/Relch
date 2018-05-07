@@ -9,7 +9,9 @@ class Agent : Perceivable {
       Q: [d] real,
       E: [d] real,
       policy: Policy,
-      compiled : bool = false;
+      compiled : bool = false,
+      currentStep: int,
+      done: bool;
 
   proc init(name:string
       , position:Position = new Position()
@@ -17,7 +19,8 @@ class Agent : Perceivable {
     super.init(name=name, position=position);
     this.complete();
     this.speed=speed;
-    this.policy = new RandomPolicy();
+    this.currentStep = 1;
+    this.done = false;
   }
 
   proc add(sensor : Sensor) {
@@ -33,7 +36,8 @@ class Agent : Perceivable {
   /* Expects an integer array of options */
   proc choose(options: [] int, state: [] int) {
       const choice = this.policy.f(options=options, state=state);
-      return act(choice);
+      //return act(choice);
+      return choice;
   }
 
   proc act(choice:[] int) {
