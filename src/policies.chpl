@@ -66,18 +66,23 @@ class FollowTargetPolicy : Policy {
     this.sensor = sensor;
   }
 
-  proc f(options:[] int, state:[] int) {
-    var c = randInt(1,options.shape[1]);
-    const choice:[1..options.shape[2]] int = options[c,..];
-    return choice;
-  }
 
   /*
+  If I include the proc function, I get a compilation error when running
+
+  > make test
+
+  but not if I run
+
+  > make
+
+  */
+
   proc f(options:[] int, state:[] int) {
     //var targetPosition = this.sensor.target.position;
     //writeln("target position: ", targetPosition);
     //var opt:[1..options.shape[2]] int;
     var opt:[1..4] int;
     return opt;
-  } */
+  }
 }
