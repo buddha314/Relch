@@ -1,4 +1,6 @@
-use NumSuch;
+use NumSuch,
+    physics;
+
 
 class Policy {
   proc init() {
@@ -54,5 +56,19 @@ class QLearningPolicy : Policy {
     opt = options[argmax(choices), ..];
     return opt;
   }
+}
 
+class FollowTargetPolicy : Policy {
+  var sensor : Sensor;
+  proc init(sensor: Sensor) {
+    super.init();
+    this.complete();
+    this.sensor = sensor;
+  }
+
+  proc f(me: Agent, options:[] int, state: [] int) {
+    writeln("following the thing at position ", this.sensor.target.position);
+    var choice: [1..options.shape[2]] int = options[1,..];
+    return choice;
+  }
 }

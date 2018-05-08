@@ -209,8 +209,15 @@ class RelchTest : UnitTest {
   }
 
   proc testPolicies() {
+
+      var dog = new Agent(name="dog", position=new Position(x=25, y=25)),
+          cat = new Agent(name="cat", position=new Position(x=50, y=50)),
+          whereDatCat = new Sensor(name="Where Dat Cat?");
+
+      whereDatCat.target = cat;
       var p = new Policy();
       var rp = new RandomPolicy();
+      var ftp = new FollowTargetPolicy(sensor=whereDatCat);
 
 
       var nActions: int = 4,
@@ -231,6 +238,7 @@ class RelchTest : UnitTest {
       qactions[3,3] = 0;
       var pc = p.f(options=qactions, state=qstate);
       var rc = rp.f(options=qactions, state=qstate);
+      var ftpc = ftp.f(me=dog, options=qactions, state=qstate);
 
       var choice = qp.f(options=qactions, state=qstate);
       var c:[1..4] int = [0,1,0,0]; // Should pick the second option, it has max of 3rd Q col

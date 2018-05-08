@@ -79,7 +79,7 @@ module Relch {
       //var options = eye(agent.optionDimension(), int);
       var options = eye(4, int);
       //var state: [1..agent.sensorDimension()] int;
-      var state: [1..4] int;
+      var state: [1..agent.sensorDimension()] int;
       var k: int = 1;
       for sensor in agent.sensors {
           //writeln("I am the DM looking at sensor ", sensor.name);
