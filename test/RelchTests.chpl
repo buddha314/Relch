@@ -180,8 +180,9 @@ class RelchTest : UnitTest {
     whereDatCat.add(hundredYardTiler);
     whereDatCat.add(angler);
     dog.add(whereDatCat);
+    dog.policy = new RandomPolicy();
 
-    var motionServo = new Servo(tiler=angler);
+    var motionServo = new MotionServo(tiler=angler);
     dog.add(motionServo);
 
     /* Note, dog has no sensors for this test */
@@ -200,11 +201,9 @@ class RelchTest : UnitTest {
     /* Get doggy back at the starting line */
     dog.position.x = 25;
     dog.position.y = 25;
-    for e in 1..25 {
-      var (options, state) = sim.presentOptions(dog);
-      var a = dog.choose(options, state);
-      writeln(dog.position);
-
+    sim.add(dog);
+    for a in sim.run() {
+      writeln(a);
     }
   }
 
@@ -212,6 +211,12 @@ class RelchTest : UnitTest {
       var p = new Policy();
       var rp = new RandomPolicy();
 
+      var cat = new Agent(name="cat", position=new Position(x=50, y=50)),
+          whereDatCat = new Sensor(name="Where Dat Cat?");
+      whereDatCat.target = cat;
+
+      var tfp = new FollowTargetPolicy(sensor=whereDatCat);
+      //writeln("target position: ", tfp.sensor.target);
 
       var nActions: int = 4,
           nStates :int = 5;
@@ -246,7 +251,7 @@ class RelchTest : UnitTest {
     testSensors();
     testAgentRelativeMethods();
     testBuildSim();
-    //testDogChaseCat();
+    testDogChaseCat();
     testPolicies();
     return 0;
   }

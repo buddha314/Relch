@@ -51,8 +51,9 @@ module Relch {
     proc step(agent: Agent, action:[] int) {
         var state: [1..1] int = [1];
         var reward = this.dispenseReward(agent=agent, choice=action);
-        var done: bool = this.areYouThroughYet();  // Yes, this is a Steve Martin reference
+        var done: bool = this.areYouThroughYet(agent);  // Yes, this is a Steve Martin reference
         var position: Position = new Position();
+        agent.act(action);
         agent.currentStep += 1;
         return (state, reward, done, position);
     }
@@ -76,10 +77,10 @@ module Relch {
     proc presentOptions(agent: Agent) {
       /* Constructing options is kinda hard, right now just 1 for every
          element of the sensors */
-      //var options = eye(agent.optionDimension(), int);
-      var options = eye(4, int);
-      //var state: [1..agent.sensorDimension()] int;
-      var state: [1..4] int;
+      var options = eye(agent.optionDimension(), int);
+      //var options = eye(4, int);
+      var state: [1..agent.sensorDimension()] int;
+      //var state: [1..4] int;
       var k: int = 1;
       for sensor in agent.sensors {
           //writeln("I am the DM looking at sensor ", sensor.name);
@@ -93,9 +94,9 @@ module Relch {
       return 10.0;
     }
 
-    proc areYouThroughYet() {
+    proc areYouThroughYet(agent: Agent) {
       var r: bool = false;
-      if this.currentStep >= this.steps then r = true;
+      if agent.currentStep >= this.steps then r = true;
       return r;
     }
 
@@ -112,7 +113,6 @@ module Relch {
             var choice = agent.choose(options, currentState);
             // DM rewards
             var (nextState, reward, done, position) = this.step(agent=agent, action=choice);
-            /*
             if done {
               agent.done = true;
               this.reset(agent);
@@ -120,7 +120,6 @@ module Relch {
             }
             // A logs the reward
             // Return A
-            */
             yield agent;
           }
         }

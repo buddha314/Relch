@@ -1,4 +1,5 @@
 use NumSuch;
+use physics;
 
 class Policy {
   proc init() {
@@ -54,5 +55,29 @@ class QLearningPolicy : Policy {
     opt = options[argmax(choices), ..];
     return opt;
   }
+}
 
+class FollowTargetPolicy : Policy {
+  var sensor : Sensor;
+
+  proc init(sensor: Sensor) {
+    super.init();
+    this.complete();
+    this.sensor = sensor;
+  }
+
+  proc f(options:[] int, state:[] int) {
+    var c = randInt(1,options.shape[1]);
+    const choice:[1..options.shape[2]] int = options[c,..];
+    return choice;
+  }
+
+  /*
+  proc f(options:[] int, state:[] int) {
+    //var targetPosition = this.sensor.target.position;
+    //writeln("target position: ", targetPosition);
+    //var opt:[1..options.shape[2]] int;
+    var opt:[1..4] int;
+    return opt;
+  } */
 }

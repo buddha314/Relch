@@ -41,8 +41,11 @@ class Agent : Perceivable {
   }
 
   proc act(choice:[] int) {
+    var k: int = 1;
     for servo in this.servos {
-      servo.f(agent=this, choice=choice);
+      var c: [1..servo.dim()] int = choice[k..(k+servo.dim())];
+      servo.f(agent=this, choice=c);
+      k += servo.dim() + 1;
     }
     return this;
   }
