@@ -17,7 +17,7 @@ run:
 	./$(BINDIR)/$(EXEC) -f qlearn.cfg
 
 
-test: $(SRCDIR)/Relch.chpl $(SRCDIR)/policies.chpl $(SRCDIR)/agents.chpl $(TESTDIR)/RelchTests.chpl 
+test: $(SRCDIR)/Relch.chpl $(SRCDIR)/policies.chpl $(SRCDIR)/agents.chpl $(TESTDIR)/RelchTests.chpl
 	$(CC) $(MODULES) $(TEST_MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o $(TESTDIR)/test $(TESTDIR)/RelchTests.chpl ;\
-	./$(TESTDIR)/test ; \
+	./$(TESTDIR)/test; \
 	rm $(TESTDIR)/test

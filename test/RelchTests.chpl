@@ -215,7 +215,9 @@ class RelchTest : UnitTest {
           whereDatCat = new Sensor(name="Where Dat Cat?");
       whereDatCat.target = cat;
 
-      var tfp = new FollowTargetPolicy(sensor=whereDatCat);
+      //var tfp = new FollowTargetPolicy();
+      //var tfp = new FollowTargetPolicy(izok="what?");
+      var ftp = new FollowTargetPolicy(sensor=new Sensor(name="can't see shit"));
       //writeln("target position: ", tfp.sensor.target);
 
       var nActions: int = 4,
@@ -236,6 +238,10 @@ class RelchTest : UnitTest {
       qactions[3,3] = 0;
       var pc = p.f(options=qactions, state=qstate);
       var rc = rp.f(options=qactions, state=qstate);
+      /* Comment out the next two lines and you get an error
+         That is, if you DON'T call f, it errors. */
+      var ftpc = ftp.f(options=qactions, state=qstate);
+      writeln("tfpc:\n", ftpc);
 
       var choice = qp.f(options=qactions, state=qstate);
       var c:[1..4] int = [0,1,0,0]; // Should pick the second option, it has max of 3rd Q col

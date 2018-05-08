@@ -3,7 +3,6 @@ use physics;
 
 class Policy {
   proc init() {
-    this.complete();
   }
 
   proc f(options:[] int, state:[] int) {
@@ -63,26 +62,13 @@ class FollowTargetPolicy : Policy {
   proc init(sensor: Sensor) {
     super.init();
     this.complete();
-    this.sensor = sensor;
   }
 
-
-  /*
-  If I include the proc function, I get a compilation error when running
-
-  > make test
-
-  but not if I run
-
-  > make
-
-  */
-
+  /* This should be named f but that causes error */
   proc f(options:[] int, state:[] int) {
-    //var targetPosition = this.sensor.target.position;
-    //writeln("target position: ", targetPosition);
-    //var opt:[1..options.shape[2]] int;
-    var opt:[1..4] int;
-    return opt;
+    writeln(" ** FOLLOW TARGET POLICY f");
+    var r:[1..1] int;
+    r[1] = 1;
+    return r;
   }
 }
