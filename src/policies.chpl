@@ -3,6 +3,7 @@ use NumSuch,
 
 
 class Policy {
+  var sensors: [1..0] Sensor;
   proc init() {
     this.complete();
   }
@@ -11,6 +12,10 @@ class Policy {
     var r:[1..1] int;
     r[1] = 1;
     return r;
+  }
+
+  proc add(sensor : Sensor) {
+    this.sensor.push_back(sensor);
   }
 }
 
