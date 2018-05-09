@@ -77,7 +77,7 @@ class RelchTest : UnitTest {
     assertIntArrayEquals(msg="Angler sees -pi correctly", expected=ao, actual=angler.bin(-pi));
     assertIntArrayEquals(msg="Angler sees origin correctly", expected=ao2, actual=angler.bin(0));
     assertRealApproximates(msg="Angler unbins correctly", expected=2.51327, actual=angler.unbin(ao3));
-    this.tearDown(t);
+    return this.tearDown(t);
   }
 
   proc testSensors() {
@@ -121,6 +121,7 @@ class RelchTest : UnitTest {
   }
 
   proc testAgentRelativeMethods() {
+    var t = this.setUp("RelativeMethods");
     var d: real = 35.3553;
     assertRealApproximates(msg="Distance from dog to cat is correct"
       , expected=d, actual=dog.distanceFromMe(cat)
@@ -141,9 +142,11 @@ class RelchTest : UnitTest {
     cat.moveAlong(pi/6);
     assertRealApproximates(msg="Cat moved along pi/6 (x)", expected=52.5981, actual=cat.position.x, error=1e-03);
     assertRealApproximates(msg="Cat moved along pi/6 (y)", expected=1.5, actual=cat.position.y);
+    return this.tearDown(t);
   }
 
   proc testBuildSim() {
+    var t = this.setUp("BuildSim");
     var sim = new Environment(name="simulation amazing", epochs=10, steps=10);
     sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
@@ -173,9 +176,11 @@ class RelchTest : UnitTest {
     var centroid = aflocka.findCentroid(sim.agents);
     assertRealEquals("centroid has correct x", expected=102.5, actual=centroid.x);
     assertRealEquals("centroid has correct y", expected=107.5, actual=centroid.y);
+    return this.tearDown(t);
   }
 
   proc testDogChaseCat() {
+    var t = this.setUp("DogChaseCat");
     var sim = new Environment(name="simulation amazing", epochs=10, steps=5);
     sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
@@ -198,58 +203,56 @@ class RelchTest : UnitTest {
       writeln(dog.position);
 
     }
+    return this.tearDown(t);
   }
 
   proc testPolicies() {
-      // Reset position for safety of the animals involved
-      cat.position.x = 50;
-      cat.position.y = 50;
-      dog.position.x = 25;
-      dog.position.y = 25;
-      var p = new Policy();
-      var rp = new RandomPolicy();
-      catAngleSensor.target = cat;
-      var ftp = new FollowTargetPolicy(sensor=catAngleSensor);
-      assertIntEquals(msg="Follow Target Policy has correct sensory dims"
-        , expected=N_ANGLES, actual=ftp.sensorDimension());
-      assertIntEquals(msg="Follow Target Policy sensor has correct state index start"
-        , expected=1, actual=ftp.targetSensor.stateIndexStart);
-      assertIntEquals(msg="Follow Target Policy sensor has correct state index end"
+    var t = this.setUp("Policies");
+    // Reset position for safety of the animals involved
+    var p = new Policy();
+    var rp = new RandomPolicy();
+    catAngleSensor.target = cat;
+    var ftp = new FollowTargetPolicy(sensor=catAngleSensor);
+    assertIntEquals(msg="Follow Target Policy has correct sensory dims"
+      , expected=N_ANGLES, actual=ftp.sensorDimension());
+    assertIntEquals(msg="Follow Target Policy sensor has correct state index start"
+      , expected=1, actual=ftp.targetSensor.stateIndexStart);
+    assertIntEquals(msg="Follow Target Policy sensor has correct state index end"
         , expected=6, actual=ftp.targetSensor.stateIndexEnd);
 
 
 
-      var nActions: int = 4,
-          nStates :int = 5;
-      var qstate: [1..nStates] int = 0,
-          qactions: [1..4, 1..N_ANGLES] int = 0;
-      qactions[1,1] = 1;
-      qactions[2,2] = 1;
-      qactions[3,4] = 1;
-      qactions[4,5] = 1;
+    var nActions: int = 4,
+        nStates :int = 5;
+    var qstate: [1..nStates] int = 0,
+        qactions: [1..4, 1..N_ANGLES] int = 0;
+    qactions[1,1] = 1;
+    qactions[2,2] = 1;
+    qactions[3,4] = 1;
+    qactions[4,5] = 1;
 
       // Build a matrix so we know the answer
-      var Q = Matrix(
-          [0.1, 0.2, 0.1, 0.4, 0.5],
-          [0.3, 0.1, 0.9, 0.8, 0.1],
-          [0.6, 0.5, 0.6, 0.3, 0.1],
-          [0.4, 0.7, 0.5, 0.7, 0.4] );
-      var qp = new QLearningPolicy(nActions=nActions, nStates=nStates);
-      qp.Q = Q;
+    var Q = Matrix(
+        [0.1, 0.2, 0.1, 0.4, 0.5],
+        [0.3, 0.1, 0.9, 0.8, 0.1],
+        [0.6, 0.5, 0.6, 0.3, 0.1],
+        [0.4, 0.7, 0.5, 0.7, 0.4] );
+    var qp = new QLearningPolicy(nActions=nActions, nStates=nStates);
+    qp.Q = Q;
 
-      qstate[3] = 1;  // Just doing state 3 now.
-      assertIntArrayEquals(msg="Standard Policy gives first row of options"
-        , expected=[1,0,0,0,0]
-        , actual=p.f(options=qactions, state=qstate));
-      var rc = rp.f(options=qactions, state=qstate);
-      assertIntEquals(msg="Random Policy returns the correct dimension",expected=N_ANGLES, actual=rc.size);
+    qstate[3] = 1;  // Just doing state 3 now.
+    assertIntArrayEquals(msg="Standard Policy gives first row of options"
+      , expected=[1,0,0,0,0]
+      , actual=p.f(options=qactions, state=qstate));
+    var rc = rp.f(options=qactions, state=qstate);
+    assertIntEquals(msg="Random Policy returns the correct dimension",expected=N_ANGLES, actual=rc.size);
 
-      var ftpc = ftp.f(me=dog, options=qactions, state=qstate);
-      assertIntArrayEquals(msg="Follow Target takes min angle option", expected=[0,0,0,1,0], actual=ftpc);
+    var ftpc = ftp.f(me=dog, options=qactions, state=qstate);
+    assertIntArrayEquals(msg="Follow Target takes min angle option", expected=[0,0,0,1,0], actual=ftpc);
 
-      var qchoice = qp.f(options=qactions, state=qstate);
-      assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
-      return 0;
+    var qchoice = qp.f(options=qactions, state=qstate);
+    assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
+      return this.tearDown(t);
     }
   proc testServos() {
     var t = this.setUp("Servos");
@@ -258,7 +261,7 @@ class RelchTest : UnitTest {
 
   proc run() {
     super.run();
-    //testRunDefault();     // just errors
+    // testRunDefault(); CORE DUMP
     testTilers();
     testSensors();
     testServos();
