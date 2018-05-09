@@ -195,6 +195,14 @@ class RelchTest : UnitTest {
       var rp = new RandomPolicy();
       catAngleSensor.target = cat;
       var ftp = new FollowTargetPolicy(sensor=catAngleSensor);
+      assertIntEquals(msg="Follow Target Policy has correct sensory dims"
+        , expected=N_ANGLES, actual=ftp.sensorDimension());
+      assertIntEquals(msg="Follow Target Policy sensor has correct state index start"
+        , expected=1, actual=ftp.targetSensor.stateIndexStart);
+      assertIntEquals(msg="Follow Target Policy sensor has correct state index end"
+        , expected=6, actual=ftp.targetSensor.stateIndexEnd);
+
+
 
       var nActions: int = 4,
           nStates :int = 5;

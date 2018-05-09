@@ -15,7 +15,23 @@ class Policy {
   }
 
   proc add(sensor : Sensor) {
-    this.sensor.push_back(sensor);
+    sensor.stateIndexStart = this.sensorDimension() + 1;
+    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins;
+    this.sensors.push_back(sensor);
+  }
+
+  proc sensorDimension() {
+    var n: int = 0;
+    for s in this.sensors {
+      n += s.dim();
+    }
+    return n;
+  }
+
+  proc randomAction(options:[] int) {
+    var c = randInt(1,options.shape[1]);
+    const choice:[1..options.shape[2]] int = options[c,..];
+    return choice;
   }
 }
 
@@ -26,10 +42,9 @@ class RandomPolicy : Policy {
   }
 
   proc f(options:[] int, state:[] int) {
-    var c = randInt(1,options.shape[1]);
-    const choice:[1..options.shape[2]] int = options[c,..];
-    return choice;
+    return this.randomAction(options);
   }
+
 }
 
 class QLearningPolicy : Policy {
@@ -64,20 +79,21 @@ class QLearningPolicy : Policy {
 }
 
 class FollowTargetPolicy : Policy {
-  var sensor : Sensor;
+  var targetSensor : Sensor;
   proc init(sensor: Sensor) {
     super.init();
     this.complete();
-    this.sensor = sensor;
+    this.add(sensor);
+    this.targetSensor = this.sensors[1];
   }
 
   proc f(me: Agent, options:[] int, state: [] int) {
-    var targetAngle = me.angleFromMe(this.sensor.target.position);
+    var targetAngle = me.angleFromMe(this.targetSensor.target.position);
     var thetas:[1..options.shape[1]] real;
     var t: [1..options.shape[2]] int;
     for i in 1..options.shape[1] {
       t = options[i,..];
-      var theta = abs(targetAngle - this.sensor.tiler.unbin(t)) ;
+      var theta = abs(targetAngle - this.targetSensor.tiler.unbin(t)) ;
       if theta > pi then theta = 2* pi - theta;
       thetas[i] = theta;
     }

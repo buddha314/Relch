@@ -2,7 +2,9 @@ use policies, agents;
   /* I really have no idea how I'm going to handle this yet */
 class Servo {
   var tiler: Tiler,
-      optionIndex: [1..0] int;
+      optionIndexStart: int,
+      optionIndexEnd: int;
+      
   proc init() {}
   proc init(tiler: Tiler) {
     this.tiler=tiler;
@@ -40,11 +42,10 @@ class Position {
 
 class Sensor {
   var name: string,
-      //size: int, // How long is the return vector
-      //distanceTiler: Tiler,
-      //angleTiler: Tiler,
       tiler: Tiler,
-      target: Perceivable;
+      target: Perceivable,
+      stateIndexStart: int,   // which part of the state space does this populate?
+      stateIndexEnd: int;
 
   proc init(name:string, tiler: Tiler) {
     this.name = name;
