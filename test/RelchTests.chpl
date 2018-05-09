@@ -104,15 +104,6 @@ class RelchTest : UnitTest {
   }
 
   proc testAgentRelativeMethods() {
-
-    /*
-    var dogSensor = new Sensor(name="find the dog", size=7);
-    var is: [1..0] Sensor;
-    var ws: [1..0] Sensor;
-    is.push_back(catAngleSensor);
-    ws.push_back(catSensor);
-    var dog = new Agent(name="dog", position=new Position(x=25, y=25));
-    var cat = new Agent(name="cat", position=new Position(x=50, y=50));
     var d: real = 35.3553;
     assertRealApproximates(msg="Distance from dog to cat is correct"
       , expected=d, actual=dog.distanceFromMe(cat)
@@ -133,7 +124,6 @@ class RelchTest : UnitTest {
     cat.moveAlong(pi/6);
     assertRealApproximates(msg="Cat moved along pi/6 (x)", expected=52.5981, actual=cat.position.x, error=1e-03);
     assertRealApproximates(msg="Cat moved along pi/6 (y)", expected=1.5, actual=cat.position.y);
-     */
   }
 
   proc testBuildSim() {
@@ -230,7 +220,7 @@ class RelchTest : UnitTest {
     testStep();
     //testRunDefault();     // just errors
     testTilers();
-    testSensors();  // CORE DUMPS
+    testSensors();
     testAgentRelativeMethods();
     testBuildSim();
     //testDogChaseCat();     // just errors
