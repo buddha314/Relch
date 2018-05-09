@@ -276,6 +276,32 @@ class RelchTest : UnitTest {
     this.tearDown(t=t);
   }
 
+  proc testPresentOptions() {
+    var t = this.setUp("Present Options");
+    var motionServo = new Servo(tiler=angler),
+        sim = new Environment(name="simulation amazing", epochs=10, steps=5),
+        followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor),
+        optAnswer1 = eye(N_ANGLES, int);
+
+    sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+
+    catAngleSensor.target = cat;
+    catDistanceSensor.target = cat;
+    followCatPolicy.add(catAngleSensor);
+
+    dog.policy=followCatPolicy;
+    dog.add(motionServo);
+    var (options, state) = sim.presentOptions(dog);
+    //writeln("options 1\n", options);
+    dog.add(new Servo(tiler=hundredYardTiler));
+    var (options2, state2) = sim.presentOptions(dog);
+    assertIntEquals(msg="Options 2 has the correct n rows", expected=35, actual=options2.shape[1]);
+    assertIntEquals(msg="Options 2 has the correct n cols", expected=12, actual=options2.shape[2]);
+    //writeln("options 2\n", options2);
+
+    this.tearDown(t=t);
+  }
+
   proc run() {
     super.run();
     testRunDefault();
@@ -286,6 +312,7 @@ class RelchTest : UnitTest {
     testBuildSim();
     //testDogChaseCat();     // just errors
     testPolicies();          // CORE DUMPS
+    testPresentOptions();
     return 0;
   }
 }

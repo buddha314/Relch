@@ -77,21 +77,40 @@ module Relch {
       /* Constructing options is kinda hard, right now just 1 for every
          element of the sensors */
       var optDom = {1..0, 1..agent.optionDimension()},
-          options: [optDom] int;
+          options: [optDom] int = 0;
 
       var apos = agent.position;
-      for servo in agent.servos {
-        var servoOptDom = {1..0, 1..servo.dim()},
-            servoOpts: [servoOptDom] int;
+      for s in 1..agent.servos.size {
+        const servo = agent.servos[s];
+        // Copying this so we can repeat it for later sensors
+        var optSnapshot: [1..options.shape[1], 1..options.shape[2]] int  = options;
+        var nAddedOptions: int = 0;
         for i in 1..servo.dim() {
           var a: [1..servo.dim()] int = 0;
           a[i] = 1;
           var theta = servo.tiler.unbin(a);
           var p = moveAlong(from=agent.position, theta=theta, speed=agent.speed);
+          // Need to add a row to the options
           if this.world.isValidPosition(p) {
-            servoOptDom= {1..servoOptDom.dims()(1).high+1, servoOptDom.dims()(2)};
-            servoOpts[i,..] = a;
-            //writeln(servoOpts);
+            // Might be the first one
+            if s == 1 {
+              optDom = {1..optDom.dims()(1).high +1, optDom.dims()(2)};
+              for x in servo.optionIndexStart..servo.optionIndexEnd do options[i,x] = a[x-servo.optionIndexStart+1];
+            } else if s > 1 && nAddedOptions == 0 {   // First new option, so add to the empty space
+              const nr = optSnapshot.domain.dims()(1).high;
+              for j in 1..nr {
+                for x in servo.optionIndexStart..servo.optionIndexEnd do options[j,x] = a[x-servo.optionIndexStart+1];
+              }
+            } else if s > 1 && nAddedOptions > 0 {  // In this case you have to copy all the previous lines and add the options
+              const nr = optSnapshot.shape[1];
+              for j in 1..nr {
+                var currentRow: [1..optDom.dims()(2).high] int = options[j,..];
+                currentRow[servo.optionIndexStart..servo.optionIndexEnd] = a;
+                optDom = {1..optDom.dims()(1).high+1, optDom.dims()(2)};
+                options[optDom.dims()(1).high, ..] = currentRow;
+              }
+            }
+            nAddedOptions += 1;
           } else {
             writeln("Not a chance, suckah!");
           }
