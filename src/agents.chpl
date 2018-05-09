@@ -65,12 +65,20 @@ class Agent : Perceivable {
   /*
    This really need to be abstracted
    */
-  proc distanceFromMe(you: Agent) {
-    return dist(this.position, you.position);
+  proc distanceFromMe(you: Perceivable) {
+    return this.distanceFromMe(you.position);
   }
 
-  proc angleFromMe(you: Agent) {
-    return angle(this.position, you.position);
+  proc distanceFromMe(you: Position) {
+    return dist(this.position, you);
+  }
+
+  proc angleFromMe(you: Perceivable) {
+    return angleFromMe(you.position);
+  }
+
+  proc angleFromMe(you: Position) {
+    return angle(this.position, you);
   }
 
   /* Move along an angle */

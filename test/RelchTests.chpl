@@ -28,6 +28,7 @@ class RelchTest : UnitTest {
   }
 
   proc testStep() {
+    /*
     var sim = new Environment(name="steppin out", epochs=1, steps=2);
     var action: [1..3] int = [1,0,0];
     var bond = new Agent(name="Bond, James Bond", position=new Position(x=7, y=7));
@@ -35,6 +36,7 @@ class RelchTest : UnitTest {
     var (state, reward, done, position) = sim.step(agent=bond, action=action);
     assertRealEquals(msg="Default reward is 10.0", expected=10.0, actual = reward);
     assertBoolEquals(msg="Default done is false", expected=false, actual = done);
+     */
   }
 
   proc testRunDefault() {
@@ -184,16 +186,24 @@ class RelchTest : UnitTest {
   }
 
   proc testPolicies() {
+      // Reset position for safety of the animals involved
+      cat.position.x = 50;
+      cat.position.y = 50;
+      dog.position.x = 25;
+      dog.position.y = 25;
       var p = new Policy();
       var rp = new RandomPolicy();
+      catAngleSensor.target = cat;
       var ftp = new FollowTargetPolicy(sensor=catAngleSensor);
-
 
       var nActions: int = 4,
           nStates :int = 5;
-      var qp = new QLearningPolicy(nActions=nActions, nStates=nStates);
       var qstate: [1..nStates] int = 0,
-          qactions = eye(nActions, int);
+          qactions: [1..4, 1..N_ANGLES] int = 0;
+      qactions[1,1] = 1;
+      qactions[2,2] = 1;
+      qactions[3,4] = 1;
+      qactions[4,5] = 1;
 
       // Build a matrix so we know the answer
       var Q = Matrix(
@@ -201,17 +211,21 @@ class RelchTest : UnitTest {
           [0.3, 0.1, 0.9, 0.8, 0.1],
           [0.6, 0.5, 0.6, 0.3, 0.1],
           [0.4, 0.7, 0.5, 0.7, 0.4] );
+      var qp = new QLearningPolicy(nActions=nActions, nStates=nStates);
       qp.Q = Q;
 
       qstate[3] = 1;  // Just doing state 3 now.
-      qactions[3,3] = 0;
-      var pc = p.f(options=qactions, state=qstate);
+      assertIntArrayEquals(msg="Standard Policy gives first row of options"
+        , expected=[1,0,0,0,0]
+        , actual=p.f(options=qactions, state=qstate));
       var rc = rp.f(options=qactions, state=qstate);
-      var ftpc = ftp.f(me=dog, options=qactions, state=qstate);
+      assertIntEquals(msg="Random Policy returns the correct dimension",expected=N_ANGLES, actual=rc.size);
 
-      var choice = qp.f(options=qactions, state=qstate);
-      var c:[1..4] int = [0,1,0,0]; // Should pick the second option, it has max of 3rd Q col
-      assertIntArrayEquals(msg="Correct choice is taken", expected=c, actual=choice);
+      var ftpc = ftp.f(me=dog, options=qactions, state=qstate);
+      assertIntArrayEquals(msg="Follow Target takes min angle option", expected=[0,0,0,1,0], actual=ftpc);
+
+      var qchoice = qp.f(options=qactions, state=qstate);
+      assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
       return 0;
     }
 
@@ -224,7 +238,7 @@ class RelchTest : UnitTest {
     testAgentRelativeMethods();
     testBuildSim();
     //testDogChaseCat();     // just errors
-    //testPolicies();          // CORE DUMPS
+    testPolicies();          // CORE DUMPS
     return 0;
   }
 }
