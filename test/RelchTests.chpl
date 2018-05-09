@@ -21,6 +21,27 @@ class RelchTest : UnitTest {
       dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler),
       dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
 
+  proc setUp(name: string = "setup") {
+    hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true);
+    angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05);
+    whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false); // Does not wrap
+    dog = new Agent(name="dog", position=new Position(x=25, y=25));
+    cat = new Agent(name="cat", position=new Position(x=50, y=50));
+    aSensor = new AngleSensor(name="s1", tiler=angler);
+    dSensor = new DistanceSensor(name="d1", tiler=hundredYardTiler);
+    catAngleSensor = new AngleSensor(name="find the cat", tiler=angler);
+    catDistanceSensor = new DistanceSensor(name="find the cat", tiler=hundredYardTiler);
+    dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler);
+    dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
+    return super.setUp(name);
+  }
+
+  proc tearDown(ref t: Timer) {
+    return super.tearDown(t);
+    //ref s = t;
+    //t.stop();
+    //writeln("s: ", t.elapsed());
+  }
 
   proc init(verbose:bool) {
     super.init(verbose=verbose);
@@ -236,6 +257,10 @@ class RelchTest : UnitTest {
       assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
       return 0;
     }
+  proc testServos() {
+    var t = this.setUp("Servos");
+    this.tearDown(t=t);
+  }
 
   proc run() {
     super.run();
@@ -243,6 +268,7 @@ class RelchTest : UnitTest {
     //testRunDefault();     // just errors
     testTilers();
     testSensors();
+    testServos();
     testAgentRelativeMethods();
     testBuildSim();
     //testDogChaseCat();     // just errors
