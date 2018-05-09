@@ -76,10 +76,11 @@ module Relch {
     proc presentOptions(agent: Agent) {
       /* Constructing options is kinda hard, right now just 1 for every
          element of the sensors */
-      //var options = eye(agent.optionDimension(), int);
-      var options = eye(4, int);
-      //var state: [1..agent.sensorDimension()] int;
-      var state: [1..5] int;
+      var optDom = {1..agent.optionDimension(), 1..0},
+          options: [optDom] int;
+
+      var state: [1..agent.sensorDimension()] int;
+      //var state: [1..5] int;
       var k: int = 1;
       /*
       for sensor in agent.policy.sensors {
@@ -110,9 +111,9 @@ module Relch {
             // DM presents options
             var (options, currentState) = this.presentOptions(agent);
             // A chooses an action
-            var choice = agent.choose(options, currentState);
+            //var choice = agent.choose(options, currentState);
             // DM rewards
-            var (nextState, reward, done, position) = this.step(agent=agent, action=choice);
+            //var (nextState, reward, done, position) = this.step(agent=agent, action=choice);
             /*
             if done {
               agent.done = true;
