@@ -11,7 +11,8 @@ class Servo {
   }
 
   proc f(agent: Agent, choice: [] int) {
-    const d: real = this.tiler.unbin(choice);
+    const o:[1..this.dim()] int = choice[this.optionIndexStart..this.optionIndexEnd];
+    const d: real = this.tiler.unbin(o);
     agent.moveAlong(d);
     return agent;
   }
@@ -124,8 +125,16 @@ class Tiler {
   }
 
   proc bin(x: real) {return [0];}
-  proc unbin(x:[] int) {return 0.0;}
-
+  proc unbin(x:[] int) throws {
+    this.checkDim(x);
+    return 0.0;
+  }
+  proc checkDim(x:[] int) throws {
+    if x.size != this.nbins {
+      const err = new DimensionMatchError(expected = this.nbins, actual=x.size);
+      throw err;
+    }
+  }
   proc makeBins() {}
 }
 
@@ -167,7 +176,8 @@ class LinearTiler : Tiler {
   }
 
   /* go from bins back to a value, typically the mid point */
-  proc unbin(x:[] int) {
+  proc unbin(x:[] int) throws {
+    this.checkDim(x);
     var r: real;
     for i in x.domain {
       if x[i] == 1 {

@@ -262,6 +262,10 @@ class RelchTest : UnitTest {
     dog.act([1,0,0,0,0]);
     assertRealApproximates(msg="Dog moved to correct x", expected=22.5729, actual=dog.position.x, error=1e-03);
     assertRealApproximates(msg="Dog moved to correct y", expected=23.2366, actual=dog.position.y, error=1e-03);
+    // Now give larger option to check on servo subsetting
+    dog.act([1,0,0,0,0,1,1,1]);
+    assertRealApproximates(msg="Dog moved to correct x (overloaded option)", expected=20.1459, actual=dog.position.x, error=1e-03);
+    assertRealApproximates(msg="Dog moved to correct y (overloaded option)", expected=21.4733, actual=dog.position.y, error=1e-03);
     this.tearDown(t=t);
   }
 
