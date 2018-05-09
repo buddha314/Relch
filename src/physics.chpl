@@ -13,13 +13,19 @@ class Servo {
   proc f(agent: Agent, choice: [] int) {
     const o:[1..this.dim()] int = choice[this.optionIndexStart..this.optionIndexEnd];
     const d: real = this.tiler.unbin(o);
-    agent.moveAlong(d);
+    agent.moveAgentAlong(d);
     return agent;
   }
 
   proc dim() {
     return this.tiler.nbins;
   }
+}
+
+/* Returns a position from the original point along theta */
+proc moveAlong(from: Position, theta: real, speed: real) {
+  const p = new Position(x=from.x + speed*cos(theta), y=from.y + speed*sin(theta) );
+  return p;
 }
 
 proc dist(me: Agent, you: Agent) {
@@ -198,5 +204,28 @@ class AngleTiler : LinearTiler {
   proc init(nbins: int, overlap:real=-1, theta0: real =-pi , theta1: real = pi) {
     super.init(nbins=nbins, x1=theta0, x2=theta1, overlap=overlap, wrap=true);
     this.complete();
+  }
+}
+
+
+class World {
+  const width: int,
+        height: int;
+  var wrap: bool = false;
+
+  proc init(width: int, height: int) {
+    this.width = width;
+    this.height = height;
+  }
+
+  proc isValidPosition(position: Position ) {
+    if wrap {
+      return true;
+    } else if position.x >= 0 && position.x < this.width
+              && position.y >= 0 && position.y <= this.height {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

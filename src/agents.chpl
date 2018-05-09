@@ -78,9 +78,10 @@ class Agent : Perceivable {
   }
 
   /* Move along an angle */
-  proc moveAlong(theta: real) {
-    this.position.x += this.speed * cos(theta);
-    this.position.y += this.speed * sin(theta);
+  proc moveAgentAlong(theta: real) {
+    this.position = moveAlong(from=this.position, theta=theta, speed=this.speed);
+    //this.position.x += this.speed * cos(theta);
+    //this.position.y += this.speed * sin(theta);
   }
 
   proc optionDimension() {

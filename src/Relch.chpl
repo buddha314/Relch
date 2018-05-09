@@ -76,8 +76,27 @@ module Relch {
     proc presentOptions(agent: Agent) {
       /* Constructing options is kinda hard, right now just 1 for every
          element of the sensors */
-      var optDom = {1..agent.optionDimension(), 1..0},
+      var optDom = {1..0, 1..agent.optionDimension()},
           options: [optDom] int;
+
+      var apos = agent.position;
+      for servo in agent.servos {
+        var servoOptDom = {1..0, 1..servo.dim()},
+            servoOpts: [servoOptDom] int;
+        for i in 1..servo.dim() {
+          var a: [1..servo.dim()] int = 0;
+          a[i] = 1;
+          var theta = servo.tiler.unbin(a);
+          var p = moveAlong(from=agent.position, theta=theta, speed=agent.speed);
+          if this.world.isValidPosition(p) {
+            servoOptDom= {1..servoOptDom.dims()(1).high+1, servoOptDom.dims()(2)};
+            servoOpts[i,..] = a;
+            //writeln(servoOpts);
+          } else {
+            writeln("Not a chance, suckah!");
+          }
+        }
+      }
 
       var state: [1..agent.sensorDimension()] int;
       //var state: [1..5] int;
@@ -129,14 +148,4 @@ module Relch {
       }
     }
   }
-
-  class World {
-    const width: int,
-          height: int;
-    proc init(width: int, height: int) {
-      this.width = width;
-      this.height = height;
-    }
-  }
-
 }

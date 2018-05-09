@@ -19,7 +19,8 @@ class RelchTest : UnitTest {
       catAngleSensor = new AngleSensor(name="find the cat", tiler=angler),
       catDistanceSensor = new DistanceSensor(name="find the cat", tiler=hundredYardTiler),
       dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler),
-      dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
+      dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler),
+      boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
   proc setUp(name: string = "setup") {
     hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true);
@@ -33,6 +34,7 @@ class RelchTest : UnitTest {
     catDistanceSensor = new DistanceSensor(name="find the cat", tiler=hundredYardTiler);
     dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler);
     dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
+    boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
     return super.setUp(name);
   }
 
@@ -50,10 +52,13 @@ class RelchTest : UnitTest {
 
   proc testRunDefault() {
     var t = this.setUp("RunDefault");
-    var sim = new Environment(name="steppin out", epochs=2, steps=3);
     catAngleSensor.add(angler);
-    var followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor);
+    var sim = new Environment(name="steppin out", epochs=2, steps=3),
+        followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor),
+        motionServo = new Servo(tiler=angler);
+    sim.world = boxWorld;
     dog.policy = followCatPolicy;
+    dog.add(motionServo);
     sim.add(dog);
     sim.run();
     return this.tearDown(t);
@@ -141,7 +146,7 @@ class RelchTest : UnitTest {
     cat.position.x = 50;
     assertRealApproximates(msg="Angle to cat is -pi/4", expected=-pi/4, actual = dog.angleFromMe(cat));
 
-    cat.moveAlong(pi/6);
+    cat.moveAgentAlong(pi/6);
     assertRealApproximates(msg="Cat moved along pi/6 (x)", expected=52.5981, actual=cat.position.x, error=1e-03);
     assertRealApproximates(msg="Cat moved along pi/6 (y)", expected=1.5, actual=cat.position.y);
     return this.tearDown(t);
