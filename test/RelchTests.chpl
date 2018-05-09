@@ -48,25 +48,17 @@ class RelchTest : UnitTest {
     this.complete();
   }
 
-  proc testStep() {
-    /*
-    var sim = new Environment(name="steppin out", epochs=1, steps=2);
-    var action: [1..3] int = [1,0,0];
-    var bond = new Agent(name="Bond, James Bond", position=new Position(x=7, y=7));
-    bond.policy = new RandomPolicy();
-    var (state, reward, done, position) = sim.step(agent=bond, action=action);
-    assertRealEquals(msg="Default reward is 10.0", expected=10.0, actual = reward);
-    assertBoolEquals(msg="Default done is false", expected=false, actual = done);
-     */
-  }
 
   proc testRunDefault() {
+    var t = this.setUp("RunDefault");
     var sim = new Environment(name="steppin out", epochs=2, steps=3);
     sim.add(dog);
     sim.run();
+    this.tearDown(t);
   }
 
   proc testTilers() {
+    var t = this.setUp("Tilers");
     var eo:[1..N_DISTS] int = [1,1,0,0,0,0,0];
     var eo2:[1..N_DISTS] int = [1,0,0,0,0,0,0];
     var eo3:[1..N_DISTS] int = [1,0,0,0,0,0,1];
@@ -85,9 +77,11 @@ class RelchTest : UnitTest {
     assertIntArrayEquals(msg="Angler sees -pi correctly", expected=ao, actual=angler.bin(-pi));
     assertIntArrayEquals(msg="Angler sees origin correctly", expected=ao2, actual=angler.bin(0));
     assertRealApproximates(msg="Angler unbins correctly", expected=2.51327, actual=angler.unbin(ao3));
+    this.tearDown(t);
   }
 
   proc testSensors() {
+    var t = this.setUp("Sensors");
     var sim = new Environment(name="simulation amazing", epochs=10, steps=5);
     sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
@@ -123,7 +117,7 @@ class RelchTest : UnitTest {
     assertRealEquals("Sensor finds that mike is closest to dog (y)", expected=100.0,actual=nn.y);
     var nm = aflocka.findNearestMember(dog, sim.agents);
     assertStringEquals("Sensor finds that mike is closest to dog (agent)", expected="mike",actual=nm.name);
-    return 0;
+    return this.tearDown(t);
   }
 
   proc testAgentRelativeMethods() {
@@ -264,7 +258,6 @@ class RelchTest : UnitTest {
 
   proc run() {
     super.run();
-    testStep();
     //testRunDefault();     // just errors
     testTilers();
     testSensors();
