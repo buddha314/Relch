@@ -253,9 +253,15 @@ class RelchTest : UnitTest {
     var qchoice = qp.f(options=qactions, state=qstate);
     assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
       return this.tearDown(t);
-    }
+  }
+
   proc testServos() {
     var t = this.setUp("Servos");
+    var motionServo = new Servo(tiler=angler);
+    dog.add(motionServo);
+    dog.act([1,0,0,0,0]);
+    assertRealApproximates(msg="Dog moved to correct x", expected=22.5729, actual=dog.position.x, error=1e-03);
+    assertRealApproximates(msg="Dog moved to correct y", expected=23.2366, actual=dog.position.y, error=1e-03);
     this.tearDown(t=t);
   }
 

@@ -4,7 +4,7 @@ class Servo {
   var tiler: Tiler,
       optionIndexStart: int,
       optionIndexEnd: int;
-      
+
   proc init() {}
   proc init(tiler: Tiler) {
     this.tiler=tiler;
@@ -14,6 +14,10 @@ class Servo {
     const d: real = this.tiler.unbin(choice);
     agent.moveAlong(d);
     return agent;
+  }
+
+  proc dim() {
+    return this.tiler.nbins;
   }
 }
 
