@@ -1,16 +1,37 @@
 use NumSuch,
+    Math,
     physics;
 
 
 class Policy {
+  var sensors: [1..0] Sensor;
   proc init() {
-    this.complete();
   }
 
   proc f(options:[] int, state:[] int) {
-    var r:[1..1] int;
-    r[1] = 1;
+    var r:[1..options.shape[2]] int;
+    r = options[1,..];
     return r;
+  }
+
+  proc add(sensor : Sensor) {
+    sensor.stateIndexStart = this.sensorDimension() + 1;
+    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins;
+    this.sensors.push_back(sensor);
+  }
+
+  proc sensorDimension() {
+    var n: int = 0;
+    for s in this.sensors {
+      n += s.dim();
+    }
+    return n;
+  }
+
+  proc randomAction(options:[] int) {
+    var c = randInt(1,options.shape[1]);
+    const choice:[1..options.shape[2]] int = options[c,..];
+    return choice;
   }
 }
 
@@ -21,10 +42,9 @@ class RandomPolicy : Policy {
   }
 
   proc f(options:[] int, state:[] int) {
-    var c = randInt(1,options.shape[1]);
-    const choice:[1..options.shape[2]] int = options[c,..];
-    return choice;
+    return this.randomAction(options);
   }
+
 }
 
 class QLearningPolicy : Policy {
@@ -40,10 +60,10 @@ class QLearningPolicy : Policy {
     this.E = 0.0;
   }
   proc f(options:[] int, state:[] int) {
-    /* Need to translate the options into discrete rows */
+    // Need to translate the options into discrete rows
     var choices: [1..options.shape[1]] real = 0.0;
-    /* The states are discrete, but the input looks like [0 0 1 0]
-       meaning we are in state 3 */
+    // The states are discrete, but the input looks like [0 0 1 0]
+    //  meaning we are in state 3
     var s:int = argmax(state);
     for r in 1..options.shape[1] {
       if options[r,r] == 1 {
@@ -52,23 +72,32 @@ class QLearningPolicy : Policy {
         choices[r] = 0.0;
       }
     }
-    var opt:[1..options.shape[1]] int;
+    var opt:[1..options.shape[2]] int;
     opt = options[argmax(choices), ..];
     return opt;
   }
 }
 
 class FollowTargetPolicy : Policy {
-  var sensor : Sensor;
+  var targetSensor : Sensor;
   proc init(sensor: Sensor) {
     super.init();
     this.complete();
-    this.sensor = sensor;
+    this.add(sensor);
+    this.targetSensor = this.sensors[1];
   }
 
   proc f(me: Agent, options:[] int, state: [] int) {
-    writeln("following the thing at position ", this.sensor.target.position);
-    var choice: [1..options.shape[2]] int = options[1,..];
+    var targetAngle = me.angleFromMe(this.targetSensor.target.position);
+    var thetas:[1..options.shape[1]] real;
+    var t: [1..options.shape[2]] int;
+    for i in 1..options.shape[1] {
+      t = options[i,..];
+      var theta = abs(targetAngle - this.targetSensor.tiler.unbin(t)) ;
+      if theta > pi then theta = 2* pi - theta;
+      thetas[i] = theta;
+    }
+    var choice: [1..options.shape[2]] int = options[argmin(thetas), ..];
     return choice;
   }
 }

@@ -79,13 +79,14 @@ module Relch {
       //var options = eye(agent.optionDimension(), int);
       var options = eye(4, int);
       //var state: [1..agent.sensorDimension()] int;
-      var state: [1..agent.sensorDimension()] int;
+      var state: [1..5] int;
       var k: int = 1;
-      for sensor in agent.sensors {
+      /*
+      for sensor in agent.policy.sensors {
           //writeln("I am the DM looking at sensor ", sensor.name);
           state[k..sensor.dim()] = sensor.v(me=agent);
           k = sensor.dim() +1;
-      }
+      } */
       return (options, state);
     }
 

@@ -3,7 +3,7 @@ use physics, policies;
 // Should be abstracted to something like DQNAgent
 class Agent : Perceivable {
   var speed: real,
-      sensors: [1..0] Sensor,
+      //sensors: [1..0] Sensor,
       servos: [1..0] Servo,
       d: domain(2),
       Q: [d] real,
@@ -23,12 +23,9 @@ class Agent : Perceivable {
     this.done = false;
   }
 
-  proc add(sensor : Sensor) {
-    this.sensors.push_back(sensor);
-    return this;
-  }
-
   proc add(servo: Servo) {
+    servo.optionIndexStart = this.optionDimension() + 1;
+    servo.optionIndexEnd = servo.optionIndexStart + servo.dim();
     this.servos.push_back(servo);
     return this;
   }
@@ -36,7 +33,6 @@ class Agent : Perceivable {
   /* Expects an integer array of options */
   proc choose(options: [] int, state: [] int) {
       const choice = this.policy.f(options=options, state=state);
-      //return act(choice);
       return choice;
   }
 
@@ -65,12 +61,20 @@ class Agent : Perceivable {
   /*
    This really need to be abstracted
    */
-  proc distanceFromMe(you: Agent) {
-    return dist(this.position, you.position);
+  proc distanceFromMe(you: Perceivable) {
+    return this.distanceFromMe(you.position);
   }
 
-  proc angleFromMe(you: Agent) {
-    return angle(this.position, you.position);
+  proc distanceFromMe(you: Position) {
+    return dist(this.position, you);
+  }
+
+  proc angleFromMe(you: Perceivable) {
+    return angleFromMe(you.position);
+  }
+
+  proc angleFromMe(you: Position) {
+    return angle(this.position, you);
   }
 
   /* Move along an angle */
@@ -88,11 +92,7 @@ class Agent : Perceivable {
   }
 
   proc sensorDimension() {
-    var n: int = 0;
-    for sensor in this.sensors {
-      n += sensor.dim();
-    }
-    return n;
+    return this.policy.sensorDimension();
   }
 
 
