@@ -3,7 +3,6 @@ use physics, policies;
 // Should be abstracted to something like DQNAgent
 class Agent : Perceivable {
   var speed: real,
-      //sensors: [1..0] Sensor,
       servos: [1..0] Servo,
       d: domain(2),
       Q: [d] real,
@@ -33,7 +32,6 @@ class Agent : Perceivable {
   /* Expects an integer array of options */
   proc choose(options: [] int, state: [] int) {
       const choice = this.policy.f(options=options, state=state);
-      //var choice: [1..5] int;
       return choice;
   }
 
@@ -81,8 +79,6 @@ class Agent : Perceivable {
   /* Move along an angle */
   proc moveAgentAlong(theta: real) {
     this.position = moveAlong(from=this.position, theta=theta, speed=this.speed);
-    //this.position.x += this.speed * cos(theta);
-    //this.position.y += this.speed * sin(theta);
   }
 
   proc optionDimension() {
