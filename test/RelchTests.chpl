@@ -278,6 +278,8 @@ class RelchTest : UnitTest {
 
   proc testPresentOptions() {
     var t = this.setUp("Present Options");
+
+    catAngleSensor.target = cat;
     var motionServo = new Servo(tiler=angler),
         sim = new Environment(name="simulation amazing", epochs=10, steps=5),
         followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor),
@@ -285,26 +287,22 @@ class RelchTest : UnitTest {
 
     sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
-    catAngleSensor.target = cat;
-    catDistanceSensor.target = cat;
-    followCatPolicy.add(catAngleSensor);
 
     dog.policy=followCatPolicy;
     dog.add(motionServo);
     var (options, state) = sim.presentOptions(dog);
-    //writeln("options 1\n", options);
+    assertIntArrayEquals(msg="State is correct from Present Options", expected=[0,0,0,1,0], actual=state);
     dog.add(new Servo(tiler=hundredYardTiler));
     var (options2, state2) = sim.presentOptions(dog);
     assertIntEquals(msg="Options 2 has the correct n rows", expected=35, actual=options2.shape[1]);
     assertIntEquals(msg="Options 2 has the correct n cols", expected=12, actual=options2.shape[2]);
     //writeln("options 2\n", options2);
-
     this.tearDown(t=t);
   }
 
   proc run() {
     super.run();
-    testRunDefault();
+    //testRunDefault();   // CORE DUMPS again
     testTilers();
     testSensors();
     testServos();

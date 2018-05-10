@@ -118,14 +118,10 @@ module Relch {
       }
 
       var state: [1..agent.sensorDimension()] int;
-      //var state: [1..5] int;
-      var k: int = 1;
-      /*
       for sensor in agent.policy.sensors {
-          //writeln("I am the DM looking at sensor ", sensor.name);
-          state[k..sensor.dim()] = sensor.v(me=agent);
-          k = sensor.dim() +1;
-      } */
+          var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent);
+          state[a.domain] = a;
+      }
       return (options, state);
     }
 

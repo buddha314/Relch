@@ -67,7 +67,6 @@ class Sensor {
     this.tiler = tiler;
   }
 
-  /* Note Bene: You have to have both tilers or it core dumps! */
   proc v(me: Agent, you: Position) {
     var v:[1..this.dim()] int = 0;
     return v;
@@ -78,7 +77,10 @@ class Sensor {
   }
 
   proc v(me: Agent) {
+    //writeln("getting v");
+    //writeln("target: ", this.target);
     return this.v(me=me, you=this.target.position);
+    //writeln("got v");
   }
 
   proc dim() {
