@@ -137,18 +137,17 @@ module Relch {
 
 
     iter run() {
-      var pp = new RandomPolicy();
       for i in 1..this.epochs {
         for agent in this.agents{
-          this.reset(agent=agent);
+          //this.reset(agent=agent);
           for step in 1..this.steps {
             // DM presents options
             var (options, currentState) = this.presentOptions(agent);
             // A chooses an action
-            //var choice = agent.choose(options, currentState);
+            var choice = agent.choose(options, currentState);
+            writeln("agent: ", agent);
             // DM rewards
-            //var (nextState, reward, done, position) = this.step(agent=agent, action=choice);
-            /*
+            var (nextState, reward, done, position) = this.step(agent=agent, action=choice);
             if done {
               agent.done = true;
               this.reset(agent);
@@ -156,7 +155,6 @@ module Relch {
             }
             // A logs the reward
             // Return A
-            */
             yield agent;
           }
         }

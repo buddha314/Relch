@@ -37,3 +37,8 @@ circle: circle_nn.chpl
 
 run-circle:
 	./circle -f circle_nn.cfg
+
+dog: dogChaseCat.chpl
+	$(CC) -M../src $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o dog $< ; \
+	./dog -f dog.cfg; \
+	rm dog
