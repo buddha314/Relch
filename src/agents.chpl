@@ -32,7 +32,8 @@ class Agent : Perceivable {
 
   /* Expects an integer array of options */
   proc choose(options: [] int, state: [] int) {
-      const choice = this.policy.f(options=options, state=state);
+      const choice = this.policy.f(me=this, options=options, state=state);
+      //var choice: [1..5] int;
       return choice;
   }
 
