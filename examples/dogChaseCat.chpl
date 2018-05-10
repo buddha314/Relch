@@ -27,4 +27,7 @@ dog.policy = followCatPolicy;
 dog.add(motionServo);
 sim.add(dog);
 
-sim.run();
+writeln("running sim");
+for a in sim.run() {
+  writeln(a);
+}
