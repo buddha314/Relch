@@ -40,9 +40,6 @@ class RelchTest : UnitTest {
 
   proc tearDown(ref t: Timer) {
     return super.tearDown(t);
-    //ref s = t;
-    //t.stop();
-    //writeln("s: ", t.elapsed());
   }
 
   proc init(verbose:bool) {
@@ -303,15 +300,15 @@ class RelchTest : UnitTest {
 
   proc run() {
     super.run();
-    //testRunDefault();
-    //testTilers();
-    //testSensors();
-    //testServos();
-    //testAgentRelativeMethods();
-    //testBuildSim();
+    testRunDefault();
+    testTilers();
+    testSensors();
+    testServos();
+    testAgentRelativeMethods();
+    testBuildSim();
     //testDogChaseCat();     // just errors
     testPolicies();
-    //testPresentOptions();
+    testPresentOptions();
     return 0;
   }
 }

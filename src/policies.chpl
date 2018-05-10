@@ -9,7 +9,6 @@ class Policy {
   }
 
   proc f(me: Agent, options:[] int, state:[] int) {
-    writeln("default policy");
     var r:[1..options.shape[2]] int;
     r = options[1,..];
     return r;
@@ -43,7 +42,6 @@ class RandomPolicy : Policy {
   }
 
   proc f(me: Agent, options:[] int, state:[] int) {
-    writeln("random policy");
     return this.randomAction(options);
   }
 
@@ -62,7 +60,6 @@ class QLearningPolicy : Policy {
     this.E = 0.0;
   }
   proc f(me: Agent, options:[] int, state:[] int) {
-    writeln("Q policy");
     // Need to translate the options into discrete rows
     var choices: [1..options.shape[1]] real = 0.0;
     // The states are discrete, but the input looks like [0 0 1 0]
@@ -91,7 +88,6 @@ class FollowTargetPolicy : Policy {
   }
 
   proc f(me: Agent, options:[] int, state: [] int) {
-    writeln("FTP");
     var targetAngle = me.angleFromMe(this.targetSensor.target.position);
     var thetas:[1..options.shape[1]] real;
     var t: [1..options.shape[2]] int;

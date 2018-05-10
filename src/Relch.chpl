@@ -117,13 +117,12 @@ module Relch {
         }
       }
 
-      var state: [1..5] int;
-      /*
+      //var state: [1..5] int;
       var state: [1..agent.sensorDimension()] int;
       for sensor in agent.policy.sensors {
           var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent);
           state[a.domain] = a;
-      }*/
+      }
       return (options, state);
     }
 
@@ -145,19 +144,16 @@ module Relch {
           for step in 1..this.steps {
             // DM presents options
             var (options, currentState) = this.presentOptions(agent);
-            // Current State is bad
             // A chooses an action
             var choice = agent.choose(options, currentState);
-            writeln("choice: ", choice);
-            //writeln("agent: ", agent);
+            agent.act(choice);
             // DM rewards
-            //var (nextState, reward, done, position) = this.step(agent=agent, action=choice);
-            /*
+            var (nextState, reward, done, position) = this.step(agent=agent, action=choice);
             if done {
               agent.done = true;
               this.reset(agent);
               break;
-            } */
+            }
             // A logs the reward
             // Return A
             yield agent;
