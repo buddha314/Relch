@@ -92,8 +92,7 @@ class FollowTargetPolicy : Policy {
 
   //proc f(me: Agent, options:[] int, state: [] int) {
   proc f(options:[] int, state: [] int) {
-    //var targetAngle = me.angleFromMe(this.targetSensor.target.position);
-    var targetAngle = pi/4;
+    var targetAngle = this.targetSensor.tiler.unbin(state[this.targetSensor.stateIndexStart..this.targetSensor.stateIndexEnd]);
     var thetas:[1..options.shape[1]] real;
     var t: [1..options.shape[2]] int;
     for i in 1..options.shape[1] {
