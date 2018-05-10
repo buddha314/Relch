@@ -27,7 +27,11 @@ dog.policy = followCatPolicy;
 dog.add(motionServo);
 sim.add(dog);
 
-writeln("running sim");
+writeln("""
+  Dog starts at (25, 25). The cat is not an agent and is
+  positioned at (50,50).  The dog is using a FollowTargetPolicy and
+  basically bum rushes the cat, overshoots, and comes back and forth.
+  """);
 for a in sim.run() {
   writeln(a);
 }

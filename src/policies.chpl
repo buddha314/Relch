@@ -8,7 +8,8 @@ class Policy {
   proc init() {
   }
 
-  proc f(me: Agent, options:[] int, state:[] int) {
+  //proc f(me: Agent, options:[] int, state:[] int) {
+  proc f(options:[] int, state:[] int) {
     var r:[1..options.shape[2]] int;
     r = options[1,..];
     return r;
@@ -41,7 +42,8 @@ class RandomPolicy : Policy {
     this.complete();
   }
 
-  proc f(me: Agent, options:[] int, state:[] int) {
+  //proc f(me: Agent, options:[] int, state:[] int) {
+  proc f(options:[] int, state:[] int) {
     return this.randomAction(options);
   }
 
@@ -59,7 +61,8 @@ class QLearningPolicy : Policy {
     fillRandom(this.Q);
     this.E = 0.0;
   }
-  proc f(me: Agent, options:[] int, state:[] int) {
+  //proc f(me: Agent, options:[] int, state:[] int) {
+  proc f(options:[] int, state:[] int) {
     // Need to translate the options into discrete rows
     var choices: [1..options.shape[1]] real = 0.0;
     // The states are discrete, but the input looks like [0 0 1 0]
@@ -87,8 +90,10 @@ class FollowTargetPolicy : Policy {
     this.targetSensor = this.sensors[1];
   }
 
-  proc f(me: Agent, options:[] int, state: [] int) {
-    var targetAngle = me.angleFromMe(this.targetSensor.target.position);
+  //proc f(me: Agent, options:[] int, state: [] int) {
+  proc f(options:[] int, state: [] int) {
+    //var targetAngle = me.angleFromMe(this.targetSensor.target.position);
+    var targetAngle = pi/4;
     var thetas:[1..options.shape[1]] real;
     var t: [1..options.shape[2]] int;
     for i in 1..options.shape[1] {

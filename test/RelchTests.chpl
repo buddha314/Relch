@@ -248,14 +248,14 @@ class RelchTest : UnitTest {
     qstate[3] = 1;  // Just doing state 3 now.
     assertIntArrayEquals(msg="Standard Policy gives first row of options"
       , expected=[1,0,0,0,0]
-      , actual=p.f(me=dog, options=qactions, state=qstate));
-    var rc = rp.f(me=dog, options=qactions, state=qstate);
+      , actual=p.f(options=qactions, state=qstate));
+    var rc = rp.f(options=qactions, state=qstate);
     assertIntEquals(msg="Random Policy returns the correct dimension",expected=N_ANGLES, actual=rc.size);
 
-    var ftpc = ftp.f(me=dog, options=qactions, state=qstate);
+    var ftpc = ftp.f(options=qactions, state=qstate);
     assertIntArrayEquals(msg="Follow Target takes min angle option", expected=[0,0,0,1,0], actual=ftpc);
 
-    var qchoice = qp.f(me=dog, options=qactions, state=qstate);
+    var qchoice = qp.f(options=qactions, state=qstate);
     assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
       return this.tearDown(t);
   }
