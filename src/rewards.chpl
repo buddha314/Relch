@@ -7,6 +7,11 @@ class Reward {
       reward: real,
       stepPenalty: real;
 
+  proc init(reward:real = 10.0, stepPenalty: real = -1.0) {
+    this.reward = reward;
+    this.stepPenalty = stepPenalty;
+  }
+
   proc init(target: [] int, sensor: Sensor, reward=10.0, stepPenalty=-1.0) {
     this.tDom = target.domain;
     this.target = target;
@@ -29,4 +34,24 @@ class Reward {
   proc f(state:[] int) {
     return this.f(state=state, sensor=this.sensor);
   }
+}
+
+class ProximityReward : Reward {
+  var proximity: real;
+  proc init(proximity: real, reward: real = 10.0, stepPenalty: real = -1) {
+    super.init(reward=reward, stepPenalty=stepPenalty);
+    this.complete();
+    this.proximity = proximity;
+  }
+
+  proc f(state:[] int, sensor: Sensor) {
+    var d = sensor.tiler.unbin(state[sensor.stateIndexStart..sensor.stateIndexEnd]);
+    if d <= this.proximity {
+      sensor.done = true;
+      return this.reward;
+    } else {
+      return this.stepPenalty;
+    }
+  }
+
 }

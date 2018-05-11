@@ -307,6 +307,21 @@ class RelchTest : UnitTest {
       , actual=catchCatReward.f(targetState));
     assertBoolEquals(msg="Sensor is done", expected=true, actual=catDistanceSensor.done);
 
+    // Test ProximityReward
+    var imNotTouchingYou = new ProximityReward(proximity=45, reward=15.0, stepPenalty=-5);
+    var near = hundredYardTiler.bin(23);
+    var far = hundredYardTiler.bin(71);
+    // Cat has no index yet, not attached to a Policy
+    catDistanceSensor.stateIndexStart = 1;
+    catDistanceSensor.stateIndexEnd = hundredYardTiler.nbins;
+
+    assertRealEquals(msg="Dog is near to the cat, gets 15.0"
+      ,expected=15.0, actual=imNotTouchingYou.f(near, catDistanceSensor));
+    assertBoolEquals(msg="Dog touched cat", expected=true, actual=catDistanceSensor.done);
+
+    assertRealEquals(msg="Dog is far from the cat, gets -5.0"
+      ,expected=-5.0, actual=imNotTouchingYou.f(far, catDistanceSensor));
+
     this.tearDown(t=t);
   }
 
