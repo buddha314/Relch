@@ -157,6 +157,9 @@ module Relch {
       for i in 1..this.epochs {
         for step in 1..this.steps {
           for agent in this.agents{
+            if agent.done {
+              writeln(agent.name," will not be participating");
+            }
             agent.currentStep = step;
             // DM presents options
             var (options, currentState) = this.presentOptions(agent);
