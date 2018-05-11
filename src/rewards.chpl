@@ -18,7 +18,7 @@ class Reward {
     for i in 1..target.shape[1] {
       var t:[1..sensor.dim()] int = target[i,..];
       if t.equals(v) {
-        writeln("YAH!");
+        sensor.done = true;
         return reward;
       }
     }

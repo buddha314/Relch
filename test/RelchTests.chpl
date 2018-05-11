@@ -253,7 +253,8 @@ class RelchTest : UnitTest {
     assertIntEquals(msg="Random Policy returns the correct dimension",expected=N_ANGLES, actual=rc.size);
 
     var ftpc = ftp.f(options=qactions, state=qstate);
-    assertIntArrayEquals(msg="Follow Target takes min angle option", expected=[0,0,0,1,0], actual=ftpc);
+    // Note, the most direct angle is [0,0,1,0,0] but is not a choice in qactions
+    assertIntArrayEquals(msg="Follow Target takes min angle option", expected=[0,1,0,0,0], actual=ftpc);
 
     var qchoice = qp.f(options=qactions, state=qstate);
     assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
@@ -303,19 +304,22 @@ class RelchTest : UnitTest {
         target:[1..2, 1..7] int;
 
     target[1,..] = [0,0,0,0,1,0,0];
-    target[2,..] = [0,0,1,0,0,0,0];
+    target[2,..] = [0,1,0,0,0,0,0];
 
     var catchCatReward = new Reward(target=target);
     catDistanceSensor.target = cat;
     var targetState:[1..7] int = [0,0,1,0,0,0,0];
-    assertRealEquals(msg="Reward for state is 10.0", expected=10.0
+    assertRealEquals(msg="Penalty for step is -1.0", expected=-1.0
       , actual=catchCatReward.f(targetState, catDistanceSensor));
+    assertBoolEquals(msg="Sensor is not done", expected=false, actual=catDistanceSensor.done);
 
     // Now make it fail
-    target[2,..] = [0,1,0,0,0,0,0];
-    var catchCatRewardFail = new Reward(target=target);
-    assertRealEquals(msg="Penalty for step is -1.0", expected=-1.0
-      , actual=catchCatRewardFail.f(targetState, catDistanceSensor));
+    target[2,..] = [0,0,1,0,0,0,0];
+    catchCatReward.target = target;
+    //var catchCatRewardFail = new Reward(target=target);
+    assertRealEquals(msg="Reward for state is 10.0", expected=10.0
+      , actual=catchCatReward.f(targetState, catDistanceSensor));
+    assertBoolEquals(msg="Sensor is done", expected=true, actual=catDistanceSensor.done);
 
     this.tearDown(t=t);
   }

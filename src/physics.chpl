@@ -56,7 +56,8 @@ class Sensor {
       tiler: Tiler,
       target: Perceivable,
       stateIndexStart: int,   // which part of the state space does this populate?
-      stateIndexEnd: int;
+      stateIndexEnd: int,
+      done: bool;
 
   proc init(name:string, tiler: Tiler) {
     this.name = name;
