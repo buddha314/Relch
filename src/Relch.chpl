@@ -47,7 +47,7 @@ module Relch {
         so use this to give the agent his new position
      */
     proc step(agent: Agent, action:[] int) {
-        var state: [1..1] int = buildAgentState(agent=agent);
+        var state: [1..agent.sensorDimension()] int = buildAgentState(agent=agent);
         var reward = this.dispenseReward(agent=agent, state=state);
         var done: bool = this.areYouThroughYet(agent=agent, any=true);  // Yes, this is a Steve Martin reference
         agent.currentStep += 1;
@@ -56,6 +56,7 @@ module Relch {
 
     proc reset(agent: Agent) {
       agent.currentStep = 1;
+      agent.position=new Position(x=0, y=0);
       agent.done = false;
     }
 
@@ -109,7 +110,7 @@ module Relch {
             }
             nAddedOptions += 1;
           } else {
-            writeln("Not a chance, suckah!");
+            //writeln("Not a chance, suckah!");
           }
         }
       }
@@ -131,7 +132,7 @@ module Relch {
     }
 
     proc dispenseReward(agent: Agent, state: [] int) {
-      var r: real = 0;
+      var r: real = 0.0;
       for reward in agent.rewards {
         r += reward.f(state);
       }
@@ -154,10 +155,13 @@ module Relch {
 
     iter run() {
       for i in 1..this.epochs {
+        writeln("starting epoch ", i);
         for step in 1..this.steps {
+        writeln("\tstarting step ", step);
           for agent in this.agents{
+            writeln("\t\tagent location: ", agent.position);
             if agent.done {
-              writeln(agent.name," will not be participating");
+              writeln("\t\t", agent.name, " will not be participating");
             }
             agent.currentStep = step;
             // DM presents options
@@ -168,8 +172,8 @@ module Relch {
             // DM rewards
             var (nextState, reward, done) = this.step(agent=agent, action=choice);
             if done {
+              writeln("\t\tDISQUALIFIED!!");
               agent.done = true;
-              this.reset(agent);
               break;
             }
             // A logs the reward

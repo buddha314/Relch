@@ -17,7 +17,7 @@ class Policy {
 
   proc add(sensor : Sensor) {
     sensor.stateIndexStart = this.sensorDimension() + 1;
-    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins;
+    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
     this.sensors.push_back(sensor);
   }
 
