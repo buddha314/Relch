@@ -80,7 +80,6 @@ class Sensor {
   }
 
   proc v(me: Agent) {
-    //return this.v(me=me, you=this.target.position);
     return this.v(me=me, you=this.target);
   }
 
