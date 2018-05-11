@@ -53,14 +53,16 @@ class Position {
 
 class Sensor {
   var name: string,
-      tiler: Tiler,
-      target: Perceivable,
       stateIndexStart: int,   // which part of the state space does this populate?
       stateIndexEnd: int,
+      tiler: Tiler,
+      target: Perceivable,
       done: bool;
 
   proc init(name:string, tiler: Tiler) {
-    this.name = name;
+    this.name=name;
+    this.stateIndexStart = 0;
+    this.stateIndexEnd = 0;
     this.tiler = tiler;
   }
 
@@ -73,15 +75,13 @@ class Sensor {
     return v;
   }
 
-  proc v(me: Agent, you: Agent) {
+  proc v(me: Agent, you: Perceivable) {
     return this.v(me=me, you=you.position);
   }
 
   proc v(me: Agent) {
-    //writeln("getting v");
-    //writeln("target: ", this.target);
-    return this.v(me=me, you=this.target.position);
-    //writeln("got v");
+    //return this.v(me=me, you=this.target.position);
+    return this.v(me=me, you=this.target);
   }
 
   proc dim() {
@@ -208,6 +208,18 @@ class AngleTiler : LinearTiler {
     super.init(nbins=nbins, x1=theta0, x2=theta1, overlap=overlap, wrap=true);
     this.complete();
   }
+}
+
+// Designed to hold the number of steps an agent has taken
+class StepTiler : Tiler {
+  proc init(steps: int) {
+    super.init(nbins=steps, ndims=1, overlap=0, wrap=false);
+    this.complete();
+    this.nbins = steps;
+  }
+
+  // Doesn't need to do anything
+  proc makeBins() {}
 }
 
 

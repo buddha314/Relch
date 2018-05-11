@@ -6,7 +6,6 @@ class Reward {
       reward: real,
       stepPenalty: real;
 
-
   proc init(target: [] int, reward=10.0, stepPenalty=-1.0) {
     this.tDom = target.domain;
     this.target = target;

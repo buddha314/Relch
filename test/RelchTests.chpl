@@ -316,7 +316,6 @@ class RelchTest : UnitTest {
     // Now make it fail
     target[2,..] = [0,0,1,0,0,0,0];
     catchCatReward.target = target;
-    //var catchCatRewardFail = new Reward(target=target);
     assertRealEquals(msg="Reward for state is 10.0", expected=10.0
       , actual=catchCatReward.f(targetState, catDistanceSensor));
     assertBoolEquals(msg="Sensor is done", expected=true, actual=catDistanceSensor.done);
