@@ -288,19 +288,19 @@ class RelchTest : UnitTest {
     target[1,..] = [0,0,0,0,1,0,0];
     target[2,..] = [0,1,0,0,0,0,0];
 
-    var catchCatReward = new Reward(target=target);
     catDistanceSensor.target = cat;
-    // First make it fail
     var targetState:[1..7] int = [0,0,1,0,0,0,0];
+    var catchCatReward = new Reward(target=target, sensor=catDistanceSensor);
+    // First make it fail
     assertRealEquals(msg="Penalty for step is -1.0", expected=-1.0
-      , actual=catchCatReward.f(targetState, catDistanceSensor));
+      , actual=catchCatReward.f(targetState));
     assertBoolEquals(msg="Sensor is not done", expected=false, actual=catDistanceSensor.done);
 
     // Now make it pass
     target[2,..] = [0,0,1,0,0,0,0];
     catchCatReward.target = target;
     assertRealEquals(msg="Reward for state is 10.0", expected=10.0
-      , actual=catchCatReward.f(targetState, catDistanceSensor));
+      , actual=catchCatReward.f(targetState));
     assertBoolEquals(msg="Sensor is done", expected=true, actual=catDistanceSensor.done);
 
     this.tearDown(t=t);

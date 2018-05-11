@@ -1,4 +1,4 @@
-use physics, policies;
+use physics, policies, rewards;
 
 // Should be abstracted to something like DQNAgent
 class Agent : Perceivable {
@@ -7,6 +7,7 @@ class Agent : Perceivable {
       policy: Policy,
       compiled : bool = false,
       currentStep: int,
+      rewards: [1..0] Reward,
       done: bool;
 
   proc init(name:string
@@ -24,6 +25,10 @@ class Agent : Perceivable {
     servo.optionIndexEnd = servo.optionIndexStart + servo.dim();
     this.servos.push_back(servo);
     return this;
+  }
+
+  proc add(reward: Reward) {
+    this.rewards.push_back(reward);
   }
 
   /* Expects an integer array of options */
@@ -83,7 +88,6 @@ class Agent : Perceivable {
   proc sensorDimension() {
     return this.policy.sensorDimension();
   }
-
 
   proc readWriteThis(f) throws {
     f <~> "%25s".format(this.name) <~> " "

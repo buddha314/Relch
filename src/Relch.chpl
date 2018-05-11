@@ -47,8 +47,8 @@ module Relch {
         so use this to give the agent his new position
      */
     proc step(agent: Agent, action:[] int) {
-        var state: [1..1] int = [1];
-        var reward = this.dispenseReward(agent=agent, choice=action);
+        var state: [1..1] int = buildAgentState(agent=agent);
+        var reward = this.dispenseReward(agent=agent, state=state);
         var done: bool = this.areYouThroughYet();  // Yes, this is a Steve Martin reference
         var position: Position = new Position();
         agent.currentStep += 1;
@@ -117,15 +117,25 @@ module Relch {
 
       // Right now, this just constructs the state from the Agent as a pass
       // through.  Soon it will make decisions;
+      var state = buildAgentState(agent=agent);
+
+      return (options, state);
+    }
+
+    proc buildAgentState(agent: Agent) {
       var state: [1..agent.sensorDimension()] int;
       for sensor in agent.policy.sensors {
           var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent);
           state[a.domain] = a;
       }
-      return (options, state);
+      return state;
     }
 
-    proc dispenseReward(agent: Agent, choice: [] int) {
+    proc dispenseReward(agent: Agent, state: [] int) {
+      var r: real = 0;
+      for reward in agent.rewards {
+        r += reward.f(state);
+      }
       return 10.0;
     }
 

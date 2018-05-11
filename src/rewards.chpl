@@ -3,12 +3,14 @@ use physics, agents;
 class Reward {
   var tDom = {1..0, 1..0},
       target:[tDom] int,
+      sensor: Sensor,
       reward: real,
       stepPenalty: real;
 
-  proc init(target: [] int, reward=10.0, stepPenalty=-1.0) {
+  proc init(target: [] int, sensor: Sensor, reward=10.0, stepPenalty=-1.0) {
     this.tDom = target.domain;
     this.target = target;
+    this.sensor = sensor;
     this.reward = reward;
     this.stepPenalty = stepPenalty;
   }
@@ -22,5 +24,9 @@ class Reward {
       }
     }
     return stepPenalty;
+  }
+
+  proc f(state:[] int) {
+    return this.f(state=state, sensor=this.sensor);
   }
 }
