@@ -38,8 +38,9 @@ class Reward {
 
 class ProximityReward : Reward {
   var proximity: real;
-  proc init(proximity: real, reward: real = 10.0, stepPenalty: real = -1) {
-    super.init(reward=reward, stepPenalty=stepPenalty);
+  proc init(proximity: real, sensor:Sensor, reward: real = 10.0, stepPenalty: real = -1) {
+    var x:[1..1,1..1] int;
+    super.init(target=x, sensor=sensor, reward=reward, stepPenalty=stepPenalty);
     this.complete();
     this.proximity = proximity;
   }

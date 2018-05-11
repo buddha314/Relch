@@ -23,8 +23,10 @@ var followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor),
     motionServo = new Servo(tiler=angler);
 
 sim.world = boxWorld;
+followCatPolicy.add(catDistanceSensor);
 dog.policy = followCatPolicy;
 dog.add(motionServo);
+dog.add(new ProximityReward(proximity=15, sensor=catDistanceSensor));
 sim.add(dog);
 
 writeln("""

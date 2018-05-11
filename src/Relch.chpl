@@ -131,7 +131,7 @@ module Relch {
     }
 
     proc dispenseReward(agent: Agent, state: [] int) {
-      var r: real = 0;
+      var r: real = 0.0;
       for reward in agent.rewards {
         r += reward.f(state);
       }
@@ -159,13 +159,18 @@ module Relch {
             if agent.done {
               writeln(agent.name," will not be participating");
             }
+            writeln("about to increment currentStep");
             agent.currentStep = step;
             // DM presents options
+            writeln("about to present options");
             var (options, currentState) = this.presentOptions(agent);
             // A chooses an action
+            writeln("about to choose options");
             var choice = agent.choose(options, currentState);
+            writeln("about to act");
             agent.act(choice);
             // DM rewards
+            writeln("about to step");
             var (nextState, reward, done) = this.step(agent=agent, action=choice);
             if done {
               agent.done = true;
@@ -174,6 +179,7 @@ module Relch {
             }
             // A logs the reward
             // Return A
+            writeln('about to add memory');
             agent.add(new Memory(state=nextState, action=choice, reward=reward));
             yield agent;
           }
