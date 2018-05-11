@@ -209,7 +209,7 @@ class RelchTest : UnitTest {
     assertIntEquals(msg="Follow Target Policy sensor has correct state index start"
       , expected=1, actual=ftp.targetSensor.stateIndexStart);
     assertIntEquals(msg="Follow Target Policy sensor has correct state index end"
-        , expected=6, actual=ftp.targetSensor.stateIndexEnd);
+        , expected=5, actual=ftp.targetSensor.stateIndexEnd);
 
 
 

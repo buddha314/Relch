@@ -47,7 +47,7 @@ module Relch {
         so use this to give the agent his new position
      */
     proc step(agent: Agent, action:[] int) {
-        var state: [1..1] int = buildAgentState(agent=agent);
+        var state: [1..agent.sensorDimension()] int = buildAgentState(agent=agent);
         var reward = this.dispenseReward(agent=agent, state=state);
         var done: bool = this.areYouThroughYet(agent=agent, any=true);  // Yes, this is a Steve Martin reference
         agent.currentStep += 1;
@@ -56,6 +56,7 @@ module Relch {
 
     proc reset(agent: Agent) {
       agent.currentStep = 1;
+      agent.position=new Position(x=0, y=0);
       agent.done = false;
     }
 
@@ -109,7 +110,7 @@ module Relch {
             }
             nAddedOptions += 1;
           } else {
-            writeln("Not a chance, suckah!");
+            //writeln("Not a chance, suckah!");
           }
         }
       }
@@ -154,32 +155,29 @@ module Relch {
 
     iter run() {
       for i in 1..this.epochs {
+        writeln("starting epoch ", i);
         for step in 1..this.steps {
+        writeln("\tstarting step ", step);
           for agent in this.agents{
+            writeln("\t\tagent location: ", agent.position);
             if agent.done {
-              writeln(agent.name," will not be participating");
+              writeln("\t\t", agent.name, " will not be participating");
             }
-            writeln("about to increment currentStep");
             agent.currentStep = step;
             // DM presents options
-            writeln("about to present options");
             var (options, currentState) = this.presentOptions(agent);
             // A chooses an action
-            writeln("about to choose options");
             var choice = agent.choose(options, currentState);
-            writeln("about to act");
             agent.act(choice);
             // DM rewards
-            writeln("about to step");
             var (nextState, reward, done) = this.step(agent=agent, action=choice);
             if done {
+              writeln("\t\tDISQUALIFIED!!");
               agent.done = true;
-              this.reset(agent);
               break;
             }
             // A logs the reward
             // Return A
-            writeln('about to add memory');
             agent.add(new Memory(state=nextState, action=choice, reward=reward));
             yield agent;
           }
