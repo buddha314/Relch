@@ -27,7 +27,6 @@ module Relch {
         epochs: int,
         steps: int,
         currentStep: int,
-        //dm: DungeonMaster,
         world: World,
         agents: [1..0] Agent,
         perceivables: [1..0] Perceivable;
@@ -37,7 +36,6 @@ module Relch {
       this.epochs=epochs;
       this.steps=steps;
       this.currentStep = 1;
-      //this.dm = new DungeonMaster();
     }
 
     /*
@@ -140,9 +138,9 @@ module Relch {
 
     iter run() {
       for i in 1..this.epochs {
-        for agent in this.agents{
-          this.reset(agent=agent);
-          for step in 1..this.steps {
+        for step in 1..this.steps {
+          for agent in this.agents{
+            agent.currentStep = step;
             // DM presents options
             var (options, currentState) = this.presentOptions(agent);
             // A chooses an action
@@ -160,6 +158,7 @@ module Relch {
             yield agent;
           }
         }
+        for agent in this.agents do this.reset(agent);
       }
     }
   }

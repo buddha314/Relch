@@ -6,11 +6,14 @@ class RelchTest : UnitTest {
   const WORLD_WIDTH: int = 800,
         WORLD_HEIGHT: int = 500,
         N_ANGLES: int = 5,
-        N_DISTS: int = 7;
+        N_DISTS: int = 7,
+        N_EPOCHS: int = 3,
+        N_STEPS: int = 5;
 
   /* We use these again and again for testing */
   var hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true),
       angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05),
+      drizella = new StepTiler(nbins=N_STEPS),
       whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false), // Does not wrap
       dog = new Agent(name="dog", position=new Position(x=25, y=25)),
       cat = new Agent(name="cat", position=new Position(x=50, y=50)),
@@ -20,11 +23,13 @@ class RelchTest : UnitTest {
       catDistanceSensor = new DistanceSensor(name="find the cat", tiler=hundredYardTiler),
       dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler),
       dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler),
+      fitBit = new StepSensor(name="fit bit", steps=N_STEPS),
       boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
   proc setUp(name: string = "setup") {
     hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true);
     angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05);
+    drizella = new StepTiler(nbins=N_STEPS);
     whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false); // Does not wrap
     dog = new Agent(name="dog", position=new Position(x=25, y=25));
     cat = new Agent(name="cat", position=new Position(x=50, y=50));
@@ -34,6 +39,7 @@ class RelchTest : UnitTest {
     catDistanceSensor = new DistanceSensor(name="find the cat", tiler=hundredYardTiler);
     dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler);
     dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
+    fitBit = new StepSensor(name="fit bit", steps=N_STEPS);
     boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
     return super.setUp(name);
   }
@@ -51,7 +57,7 @@ class RelchTest : UnitTest {
     var t = this.setUp("RunDefault");
     catAngleSensor.add(angler);
     catAngleSensor.target=cat;
-    var sim = new Environment(name="steppin out", epochs=2, steps=3),
+    var sim = new Environment(name="steppin out", epochs=N_EPOCHS, steps=N_STEPS),
         followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor),
         motionServo = new Servo(tiler=angler);
     sim.world = boxWorld;
@@ -82,6 +88,9 @@ class RelchTest : UnitTest {
     assertIntArrayEquals(msg="Angler sees -pi correctly", expected=ao, actual=angler.bin(-pi));
     assertIntArrayEquals(msg="Angler sees origin correctly", expected=ao2, actual=angler.bin(0));
     assertRealApproximates(msg="Angler unbins correctly", expected=2.51327, actual=angler.unbin(ao3));
+
+    dog.currentStep = 3;
+    assertIntArrayEquals(msg="Step tiler recogizes the correct step", expected=[0,0,1,0,0], actual=drizella.v(dog));
     return this.tearDown(t);
   }
 
@@ -184,33 +193,6 @@ class RelchTest : UnitTest {
     return this.tearDown(t);
   }
 
-  proc testDogChaseCat() {
-    var t = this.setUp("DogChaseCat");
-    var sim = new Environment(name="simulation amazing", epochs=10, steps=5);
-    sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
-
-    catAngleSensor.target = cat;
-    catDistanceSensor.target = cat;
-
-    dog.add(catAngleSensor);
-    dog.add(catDistanceSensor);
-
-    var motionServo = new Servo(tiler=angler);
-    dog.add(motionServo);
-
-    /* Now run it with the policy, probably won't converge */
-    /* Get doggy back at the starting line */
-    dog.position.x = 25;
-    dog.position.y = 25;
-    for e in 1..25 {
-      var (options, state) = sim.presentOptions(dog);
-      var a = dog.choose(options, state);
-      writeln(dog.position);
-
-    }
-    return this.tearDown(t);
-  }
-
   proc testPolicies() {
     var t = this.setUp("Policies");
     // Reset position for safety of the animals involved
@@ -308,12 +290,13 @@ class RelchTest : UnitTest {
 
     var catchCatReward = new Reward(target=target);
     catDistanceSensor.target = cat;
+    // First make it fail
     var targetState:[1..7] int = [0,0,1,0,0,0,0];
     assertRealEquals(msg="Penalty for step is -1.0", expected=-1.0
       , actual=catchCatReward.f(targetState, catDistanceSensor));
     assertBoolEquals(msg="Sensor is not done", expected=false, actual=catDistanceSensor.done);
 
-    // Now make it fail
+    // Now make it pass
     target[2,..] = [0,0,1,0,0,0,0];
     catchCatReward.target = target;
     assertRealEquals(msg="Reward for state is 10.0", expected=10.0
@@ -331,7 +314,6 @@ class RelchTest : UnitTest {
     testServos();
     testAgentRelativeMethods();
     testBuildSim();
-    //testDogChaseCat();     // just errors
     testPolicies();
     testPresentOptions();
     testRewards();

@@ -4,9 +4,6 @@ use physics, policies;
 class Agent : Perceivable {
   var speed: real,
       servos: [1..0] Servo,
-      d: domain(2),
-      Q: [d] real,
-      E: [d] real,
       policy: Policy,
       compiled : bool = false,
       currentStep: int,
@@ -48,12 +45,6 @@ class Agent : Perceivable {
     for f in this.sensors{
       n += f.size;
     }
-    this.d = {1..m, 1..n};
-    var X:[d] real;
-    fillRandom(X);
-    var nm = new NamedMatrix(X=X);
-    fillRandom(this.Q);
-    fillRandom(this.E);
     this.compiled = true;
   }
 

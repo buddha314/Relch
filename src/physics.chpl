@@ -117,6 +117,13 @@ class DistanceSensor : Sensor {
   }
 }
 
+class StepSensor : Sensor {
+  proc init(name: string, steps: int) {
+    super.init(name=name, tiler=new StepTiler(nbins=steps));
+    this.complete();
+  }
+}
+
 class Tiler {
   var nbins: int,
       ndims: int,
@@ -211,14 +218,18 @@ class AngleTiler : LinearTiler {
 
 // Designed to hold the number of steps an agent has taken
 class StepTiler : Tiler {
-  proc init(steps: int) {
-    super.init(nbins=steps, ndims=1, overlap=0, wrap=false);
+  proc init(nbins: int) {
+    super.init(nbins=nbins, ndims=1, overlap=0, wrap=false);
     this.complete();
-    this.nbins = steps;
   }
 
   // Doesn't need to do anything
   proc makeBins() {}
+  proc v(me: Agent) {
+    var u: [1..this.nbins] int = 0;
+    u[me.currentStep] = 1;
+    return u;
+  }
 }
 
 
