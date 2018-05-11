@@ -1,7 +1,7 @@
 /* Documentation for Relch */
 module Relch {
   use Math, NumSuch;
-  use agents, policies, physics;
+  use agents, policies, physics, rewards;
 
   /*
   use worlds;

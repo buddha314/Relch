@@ -298,6 +298,28 @@ class RelchTest : UnitTest {
     this.tearDown(t=t);
   }
 
+  proc testRewards() {
+    var t = this.setUp("Rewards"),
+        target:[1..2, 1..7] int;
+
+    target[1,..] = [0,0,0,0,1,0,0];
+    target[2,..] = [0,0,1,0,0,0,0];
+
+    var catchCatReward = new Reward(target=target);
+    catDistanceSensor.target = cat;
+    var targetState:[1..7] int = [0,0,1,0,0,0,0];
+    assertRealEquals(msg="Reward for state is 10.0", expected=10.0
+      , actual=catchCatReward.f(targetState, catDistanceSensor));
+
+    // Now make it fail
+    target[2,..] = [0,1,0,0,0,0,0];
+    var catchCatRewardFail = new Reward(target=target);
+    assertRealEquals(msg="Penalty for step is -1.0", expected=-1.0
+      , actual=catchCatRewardFail.f(targetState, catDistanceSensor));
+
+    this.tearDown(t=t);
+  }
+
   proc run() {
     super.run();
     testRunDefault();
@@ -309,6 +331,7 @@ class RelchTest : UnitTest {
     //testDogChaseCat();     // just errors
     testPolicies();
     testPresentOptions();
+    testRewards();
     return 0;
   }
 }
