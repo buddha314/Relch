@@ -65,6 +65,8 @@ class RelchTest : UnitTest {
     dog.add(motionServo);
     sim.add(dog);
     sim.run();
+    assertIntEquals(msg="Dog remembers right amount of things"
+      ,expected=N_EPOCHS * N_STEPS, actual=dog.nMemories);
     assertIntEquals(msg="Dog got walked", expected=N_STEPS, actual=dog.currentStep);
     //assertRealEquals(msg="Dog got biscuit", expected=10.0, actual=dog.rewards[dog.rewards.domain.high]);
     return this.tearDown(t);
@@ -308,6 +310,20 @@ class RelchTest : UnitTest {
     this.tearDown(t=t);
   }
 
+  proc testMemory() {
+    var t = this.setUp("Memories can't wait");
+    var dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
+    dory.add(new Memory(state = [1,0,0,0], action=[1,0], reward=1.1));
+    dory.add(new Memory(state = [0,1,0,0], action=[1,0], reward=2.2));
+    dory.add(new Memory(state = [0,0,1,0], action=[1,0], reward=3.3));
+    assertRealEquals(msg="First memory is of reward 1.1"
+      ,expected=1.1, actual=dory.memories[1].reward);
+    dory.add(new Memory(state = [0,0,0,1], action=[1,0], reward=4.4));
+    assertRealEquals(msg="First memory has cycled to reward 4.4"
+      , expected=4.4 ,actual=dory.memories[1].reward);
+    this.tearDown(t=t);
+  }
+
   proc run() {
     super.run();
     testRunDefault();
@@ -319,6 +335,7 @@ class RelchTest : UnitTest {
     testPolicies();
     testPresentOptions();
     testRewards();
+    testMemory();
     return 0;
   }
 }

@@ -8,16 +8,24 @@ class Agent : Perceivable {
       compiled : bool = false,
       currentStep: int,
       rewards: [1..0] Reward,
+      nMemories: int,
+      maxMemories: int,
+      memoriesDom = {1..0},
+      memories: [memoriesDom] Memory,
       done: bool;
 
   proc init(name:string
       , position:Position = new Position()
-      , speed: real = 3.0 ) {
+      , speed: real = 3.0
+      , maxMemories: int = 100000) {
     super.init(name=name, position=position);
     this.complete();
     this.speed=speed;
     this.currentStep = 1;
     this.done = false;
+    this.nMemories = 0;
+    this.maxMemories = maxMemories;
+    this.memoriesDom = {1..this.maxMemories};
   }
 
   proc add(servo: Servo) {
@@ -29,6 +37,11 @@ class Agent : Perceivable {
 
   proc add(reward: Reward) {
     this.rewards.push_back(reward);
+  }
+
+  proc add(memory: Memory) {
+    this.nMemories +=1;
+    this.memories[this.nMemories % maxMemories] = memory;
   }
 
   /* Expects an integer array of options */
@@ -160,5 +173,20 @@ class Herd : Perceivable {
       }
     }
     return a;
+  }
+}
+
+class Memory {
+  var stateDom = {1..0},
+      actionDom = {1..0},
+      state: [stateDom] int,
+      action: [actionDom] int,
+      reward: real;
+  proc init(state:[] int, action:[] int, reward: real) {
+    this.stateDom = state.domain;
+    this.actionDom = action.domain;
+    this.state = state;
+    this.action = action;
+    this.reward = reward;
   }
 }

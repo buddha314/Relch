@@ -174,6 +174,7 @@ module Relch {
             }
             // A logs the reward
             // Return A
+            agent.add(new Memory(state=nextState, action=choice, reward=reward));
             yield agent;
           }
         }
