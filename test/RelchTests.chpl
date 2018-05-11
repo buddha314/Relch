@@ -65,6 +65,8 @@ class RelchTest : UnitTest {
     dog.add(motionServo);
     sim.add(dog);
     sim.run();
+    assertIntEquals(msg="Dog got walked", expected=N_STEPS, actual=dog.currentStep);
+    //assertRealEquals(msg="Dog got biscuit", expected=10.0, actual=dog.rewards[dog.rewards.domain.high]);
     return this.tearDown(t);
   }
 

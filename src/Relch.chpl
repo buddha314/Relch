@@ -49,7 +49,7 @@ module Relch {
     proc step(agent: Agent, action:[] int) {
         var state: [1..1] int = buildAgentState(agent=agent);
         var reward = this.dispenseReward(agent=agent, state=state);
-        var done: bool = this.areYouThroughYet();  // Yes, this is a Steve Martin reference
+        var done: bool = this.areYouThroughYet(agent=agent, any=true);  // Yes, this is a Steve Martin reference
         var position: Position = new Position();
         agent.currentStep += 1;
         return (state, reward, done, position);
@@ -139,9 +139,16 @@ module Relch {
       return 10.0;
     }
 
-    proc areYouThroughYet() {
+    // If any sensor is done, you are done
+    // Otherwise all sensors must be done
+    proc areYouThroughYet(agent: Agent, any: bool = true) {
       var r: bool = false;
       if this.currentStep >= this.steps then r = true;
+      if any {
+        for sensor in agent.policy.sensors {
+          if sensor.done then return true;
+        }
+      }
       return r;
     }
 
