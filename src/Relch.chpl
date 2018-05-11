@@ -135,7 +135,7 @@ module Relch {
       for reward in agent.rewards {
         r += reward.f(state);
       }
-      return 10.0;
+      return r;
     }
 
     // If any sensor is done, you are done

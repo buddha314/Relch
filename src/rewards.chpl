@@ -20,10 +20,10 @@ class Reward {
       var t:[1..sensor.dim()] int = target[i,..];
       if t.equals(v) {
         sensor.done = true;
-        return reward;
+        return this.reward;
       }
     }
-    return stepPenalty;
+    return this.stepPenalty;
   }
 
   proc f(state:[] int) {
