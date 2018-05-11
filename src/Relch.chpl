@@ -50,9 +50,8 @@ module Relch {
         var state: [1..1] int = buildAgentState(agent=agent);
         var reward = this.dispenseReward(agent=agent, state=state);
         var done: bool = this.areYouThroughYet(agent=agent, any=true);  // Yes, this is a Steve Martin reference
-        var position: Position = new Position();
         agent.currentStep += 1;
-        return (state, reward, done, position);
+        return (state, reward, done);
     }
 
     proc reset(agent: Agent) {
@@ -167,7 +166,7 @@ module Relch {
             var choice = agent.choose(options, currentState);
             agent.act(choice);
             // DM rewards
-            var (nextState, reward, done, position) = this.step(agent=agent, action=choice);
+            var (nextState, reward, done) = this.step(agent=agent, action=choice);
             if done {
               agent.done = true;
               this.reset(agent);
