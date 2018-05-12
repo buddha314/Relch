@@ -47,7 +47,10 @@ class ProximityReward : Reward {
 
   proc f(state:[] int, sensor: Sensor) {
     var d = sensor.tiler.unbin(state[sensor.stateIndexStart..sensor.stateIndexEnd]);
-    if d <= this.proximity {
+    // Needs to be cast as the median of the bin it inhabits
+    var prox = sensor.tiler.unbin( sensor.tiler.bin(this.proximity));
+    if d <= prox {
+      writeln("STOP!");
       sensor.done = true;
       return this.reward;
     } else {

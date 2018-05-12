@@ -56,8 +56,9 @@ module Relch {
 
     proc reset(agent: Agent) {
       agent.currentStep = 1;
-      agent.position=new Position(x=0, y=0);
+      agent.position=new Position(x=25, y=25);
       agent.done = false;
+      writeln("resetting ", agent, " done: ", agent.done);
     }
 
     /* This will actually emit, not render */
@@ -152,16 +153,14 @@ module Relch {
       return r;
     }
 
-
     iter run() {
       for i in 1..this.epochs {
         writeln("starting epoch ", i);
         for step in 1..this.steps {
-        writeln("\tstarting step ", step);
           for agent in this.agents{
-            writeln("\t\tagent location: ", agent.position);
             if agent.done {
-              writeln("\t\t", agent.name, " will not be participating");
+              writeln(agent, " will skip step ", step, " of epoch ", i);
+              continue;
             }
             agent.currentStep = step;
             // DM presents options
@@ -172,7 +171,6 @@ module Relch {
             // DM rewards
             var (nextState, reward, done) = this.step(agent=agent, action=choice);
             if done {
-              writeln("\t\tDISQUALIFIED!!");
               agent.done = true;
               break;
             }

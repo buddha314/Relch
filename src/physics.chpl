@@ -113,6 +113,7 @@ class DistanceSensor : Sensor {
   proc v(me:Agent, you: Position) {
     const a = dist(me.position, you);
     const v:[1..this.dim()] int = this.tiler.bin(a);
+    //writeln("sensor says distance is ", a, " -> ", v, " -> ", this.tiler.unbin(v));
     return v;
   }
 }
@@ -192,11 +193,12 @@ class LinearTiler : Tiler {
 
   /* go from bins back to a value, typically the mid point */
   proc unbin(x:[] int) throws {
+    // x has a sub-domain of state, so need to normalize
+    var y: [1..x.size] int = x;
     this.checkDim(x);
-    var r: real;
-    for i in x.domain {
-      if x[i] == 1 {
-        // return the mid point
+    var r: real = 0.0;
+    for i in y.domain {
+      if y[i] == 1 {
         r = (this.bins[i,1] + this.bins[i,2]) / 2 ;
         break;
       }
