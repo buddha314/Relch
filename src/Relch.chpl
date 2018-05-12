@@ -155,25 +155,39 @@ module Relch {
       return r;
     }
 
+    /*
+    This should probably be a class;
+    Yes, this is a King Gizzard reference
+     */
+    proc robotStop() {
+      for agent in this.agents  {
+        if agent.done then return true;
+      }
+      return false; 
+    }
+
+    /*
+      Does the actual simulation
+     */
     iter run() {
       for i in 1..this.epochs {
-        writeln("starting epoch ", i);
+        //writeln("starting epoch ", i);
         for step in 1..this.steps {
-        writeln("\tstarting step ", step);
+        //writeln("\tstarting step ", step);
           for agent in this.agents{
-            writeln("\t\tagent: ", agent);
+            //writeln("\t\tagent: ", agent);
             if agent.done then continue;
             agent.currentStep = step;
             // DM presents options
-            writeln("\t\tpresenting options");
+            //writeln("\t\tpresenting options");
             var (options, currentState) = this.presentOptions(agent);
             // A chooses an action
-            writeln("\t\tagent choosing");
+            //writeln("\t\tagent choosing");
             var choice = agent.choose(options, currentState);
-            writeln("\t\tagent acting");
+            //writeln("\t\tagent acting");
             agent.act(choice);
             // DM rewards
-            writeln("\t\tstepping");
+            //writeln("\t\tstepping");
             var (nextState, reward, done) = this.step(agent=agent, action=choice);
             if done {
               agent.done = true;
@@ -183,6 +197,9 @@ module Relch {
             // Return A
             agent.add(new Memory(state=nextState, action=choice, reward=reward));
             yield agent;
+          }
+          if this.robotStop() {
+            break;
           }
         }
         for agent in this.agents do this.reset(agent);
