@@ -58,7 +58,9 @@ module Relch {
       agent.currentStep = 1;
       agent.position=new Position(x=25, y=25);
       agent.done = false;
-      writeln("resetting ", agent, " done: ", agent.done);
+      for sensor in agent.policy.sensors {
+        sensor.done = false;
+      }
     }
 
     /* This will actually emit, not render */
@@ -158,10 +160,7 @@ module Relch {
         writeln("starting epoch ", i);
         for step in 1..this.steps {
           for agent in this.agents{
-            if agent.done {
-              writeln(agent, " will skip step ", step, " of epoch ", i);
-              continue;
-            }
+            if agent.done then continue;
             agent.currentStep = step;
             // DM presents options
             var (options, currentState) = this.presentOptions(agent);
