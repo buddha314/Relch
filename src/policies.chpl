@@ -81,13 +81,19 @@ class QLearningPolicy : Policy {
   }
 }
 
+/*
+ By default, this chases the target.  Setting
+ avoid = true and it will evade the target
+ */
 class FollowTargetPolicy : Policy {
-  var targetSensor : Sensor;
-  proc init(sensor: Sensor) {
+  var targetSensor : Sensor,
+      avoid: bool;
+  proc init(sensor: Sensor, avoid: bool=false) {
     super.init();
     this.complete();
     this.add(sensor);
     this.targetSensor = this.sensors[1];
+    this.avoid = avoid;
   }
 
   //proc f(me: Agent, options:[] int, state: [] int) {
@@ -101,7 +107,13 @@ class FollowTargetPolicy : Policy {
       if theta > pi then theta = 2* pi - theta;
       thetas[i] = theta;
     }
-    var choice: [1..options.shape[2]] int = options[argmin(thetas), ..];
+    var choice: [1..options.shape[2]] int;
+    if this.avoid {
+        choice = options[argmax(thetas), ..];
+    } else {
+        choice = options[argmin(thetas), ..];
+    }
+    //var choice: [1..options.shape[2]] int = options[argmin(thetas), ..];
     return choice;
   }
 }

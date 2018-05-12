@@ -12,6 +12,7 @@ class Agent : Perceivable {
       maxMemories: int,
       memoriesDom = {1..0},
       memories: [memoriesDom] Memory,
+      initialPosition: Position,
       done: bool;
 
   proc init(name:string
@@ -26,6 +27,7 @@ class Agent : Perceivable {
     this.nMemories = 0;
     this.maxMemories = maxMemories;
     this.memoriesDom = {1..this.maxMemories};
+    this.initialPosition = position;
   }
 
   proc add(servo: Servo) {

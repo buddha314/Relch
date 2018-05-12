@@ -56,7 +56,7 @@ module Relch {
 
     proc reset(agent: Agent) {
       agent.currentStep = 1;
-      agent.position=new Position(x=25, y=25);
+      agent.position = agent.initialPosition;
       agent.done = false;
       for sensor in agent.policy.sensors {
         sensor.done = false;
@@ -159,15 +159,21 @@ module Relch {
       for i in 1..this.epochs {
         writeln("starting epoch ", i);
         for step in 1..this.steps {
+        writeln("\tstarting step ", step);
           for agent in this.agents{
+            writeln("\t\tagent: ", agent);
             if agent.done then continue;
             agent.currentStep = step;
             // DM presents options
+            writeln("\t\tpresenting options");
             var (options, currentState) = this.presentOptions(agent);
             // A chooses an action
+            writeln("\t\tagent choosing");
             var choice = agent.choose(options, currentState);
+            writeln("\t\tagent acting");
             agent.act(choice);
             // DM rewards
+            writeln("\t\tstepping");
             var (nextState, reward, done) = this.step(agent=agent, action=choice);
             if done {
               agent.done = true;
