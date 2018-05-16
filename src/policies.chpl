@@ -4,8 +4,10 @@ use NumSuch,
 
 
 class Policy {
-  var sensors: [1..0] Sensor;
-  proc init() {
+  var sensors: [1..0] Sensor,
+      onPolicy: bool;
+  proc init(onPolicy: bool = true) {
+    this.onPolicy = onPolicy;
   }
 
   //proc f(me: Agent, options:[] int, state:[] int) {
