@@ -4,12 +4,14 @@ config const WORLD_WIDTH: int,
              N_ANGLES: int,
              N_DISTS: int,
              N_STEPS: int,
-             N_EPOCHS: int;
+             N_EPOCHS: int,
+             DOG_SPEED: int,
+             CAT_SPEED: int;
 
 var hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=950, overlap=0.1, wrap=true),
     angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05),
-    dog = new Agent(name="dog", position=new Position(x=25, y=25)),
-    cat = new Agent(name="cat", position=new Position(x=75, y=75), speed=1.0),
+    dog = new Agent(name="dog", position=new Position(x=25, y=25), speed=DOG_SPEED),
+    cat = new Agent(name="cat", position=new Position(x=75, y=75), speed=CAT_SPEED),
     catAngleSensor = new AngleSensor(name="find the cat angle", tiler=angler),
     dogAngleSensor = new AngleSensor(name="find the dog angle", tiler=angler),
     catDistanceSensor = new DistanceSensor(name="find the cat distance", tiler=hundredYardTiler),
@@ -38,9 +40,12 @@ sim.add(dog);
 sim.add(cat);
 
 writeln("""
-  Dog starts at (25, 25). The cat is not an agent and is
+  Dog starts at (25, 25). The cat is now an agent and is
   positioned at (150,150).  The dog is using a FollowTargetPolicy and
-  basically bum rushes the cat, overshoots, and comes back and forth.
+  basically bum rushes the cat, overshoots, and comes back and forth.  The cat
+  runs from the dog but is out-paced (speed 1 vs 3)
+
+  Neither agent yet has a learning algorithm in place.  They are both too stupid for words.
   """);
 for a in sim.run() {
   writeln(a);
