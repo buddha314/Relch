@@ -5,9 +5,11 @@ use NumSuch,
 
 class Policy {
   var sensors: [1..0] Sensor,
-      onPolicy: bool;
+      onPolicy: bool,
+      epsilon: real;   // for epsilon-greedy routines
   proc init(onPolicy: bool = true) {
     this.onPolicy = onPolicy;
+    this.epsilon = -1.0;
   }
 
   //proc f(me: Agent, options:[] int, state:[] int) {
@@ -36,6 +38,10 @@ class Policy {
     const choice:[1..options.shape[2]] int = options[c,..];
     return choice;
   }
+
+  proc learn(state:[] int, action:[] int, reward: real) {
+    return 0;
+  }
 }
 
 class RandomPolicy : Policy {
@@ -63,7 +69,6 @@ class QLearningPolicy : Policy {
     fillRandom(this.Q);
     this.E = 0.0;
   }
-  //proc f(me: Agent, options:[] int, state:[] int) {
   proc f(options:[] int, state:[] int) {
     // Need to translate the options into discrete rows
     var choices: [1..options.shape[1]] real = 0.0;
