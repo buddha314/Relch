@@ -244,7 +244,7 @@ class RelchTest : UnitTest {
 
     var qchoice = qp.f(options=qactions, state=qstate);
     assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
-      return this.tearDown(t);
+    return this.tearDown(t);
   }
 
   proc testServos() {

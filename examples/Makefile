@@ -31,13 +31,6 @@ dungeon: dungeon.chpl
 run-dungeon:
 	./dungeon -f dungeon.cfg
 
-circle: circle_nn.chpl
-	$(CC) -M../src $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o circle $< ; \
-	./circle -f circle_nn.cfg ; \
-
-run-circle:
-	./circle -f circle_nn.cfg
-
 dog: dogChaseCat.chpl
 	$(CC) -M../src $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o dog $< ; \
 	./dog -f dog.cfg; \
