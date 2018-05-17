@@ -42,8 +42,8 @@ class Agent : Perceivable {
   }
 
   proc add(memory: Memory) {
+    this.memories[this.nMemories % maxMemories + 1] = memory;
     this.nMemories +=1;
-    this.memories[this.nMemories % maxMemories] = memory;
   }
 
   /* Expects an integer array of options */

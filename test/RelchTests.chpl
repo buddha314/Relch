@@ -25,7 +25,8 @@ class RelchTest : UnitTest {
       dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler),
       dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler),
       fitBit = new StepSensor(name="fit bit", steps=N_STEPS),
-      boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+      boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
+      dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
 
   proc setUp(name: string = "setup") {
     hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true);
@@ -42,6 +43,10 @@ class RelchTest : UnitTest {
     dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
     fitBit = new StepSensor(name="fit bit", steps=N_STEPS);
     boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+    dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
+    dory.add(new Memory(state = [1,0,0,0], action=[1,0], reward=1.1));
+    dory.add(new Memory(state = [0,1,0,0], action=[1,0], reward=2.2));
+    dory.add(new Memory(state = [0,0,1,0], action=[1,0], reward=3.3));
     return super.setUp(name);
   }
 
@@ -249,6 +254,7 @@ class RelchTest : UnitTest {
     var dqm = new FCNetwork([3,2], ["linear"]);
     var dqp = new DQPolicy();
     dqp.add(dqm);
+    dqp.learn(dory);
     writeln('model layerDom ?');
     //writeln(dqp.model.layerDom[]);
 
@@ -336,10 +342,7 @@ class RelchTest : UnitTest {
 
   proc testMemory() {
     var t = this.setUp("Memories can't wait");
-    var dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
-    dory.add(new Memory(state = [1,0,0,0], action=[1,0], reward=1.1));
-    dory.add(new Memory(state = [0,1,0,0], action=[1,0], reward=2.2));
-    dory.add(new Memory(state = [0,0,1,0], action=[1,0], reward=3.3));
+
     assertRealEquals(msg="First memory is of reward 1.1"
       ,expected=1.1, actual=dory.memories[1].reward);
     dory.add(new Memory(state = [0,0,0,1], action=[1,0], reward=4.4));

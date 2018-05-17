@@ -40,7 +40,7 @@ class Policy {
     return choice;
   }
 
-  proc learn(state:[] int, action:[] int, reward: real) {
+  proc learn(agent: Agent) {
     return 0;
   }
 }
@@ -138,9 +138,18 @@ class DQPolicy : Policy {
     this.model = model;
   }
 
-  proc learn() {
+  proc learn(agent: Agent) {
     writeln("larnin!");
-    var XX: [1..this.nMemories % this.maxMemories, 1..this.memories[1].dim()] int;
-    for i in 1..this.nMemories do XX[i,..] = this.memories[i];
+    var n = min reduce [agent.nMemories, agent.maxMemories];
+    var y: [1..n] real;
+    var XX: [1..n, 1..agent.memories[1].dim()] int;
+    for i in 1..n {
+        ref currentMemory = agent.memories[i];
+        XX[i,..] = currentMemory.v();
+        y[i] = agent.memories[i].reward;
+    }
+    writeln(XX);
+    writeln(y);
+    return 0;
   }
 }
