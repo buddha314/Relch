@@ -1,4 +1,5 @@
 use Relch,
+    NumSuch,
     Charcoal;
 
 class RelchTest : UnitTest {
@@ -211,8 +212,7 @@ class RelchTest : UnitTest {
     assertIntEquals(msg="Follow Target Policy sensor has correct state index end"
         , expected=5, actual=ftp.targetSensor.stateIndexEnd);
 
-
-
+    // Q Learning
     var nActions: int = 4,
         nStates :int = 5;
     var qstate: [1..nStates] int = 0,
@@ -244,6 +244,15 @@ class RelchTest : UnitTest {
 
     var qchoice = qp.f(options=qactions, state=qstate);
     assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
+
+    // Deep Q Network policy
+    var dqm = new FCNetwork([3,2], ["linear"]);
+    var dqp = new DQPolicy();
+    dqp.add(dqm);
+    writeln('model layerDom ?');
+    //writeln(dqp.model.layerDom[]);
+
+
     return this.tearDown(t);
   }
 
@@ -336,6 +345,10 @@ class RelchTest : UnitTest {
     dory.add(new Memory(state = [0,0,0,1], action=[1,0], reward=4.4));
     assertRealEquals(msg="First memory has cycled to reward 4.4"
       , expected=4.4 ,actual=dory.memories[1].reward);
+
+    assertIntEquals(msg="Memory dim is 6", expected=6, actual=dory.memories[1].dim());
+    assertIntArrayEquals(msg="First memory has correct action and state space"
+      ,expected=[1,0,0,0,0,1], actual=dory.memories[1].v());
     this.tearDown(t=t);
   }
 

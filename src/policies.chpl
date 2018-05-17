@@ -1,5 +1,6 @@
 use NumSuch,
     Math,
+    Epoch,
     physics;
 
 
@@ -122,5 +123,24 @@ class FollowTargetPolicy : Policy {
     }
     //var choice: [1..options.shape[2]] int = options[argmin(thetas), ..];
     return choice;
+  }
+}
+
+class DQPolicy : Policy {
+  var model: FCNetwork;
+
+  proc init() {
+      super.init();
+      this.complete();
+  }
+
+  proc add(model: FCNetwork) {
+    this.model = model;
+  }
+
+  proc learn() {
+    writeln("larnin!");
+    var XX: [1..this.nMemories % this.maxMemories, 1..this.memories[1].dim()] int;
+    for i in 1..this.nMemories do XX[i,..] = this.memories[i];
   }
 }

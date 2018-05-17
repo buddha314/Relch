@@ -1,4 +1,4 @@
-use physics, policies, rewards;
+use NumSuch, physics, policies, rewards;
 
 // Should be abstracted to something like DQNAgent
 class Agent : Perceivable {
@@ -190,5 +190,15 @@ class Memory {
     this.state = state;
     this.action = action;
     this.reward = reward;
+  }
+
+  proc dim() {
+    return this.stateDom.size + this.actionDom.size;
+  }
+
+  // return action concat with state
+  proc v() {
+    var v = concat(this.action, this.state);
+    return v;
   }
 }
