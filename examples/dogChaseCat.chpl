@@ -46,6 +46,8 @@ writeln("""
   runs from the dog but is out-paced (speed 1 vs 3)
 
   Neither agent yet has a learning algorithm in place.  They are both too stupid for words.
+
+  They make me sick they are so stupid. I'm ashamed I invented them...
   """);
 for a in sim.run() {
   writeln(a);
