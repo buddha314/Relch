@@ -252,7 +252,7 @@ class RelchTest : UnitTest {
 
     // Deep Q Network policy
     var dqm = new FCNetwork([6,1], ["linear"]);
-    var dqp = new DQPolicy();
+    var dqp = new DQPolicy(sensor = catAngleSensor);
     dqp.add(dqm);
     dqp.epochs = 500;
     dqp.learn(dory);
@@ -262,6 +262,9 @@ class RelchTest : UnitTest {
     assertIntArrayEquals(msg="Option 2 is chosen (may be random)"
       , expected=[1,0], actual=o);
 
+    // Run this from Dory's perspective, if she has one
+    dory.setPolicy(dqp);
+    dory.learn();
 
     return this.tearDown(t);
   }

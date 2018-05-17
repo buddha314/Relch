@@ -35,3 +35,8 @@ dog: dogChaseCat.chpl
 	$(CC) -M../src $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o dog $< ; \
 	./dog -f dog.cfg; \
 	rm dog
+
+doq: doQat.chpl
+	$(CC) -M../src $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o sim $< ; \
+	./sim -f doq.cfg; \
+	rm sim 

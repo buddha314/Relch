@@ -46,6 +46,10 @@ class Agent : Perceivable {
     this.nMemories +=1;
   }
 
+  proc setPolicy(policy: Policy) {
+    this.policy=policy;
+  }
+
   /* Expects an integer array of options */
   proc choose(options: [] int, state: [] int) {
       const choice = this.policy.f(options=options, state=state);
@@ -57,6 +61,10 @@ class Agent : Perceivable {
       servo.f(agent=this, choice=choice);
     }
     return this;
+  }
+
+  proc learn() {
+    this.policy.learn(agent=this);
   }
 
   proc compile() {

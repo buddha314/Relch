@@ -135,9 +135,10 @@ class DQPolicy : Policy {
       alphaR: real,
       regularization: string;
 
-  proc init() {
+  proc init(sensor: Sensor, avoid: bool=false) {
       super.init();
       this.complete();
+      this.add(sensor);
       this.momentum = 0.0;
       this.epochs = 100000;
       this.learningRate = 0.01;

@@ -163,7 +163,7 @@ module Relch {
       for agent in this.agents  {
         if agent.done then return true;
       }
-      return false; 
+      return false;
     }
 
     /*
@@ -189,20 +189,23 @@ module Relch {
             // DM rewards
             //writeln("\t\tstepping");
             var (nextState, reward, done) = this.step(agent=agent, action=choice);
+            // Add the memory
+            agent.add(new Memory(state=nextState, action=choice, reward=reward));
             if done {
               agent.done = true;
               break;
             }
-            // A logs the reward
             // Return A
-            agent.add(new Memory(state=nextState, action=choice, reward=reward));
             yield agent;
           }
           if this.robotStop() {
             break;
           }
         }
-        for agent in this.agents do this.reset(agent);
+        for agent in this.agents {
+          agent.learn();
+          this.reset(agent);
+        }
       }
     }
   }
