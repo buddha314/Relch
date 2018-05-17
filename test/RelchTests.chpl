@@ -254,6 +254,7 @@ class RelchTest : UnitTest {
     var dqm = new FCNetwork([3,2], ["linear"]);
     var dqp = new DQPolicy();
     dqp.add(dqm);
+    dqp.epochs = 500;
     dqp.learn(dory);
     writeln('model layerDom ?');
     //writeln(dqp.model.layerDom[]);

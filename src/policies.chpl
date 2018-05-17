@@ -127,11 +127,23 @@ class FollowTargetPolicy : Policy {
 }
 
 class DQPolicy : Policy {
-  var model: FCNetwork;
+  var model: FCNetwork,
+      momentum: real,
+      epochs: int,
+      learningRate: real,
+      reportInterval: int,
+      alphaR: real,
+      regularization: string;
 
   proc init() {
       super.init();
       this.complete();
+      this.momentum = 0.0;
+      this.epochs = 100000;
+      this.learningRate = 0.01;
+      this.reportInterval = 1000;
+      this.alphaR = 0;
+      this.regularization = "L2";
   }
 
   proc add(model: FCNetwork) {
@@ -150,6 +162,11 @@ class DQPolicy : Policy {
     }
     writeln(XX);
     writeln(y);
+
+    this.model.train(X = XX ,Y = y
+       ,momentum = this.momentum ,epochs = this.epochs ,learningRate = this.learningRate
+       ,reportInterval = this.reportInterval ,regularization = this.regularization
+       ,alpha = this.alphaR );
     return 0;
   }
 }
