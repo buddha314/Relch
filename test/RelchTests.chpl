@@ -251,13 +251,16 @@ class RelchTest : UnitTest {
     assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
 
     // Deep Q Network policy
-    var dqm = new FCNetwork([3,2], ["linear"]);
+    var dqm = new FCNetwork([6,1], ["linear"]);
     var dqp = new DQPolicy();
     dqp.add(dqm);
     dqp.epochs = 500;
     dqp.learn(dory);
-    writeln('model layerDom ?');
-    //writeln(dqp.model.layerDom[]);
+    //var dopts: [{1..2, 1..2}] int = [[0,1], [1,0]];
+    var dopts = Matrix([0,1], [1,0]);
+    var o = dqp.f(options=dopts, state=[0,1,0,1]);
+    assertIntArrayEquals(msg="Option 2 is chosen (may be random)"
+      , expected=[1,0], actual=o);
 
 
     return this.tearDown(t);

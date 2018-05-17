@@ -151,7 +151,6 @@ class DQPolicy : Policy {
   }
 
   proc learn(agent: Agent) {
-    writeln("larnin!");
     var n = min reduce [agent.nMemories, agent.maxMemories];
     var y: [1..n] real;
     var XX: [1..n, 1..agent.memories[1].dim()] int;
@@ -160,13 +159,24 @@ class DQPolicy : Policy {
         XX[i,..] = currentMemory.v();
         y[i] = agent.memories[i].reward;
     }
-    writeln(XX);
-    writeln(y);
-
-    this.model.train(X = XX ,Y = y
+    //this.model.train(X = XX ,Y = y
+    this.model.train(X = XX.T ,Y = y
        ,momentum = this.momentum ,epochs = this.epochs ,learningRate = this.learningRate
        ,reportInterval = this.reportInterval ,regularization = this.regularization
        ,alpha = this.alphaR );
     return 0;
   }
+
+  proc f(options:[] int, state:[] int) {
+    var opstate = concatRight(options, state);
+    // This returns a matrix, not a vector
+    // In our case, it is just one row tall, so we
+    // grab the first row
+    //var a = this.model.predict(opstate);
+    var a = this.model.predict(opstate.T);
+    var r:[1..options.shape[2]] int;
+    r = options[argmax(a[1,..]), ..];
+    return r;
+  }
+
 }
