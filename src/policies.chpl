@@ -1,5 +1,6 @@
 use NumSuch,
     Math,
+    Epoch,
     physics;
 
 
@@ -39,7 +40,7 @@ class Policy {
     return choice;
   }
 
-  proc learn(state:[] int, action:[] int, reward: real) {
+  proc learn(agent: Agent) {
     return 0;
   }
 }
@@ -123,4 +124,59 @@ class FollowTargetPolicy : Policy {
     //var choice: [1..options.shape[2]] int = options[argmin(thetas), ..];
     return choice;
   }
+}
+
+class DQPolicy : Policy {
+  var model: FCNetwork,
+      momentum: real,
+      epochs: int,
+      learningRate: real,
+      reportInterval: int,
+      alphaR: real,
+      regularization: string;
+
+  proc init() {
+      super.init();
+      this.complete();
+      this.momentum = 0.0;
+      this.epochs = 100000;
+      this.learningRate = 0.01;
+      this.reportInterval = 1000;
+      this.alphaR = 0;
+      this.regularization = "L2";
+  }
+
+  proc add(model: FCNetwork) {
+    this.model = model;
+  }
+
+  proc learn(agent: Agent) {
+    var n = min reduce [agent.nMemories, agent.maxMemories];
+    var y: [1..n] real;
+    var XX: [1..n, 1..agent.memories[1].dim()] int;
+    for i in 1..n {
+        ref currentMemory = agent.memories[i];
+        XX[i,..] = currentMemory.v();
+        y[i] = agent.memories[i].reward;
+    }
+    //this.model.train(X = XX ,Y = y
+    this.model.train(X = XX.T ,Y = y
+       ,momentum = this.momentum ,epochs = this.epochs ,learningRate = this.learningRate
+       ,reportInterval = this.reportInterval ,regularization = this.regularization
+       ,alpha = this.alphaR );
+    return 0;
+  }
+
+  proc f(options:[] int, state:[] int) {
+    var opstate = concatRight(options, state);
+    // This returns a matrix, not a vector
+    // In our case, it is just one row tall, so we
+    // grab the first row
+    //var a = this.model.predict(opstate);
+    var a = this.model.predict(opstate.T);
+    var r:[1..options.shape[2]] int;
+    r = options[argmax(a[1,..]), ..];
+    return r;
+  }
+
 }

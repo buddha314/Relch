@@ -1,4 +1,5 @@
 use Relch,
+    NumSuch,
     Charcoal;
 
 class RelchTest : UnitTest {
@@ -24,7 +25,8 @@ class RelchTest : UnitTest {
       dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler),
       dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler),
       fitBit = new StepSensor(name="fit bit", steps=N_STEPS),
-      boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+      boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
+      dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
 
   proc setUp(name: string = "setup") {
     hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true);
@@ -41,6 +43,10 @@ class RelchTest : UnitTest {
     dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
     fitBit = new StepSensor(name="fit bit", steps=N_STEPS);
     boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+    dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
+    dory.add(new Memory(state = [1,0,0,0], action=[1,0], reward=1.1));
+    dory.add(new Memory(state = [0,1,0,0], action=[1,0], reward=2.2));
+    dory.add(new Memory(state = [0,0,1,0], action=[1,0], reward=3.3));
     return super.setUp(name);
   }
 
@@ -211,8 +217,7 @@ class RelchTest : UnitTest {
     assertIntEquals(msg="Follow Target Policy sensor has correct state index end"
         , expected=5, actual=ftp.targetSensor.stateIndexEnd);
 
-
-
+    // Q Learning
     var nActions: int = 4,
         nStates :int = 5;
     var qstate: [1..nStates] int = 0,
@@ -244,6 +249,20 @@ class RelchTest : UnitTest {
 
     var qchoice = qp.f(options=qactions, state=qstate);
     assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
+
+    // Deep Q Network policy
+    var dqm = new FCNetwork([6,1], ["linear"]);
+    var dqp = new DQPolicy();
+    dqp.add(dqm);
+    dqp.epochs = 500;
+    dqp.learn(dory);
+    //var dopts: [{1..2, 1..2}] int = [[0,1], [1,0]];
+    var dopts = Matrix([0,1], [1,0]);
+    var o = dqp.f(options=dopts, state=[0,1,0,1]);
+    assertIntArrayEquals(msg="Option 2 is chosen (may be random)"
+      , expected=[1,0], actual=o);
+
+
     return this.tearDown(t);
   }
 
@@ -327,15 +346,16 @@ class RelchTest : UnitTest {
 
   proc testMemory() {
     var t = this.setUp("Memories can't wait");
-    var dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
-    dory.add(new Memory(state = [1,0,0,0], action=[1,0], reward=1.1));
-    dory.add(new Memory(state = [0,1,0,0], action=[1,0], reward=2.2));
-    dory.add(new Memory(state = [0,0,1,0], action=[1,0], reward=3.3));
+
     assertRealEquals(msg="First memory is of reward 1.1"
       ,expected=1.1, actual=dory.memories[1].reward);
     dory.add(new Memory(state = [0,0,0,1], action=[1,0], reward=4.4));
     assertRealEquals(msg="First memory has cycled to reward 4.4"
       , expected=4.4 ,actual=dory.memories[1].reward);
+
+    assertIntEquals(msg="Memory dim is 6", expected=6, actual=dory.memories[1].dim());
+    assertIntArrayEquals(msg="First memory has correct action and state space"
+      ,expected=[1,0,0,0,0,1], actual=dory.memories[1].v());
     this.tearDown(t=t);
   }
 

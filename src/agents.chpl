@@ -1,4 +1,4 @@
-use physics, policies, rewards;
+use NumSuch, physics, policies, rewards;
 
 // Should be abstracted to something like DQNAgent
 class Agent : Perceivable {
@@ -42,8 +42,8 @@ class Agent : Perceivable {
   }
 
   proc add(memory: Memory) {
+    this.memories[this.nMemories % maxMemories + 1] = memory;
     this.nMemories +=1;
-    this.memories[this.nMemories % maxMemories] = memory;
   }
 
   /* Expects an integer array of options */
@@ -190,5 +190,15 @@ class Memory {
     this.state = state;
     this.action = action;
     this.reward = reward;
+  }
+
+  proc dim() {
+    return this.stateDom.size + this.actionDom.size;
+  }
+
+  // return action concat with state
+  proc v() {
+    var v = concat(this.action, this.state);
+    return v;
   }
 }
