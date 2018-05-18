@@ -165,15 +165,14 @@ class DQPolicy : Policy {
     var d: int = agent.optionDimension() + agent.sensorDimension();
     writeln("d -> ", d);
     this.model = new FCNetwork([d,1], ["linear"]);
-
-    //this.model = new FCNetwork([5,1], ["linear"]);
     return true;
   }
 
   proc learn(agent: Agent) {
+    writeln("larnin!");
     var n = min reduce [agent.nMemories, agent.maxMemories];
     var y: [1..n] real;
-    var XX: [1..n, 1..agent.memories[1].dim()] int;
+    var XX: [1..n, 1..model.inputDim()] int;
     for i in 1..n {
         ref currentMemory = agent.memories[i];
         XX[i,..] = currentMemory.v();

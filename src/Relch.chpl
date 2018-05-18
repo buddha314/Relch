@@ -199,7 +199,7 @@ module Relch {
             writeln("\t\tstepping");
             var (nextState, reward, done) = this.step(agent=agent, action=choice);
             // Add the memory
-            agent.add(new Memory(state=nextState, action=choice, reward=reward));
+            try! agent.add(new Memory(state=nextState, action=choice, reward=reward));
             if done {
               agent.done = true;
               break;

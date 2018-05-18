@@ -14,6 +14,7 @@ class RelchTest : UnitTest {
   /* We use these again and again for testing */
   var hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true),
       angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05),
+      boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
       drizella = new StepTiler(nbins=N_STEPS),
       whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false), // Does not wrap
       dog = new Agent(name="dog", position=new Position(x=25, y=25)),
@@ -25,7 +26,7 @@ class RelchTest : UnitTest {
       dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler),
       dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler),
       fitBit = new StepSensor(name="fit bit", steps=N_STEPS),
-      boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
+      motionServo = new Servo(tiler=angler),
       dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
 
   proc setUp(name: string = "setup") {
@@ -43,10 +44,13 @@ class RelchTest : UnitTest {
     dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
     fitBit = new StepSensor(name="fit bit", steps=N_STEPS);
     boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+    motionServo = new Servo(tiler=angler);
     dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
-    dory.add(new Memory(state = [1,0,0,0], action=[1,0], reward=1.1));
-    dory.add(new Memory(state = [0,1,0,0], action=[1,0], reward=2.2));
-    dory.add(new Memory(state = [0,0,1,0], action=[1,0], reward=3.3));
+    dory.addSensor(target=cat, sensor=catAngleSensor);
+    dory.add(motionServo);
+    try! dory.add(new Memory(state = [1,0,0,0,0], action=[1,0,0,0,0], reward=1.1));
+    try! dory.add(new Memory(state = [0,1,0,0,0], action=[0,0,0,1,0], reward=2.2));
+    try! dory.add(new Memory(state = [0,0,1,0,0], action=[0,0,1,0,0], reward=3.3));
     return super.setUp(name);
   }
 
@@ -261,6 +265,7 @@ class RelchTest : UnitTest {
     //dory.add(catAngleSensor);
     var dqp = new DQPolicy(sensor = catAngleSensor);
     dqp.epochs = 500;
+    dory.addSensor(cat, catAngleSensor);
     dory.setPolicy(dqp);
     writeln("HOW?!");
     dqp.finalize(dory);
@@ -368,13 +373,13 @@ class RelchTest : UnitTest {
 
     assertRealEquals(msg="First memory is of reward 1.1"
       ,expected=1.1, actual=dory.memories[1].reward);
-    dory.add(new Memory(state = [0,0,0,1], action=[1,0], reward=4.4));
+    dory.add(new Memory(state = [0,0,0,1,0], action=[0,0,1,0,0], reward=4.4));
     assertRealEquals(msg="First memory has cycled to reward 4.4"
       , expected=4.4 ,actual=dory.memories[1].reward);
 
-    assertIntEquals(msg="Memory dim is 6", expected=6, actual=dory.memories[1].dim());
+    assertIntEquals(msg="Memory dim is correct", expected=10, actual=dory.memories[1].dim());
     assertIntArrayEquals(msg="First memory has correct action and state space"
-      ,expected=[1,0,0,0,0,1], actual=dory.memories[1].v());
+      ,expected=[0,0,0,1,0,0,0,1,0,0], actual=dory.memories[1].v());
     this.tearDown(t=t);
   }
 

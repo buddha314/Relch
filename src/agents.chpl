@@ -32,10 +32,7 @@ class Agent : Perceivable {
   }
 
   proc add(servo: Servo) {
-    servo.optionIndexStart = this.optionDimension() + 1;
-    servo.optionIndexEnd = servo.optionIndexStart + servo.dim();
-    this.servos.push_back(servo);
-    return this;
+    return this.addServo(servo);
   }
 
   /*
@@ -49,9 +46,22 @@ class Agent : Perceivable {
     this.rewards.push_back(reward);
   }
 
-  proc add(memory: Memory) {
+  proc addServo(servo: Servo) {
+    servo.optionIndexStart = this.optionDimension() + 1;
+    servo.optionIndexEnd = servo.optionIndexStart + servo.dim();
+    this.servos.push_back(servo);
+    return this;
+  }
+
+  proc add(memory: Memory) throws {
+    if memory.state.size != this.sensorDimension() then
+      throw new DimensionMatchError(msg="Memory state. ", expected=this.sensorDimension(), actual=memory.state.size);
+    if memory.action.size != this.optionDimension() then
+      throw new DimensionMatchError(msg="Memory action. ", expected=this.optionDimension(), actual=memory.action.size);
+
     this.memories[this.nMemories % maxMemories + 1] = memory;
     this.nMemories +=1;
+    return this;
   }
 
   proc addTarget(target: Perceivable, sensor: Sensor) {
