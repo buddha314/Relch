@@ -14,7 +14,7 @@ class Policy {
   }
 
   //proc f(me: Agent, options:[] int, state:[] int) {
-  proc f(options:[] int, state:[] int) {
+  proc f(options:[] int, state:[] int) throws {
     var r:[1..options.shape[2]] int;
     r = options[1,..];
     return r;
@@ -60,7 +60,7 @@ class RandomPolicy : Policy {
   }
 
   //proc f(me: Agent, options:[] int, state:[] int) {
-  proc f(options:[] int, state:[] int) {
+  proc f(options:[] int, state:[] int) throws {
     return this.randomAction(options);
   }
 
@@ -78,7 +78,7 @@ class QLearningPolicy : Policy {
     fillRandom(this.Q);
     this.E = 0.0;
   }
-  proc f(options:[] int, state:[] int) {
+  proc f(options:[] int, state:[] int) throws {
     // Need to translate the options into discrete rows
     var choices: [1..options.shape[1]] real = 0.0;
     // The states are discrete, but the input looks like [0 0 1 0]
@@ -113,7 +113,7 @@ class FollowTargetPolicy : Policy {
   }
 
   //proc f(me: Agent, options:[] int, state: [] int) {
-  proc f(options:[] int, state: [] int) {
+  proc f(options:[] int, state: [] int) throws {
     var targetAngle = this.targetSensor.tiler.unbin(state[this.targetSensor.stateIndexStart..this.targetSensor.stateIndexEnd]);
     var thetas:[1..options.shape[1]] real;
     var t: [1..options.shape[2]] int;
@@ -160,19 +160,15 @@ class DQPolicy : Policy {
 
   proc finalize(agent: Agent) {
     super.finalize(agent=agent);
-    writeln("opt dim: ", agent.optionDimension());
-    writeln("sens dim: ", agent.sensorDimension());
     var d: int = agent.optionDimension() + agent.sensorDimension();
-    writeln("d -> ", d);
     this.model = new FCNetwork([d,1], ["linear"]);
     return true;
   }
 
   proc learn(agent: Agent) {
-    writeln("larnin!");
     var n = min reduce [agent.nMemories, agent.maxMemories];
     var y: [1..n] real;
-    var XX: [1..n, 1..model.inputDim()] int;
+    var XX: [1..n, 1..this.model.inputDim()] int;
     for i in 1..n {
         ref currentMemory = agent.memories[i];
         XX[i,..] = currentMemory.v();
@@ -186,9 +182,11 @@ class DQPolicy : Policy {
     return 0;
   }
 
-  proc f(options:[] int, state:[] int) {
-    writeln("what the f?");
+  proc f(options:[] int, state:[] int) throws {
     var opstate = concatRight(options, state);
+    if opstate.shape[2] != this.model.inputDim() then
+      throw new DimensionMatchError(msg="Wrong input size to model on f()"
+        ,expected=this.model.inputDim(), actual=opstate.shape[2]);
     // This returns a matrix, not a vector
     // In our case, it is just one row tall, so we
     // grab the first row

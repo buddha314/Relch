@@ -131,7 +131,6 @@ module Relch {
      */
     proc buildAgentState(agent: Agent) {
       var state: [1..agent.sensorDimension()] int;
-      //for sensor in agent.policy.sensors {
       for sensor in agent.sensors {
           var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent);
           state[a.domain] = a;

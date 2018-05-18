@@ -14,6 +14,7 @@ class RelchTest : UnitTest {
   /* We use these again and again for testing */
   var hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true),
       angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05),
+      sim = new Environment(name="simulating awesome!", epochs=N_EPOCHS, steps=N_STEPS),
       boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
       drizella = new StepTiler(nbins=N_STEPS),
       whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false), // Does not wrap
@@ -43,14 +44,10 @@ class RelchTest : UnitTest {
     dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler);
     dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
     fitBit = new StepSensor(name="fit bit", steps=N_STEPS);
+    sim = new Environment(name="simulating awesome!", epochs=N_EPOCHS, steps=N_STEPS);
     boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
     motionServo = new Servo(tiler=angler);
     dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
-    dory.addSensor(target=cat, sensor=catAngleSensor);
-    dory.add(motionServo);
-    try! dory.add(new Memory(state = [1,0,0,0,0], action=[1,0,0,0,0], reward=1.1));
-    try! dory.add(new Memory(state = [0,1,0,0,0], action=[0,0,0,1,0], reward=2.2));
-    try! dory.add(new Memory(state = [0,0,1,0,0], action=[0,0,1,0,0], reward=3.3));
     return super.setUp(name);
   }
 
@@ -208,13 +205,10 @@ class RelchTest : UnitTest {
   }
 
   proc testPolicies() {
-    writeln("WAIT!");
     var t = this.setUp("Policies");
     // Reset position for safety of the animals involved
-    writeln("NO!");
     var p = new Policy();
     var rp = new RandomPolicy();
-    writeln("DON'T!");
     catAngleSensor.target = cat;
     /*
     var ftp = new FollowTargetPolicy(sensor=catAngleSensor);
@@ -260,26 +254,23 @@ class RelchTest : UnitTest {
     var qchoice = qp.f(options=qactions, state=qstate);
     assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
 
-    // Deep Q Network policy
-    writeln("WHY?!");
-    //dory.add(catAngleSensor);
+    // Deep Q Network policy using Dory
+    // Run this from Dory's perspective, if she has one
+    dory.addSensor(target=cat, sensor=catAngleSensor);
+    dory.add(motionServo);
+    try! dory.add(new Memory(state = [1,0,0,0,0], action=[1,0,0,0,0], reward=1.1));
+    try! dory.add(new Memory(state = [0,1,0,0,0], action=[0,0,0,1,0], reward=2.2));
+    try! dory.add(new Memory(state = [0,0,1,0,0], action=[0,0,1,0,0], reward=3.3));
+
     var dqp = new DQPolicy(sensor = catAngleSensor);
     dqp.epochs = 500;
-    dory.addSensor(cat, catAngleSensor);
     dory.setPolicy(dqp);
-    writeln("HOW?!");
-    dqp.finalize(dory);
-    writeln("PLEASE NO!");
-    dqp.learn(dory);
-    //var dopts: [{1..2, 1..2}] int = [[0,1], [1,0]];
-    var dopts = Matrix([0,1], [1,0]);
-    var o = dqp.f(options=dopts, state=[0,1,0,1]);
-    assertIntArrayEquals(msg="Option 2 is chosen (may be random)"
-      , expected=[1,0], actual=o);
-
-    // Run this from Dory's perspective, if she has one
-    dory.setPolicy(dqp);
+    dory.finalize();  // Finalizes the policy
     dory.learn();
+    var dopts = Matrix([0,1,0,0,0], [0,0,0,1,0]);
+    var o = dqp.f(options=dopts, state=[0,1,0,1,0]);
+    assertIntArrayEquals(msg="Option 2 is chosen (may be random)"
+      , expected=[0,0,0,1,0], actual=o);
 
     return this.tearDown(t);
   }
@@ -307,19 +298,21 @@ class RelchTest : UnitTest {
   proc testPresentOptions() {
     var t = this.setUp("Present Options");
 
-    catAngleSensor.target = cat;
+    //catAngleSensor.target = cat;
     var motionServo = new Servo(tiler=angler),
         sim = new Environment(name="simulation amazing", epochs=10, steps=5),
         followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor),
         optAnswer1 = eye(N_ANGLES, int);
 
-    sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
-
-
+    // Add world to sim otherwise seg fault in isValidPosition
+    sim.world = boxWorld;
+    dog.addSensor(target=cat, sensor=boxWorld.defaultAngleSensor);
     dog.policy=followCatPolicy;
     dog.add(motionServo);
     var (options, state) = sim.presentOptions(dog);
-    assertIntArrayEquals(msg="State is correct from Present Options", expected=[0,0,0,1,0], actual=state);
+    // Using default tiler for state which is 11 wide now
+    assertIntArrayEquals(msg="State is correct from Present Options"
+      , expected=[0,0,0,0,0,0,1,0,0,0,0], actual=state);
     dog.add(new Servo(tiler=hundredYardTiler));
     var (options2, state2) = sim.presentOptions(dog);
     assertIntEquals(msg="Options 2 has the correct n rows", expected=35, actual=options2.shape[1]);
@@ -371,6 +364,12 @@ class RelchTest : UnitTest {
   proc testMemory() {
     var t = this.setUp("Memories can't wait");
 
+    dory.addSensor(target=cat, sensor=catAngleSensor);
+    dory.add(motionServo);
+    try! dory.add(new Memory(state = [1,0,0,0,0], action=[1,0,0,0,0], reward=1.1));
+    try! dory.add(new Memory(state = [0,1,0,0,0], action=[0,0,0,1,0], reward=2.2));
+    try! dory.add(new Memory(state = [0,0,1,0,0], action=[0,0,1,0,0], reward=3.3));
+
     assertRealEquals(msg="First memory is of reward 1.1"
       ,expected=1.1, actual=dory.memories[1].reward);
     dory.add(new Memory(state = [0,0,0,1,0], action=[0,0,1,0,0], reward=4.4));
@@ -379,7 +378,7 @@ class RelchTest : UnitTest {
 
     assertIntEquals(msg="Memory dim is correct", expected=10, actual=dory.memories[1].dim());
     assertIntArrayEquals(msg="First memory has correct action and state space"
-      ,expected=[0,0,0,1,0,0,0,1,0,0], actual=dory.memories[1].v());
+      ,expected=[0,0,1,0,0,0,0,0,1,0], actual=dory.memories[1].v());
     this.tearDown(t=t);
   }
 
