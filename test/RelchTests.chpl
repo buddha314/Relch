@@ -145,7 +145,7 @@ class RelchTest : UnitTest {
   }
 
   proc testAgentRelativeMethods() {
-    var t = this.setUp("RelativeMethods");
+    var t = this.setUp("Agent RelativeMethods");
     var d: real = 35.3553;
     assertRealApproximates(msg="Distance from dog to cat is correct"
       , expected=d, actual=dog.distanceFromMe(cat)
@@ -204,11 +204,15 @@ class RelchTest : UnitTest {
   }
 
   proc testPolicies() {
+    writeln("WAIT!");
     var t = this.setUp("Policies");
     // Reset position for safety of the animals involved
+    writeln("NO!");
     var p = new Policy();
     var rp = new RandomPolicy();
+    writeln("DON'T!");
     catAngleSensor.target = cat;
+    /*
     var ftp = new FollowTargetPolicy(sensor=catAngleSensor);
     assertIntEquals(msg="Follow Target Policy has correct sensory dims"
       , expected=N_ANGLES, actual=ftp.sensorDimension());
@@ -216,7 +220,7 @@ class RelchTest : UnitTest {
       , expected=1, actual=ftp.targetSensor.stateIndexStart);
     assertIntEquals(msg="Follow Target Policy sensor has correct state index end"
         , expected=5, actual=ftp.targetSensor.stateIndexEnd);
-
+     */
     // Q Learning
     var nActions: int = 4,
         nStates :int = 5;
@@ -243,18 +247,24 @@ class RelchTest : UnitTest {
     var rc = rp.f(options=qactions, state=qstate);
     assertIntEquals(msg="Random Policy returns the correct dimension",expected=N_ANGLES, actual=rc.size);
 
+    /*
     var ftpc = ftp.f(options=qactions, state=qstate);
     // Note, the most direct angle is [0,0,1,0,0] but is not a choice in qactions
     assertIntArrayEquals(msg="Follow Target takes min angle option", expected=[0,1,0,0,0], actual=ftpc);
+     */
 
     var qchoice = qp.f(options=qactions, state=qstate);
     assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
 
     // Deep Q Network policy
-    var dqm = new FCNetwork([6,1], ["linear"]);
+    writeln("WHY?!");
+    //dory.add(catAngleSensor);
     var dqp = new DQPolicy(sensor = catAngleSensor);
-    dqp.add(dqm);
     dqp.epochs = 500;
+    dory.setPolicy(dqp);
+    writeln("HOW?!");
+    dqp.finalize(dory);
+    writeln("PLEASE NO!");
     dqp.learn(dory);
     //var dopts: [{1..2, 1..2}] int = [[0,1], [1,0]];
     var dopts = Matrix([0,1], [1,0]);
@@ -280,6 +290,12 @@ class RelchTest : UnitTest {
     dog.act([1,0,0,0,0,1,1,1]);
     assertRealApproximates(msg="Dog moved to correct x (overloaded option)", expected=20.1459, actual=dog.position.x, error=1e-03);
     assertRealApproximates(msg="Dog moved to correct y (overloaded option)", expected=21.4733, actual=dog.position.y, error=1e-03);
+    this.tearDown(t=t);
+  }
+
+  proc testWorld() {
+    var t = this.setUp("World");
+    assertRealEquals(msg="World has correct radius", expected=sqrt(WORLD_WIDTH**2 + WORLD_HEIGHT**2), actual=boxWorld.radius);
     this.tearDown(t=t);
   }
 
@@ -364,16 +380,17 @@ class RelchTest : UnitTest {
 
   proc run() {
     super.run();
-    testRunDefault();
+    testWorld();
     testTilers();
     testSensors();
     testServos();
     testAgentRelativeMethods();
-    testBuildSim();
-    testPolicies();
+    testMemory();
     testPresentOptions();
     testRewards();
-    testMemory();
+    testPolicies();
+    //testRunDefault();
+    //testBuildSim();
     return 0;
   }
 }

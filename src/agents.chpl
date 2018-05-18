@@ -3,9 +3,10 @@ use NumSuch, physics, policies, rewards;
 // Should be abstracted to something like DQNAgent
 class Agent : Perceivable {
   var speed: real,
+      sensors: [1..0] Sensor,
       servos: [1..0] Servo,
       policy: Policy,
-      compiled : bool = false,
+      finalized: bool = false,
       currentStep: int,
       rewards: [1..0] Reward,
       nMemories: int,
@@ -37,6 +38,13 @@ class Agent : Perceivable {
     return this;
   }
 
+  /*
+  proc add(sensor: Sensor) {
+    sensor.stateIndexStart = this.sensorDimension() + 1;
+    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
+    this.sensors.push_back(sensor);
+  }*/
+
   proc add(reward: Reward) {
     this.rewards.push_back(reward);
   }
@@ -44,6 +52,20 @@ class Agent : Perceivable {
   proc add(memory: Memory) {
     this.memories[this.nMemories % maxMemories + 1] = memory;
     this.nMemories +=1;
+  }
+
+  proc addTarget(target: Perceivable, sensor: Sensor) {
+      this.policy = new FollowTargetPolicy(sensor=sensor);
+  }
+
+  /*
+  For the dog to see the cat, it needs a target, a sensor and a tiler
+   */
+  proc addSensor(target: Perceivable, sensor: Sensor) {
+    sensor.target = target;
+    sensor.stateIndexStart = this.sensorDimension() + 1;
+    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
+    this.sensors.push_back(sensor);
   }
 
   proc setPolicy(policy: Policy) {
@@ -56,6 +78,13 @@ class Agent : Perceivable {
       return choice;
   }
 
+  proc finalize() {
+    var t: bool = true;
+    t = t && this.policy.finalize(agent = this);
+    this.finalized = t;
+    return this.finalized;
+  }
+
   proc act(choice:[] int) {
     for servo in this.servos {
       servo.f(agent=this, choice=choice);
@@ -65,15 +94,6 @@ class Agent : Perceivable {
 
   proc learn() {
     this.policy.learn(agent=this);
-  }
-
-  proc compile() {
-    var m: int = 1;  // collects the total size of the feature space
-    var n: int = 0;
-    for f in this.sensors{
-      n += f.size;
-    }
-    this.compiled = true;
   }
 
   /*
@@ -109,7 +129,10 @@ class Agent : Perceivable {
   }
 
   proc sensorDimension() {
-    return this.policy.sensorDimension();
+    var n = 0;
+    for sensor in this.sensors do n += sensor.dim();
+    return n;
+    //return this.policy.sensorDimension();
   }
 
   proc readWriteThis(f) throws {

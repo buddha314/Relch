@@ -5,8 +5,8 @@ use NumSuch,
 
 
 class Policy {
-  var sensors: [1..0] Sensor,
-      onPolicy: bool,
+  //var sensors: [1..0] Sensor,
+  var onPolicy: bool,
       epsilon: real;   // for epsilon-greedy routines
   proc init(onPolicy: bool = true) {
     this.onPolicy = onPolicy;
@@ -20,19 +20,21 @@ class Policy {
     return r;
   }
 
+  /*
   proc add(sensor : Sensor) {
     sensor.stateIndexStart = this.sensorDimension() + 1;
     sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
     this.sensors.push_back(sensor);
-  }
+  } */
 
+  /*
   proc sensorDimension() {
     var n: int = 0;
     for s in this.sensors {
       n += s.dim();
     }
     return n;
-  }
+  } */
 
   proc randomAction(options:[] int) {
     var c = randInt(1,options.shape[1]);
@@ -42,6 +44,12 @@ class Policy {
 
   proc learn(agent: Agent) {
     return 0;
+  }
+
+
+  proc finalize(agent: Agent) {
+    //for sensor in agent.sensors do this.add(sensor);
+    return true;
   }
 }
 
@@ -99,8 +107,8 @@ class FollowTargetPolicy : Policy {
   proc init(sensor: Sensor, avoid: bool=false) {
     super.init();
     this.complete();
-    this.add(sensor);
-    this.targetSensor = this.sensors[1];
+    //this.add(sensor);
+    this.targetSensor = sensor;
     this.avoid = avoid;
   }
 
@@ -126,6 +134,9 @@ class FollowTargetPolicy : Policy {
   }
 }
 
+/*
+ Defaults to a full connected neural net from the Epoch package.
+ */
 class DQPolicy : Policy {
   var model: FCNetwork,
       momentum: real,
@@ -138,7 +149,7 @@ class DQPolicy : Policy {
   proc init(sensor: Sensor, avoid: bool=false) {
       super.init();
       this.complete();
-      this.add(sensor);
+      //this.add(sensor);
       this.momentum = 0.0;
       this.epochs = 100000;
       this.learningRate = 0.01;
@@ -147,8 +158,16 @@ class DQPolicy : Policy {
       this.regularization = "L2";
   }
 
-  proc add(model: FCNetwork) {
-    this.model = model;
+  proc finalize(agent: Agent) {
+    super.finalize(agent=agent);
+    writeln("opt dim: ", agent.optionDimension());
+    writeln("sens dim: ", agent.sensorDimension());
+    var d: int = agent.optionDimension() + agent.sensorDimension();
+    writeln("d -> ", d);
+    this.model = new FCNetwork([d,1], ["linear"]);
+
+    //this.model = new FCNetwork([5,1], ["linear"]);
+    return true;
   }
 
   proc learn(agent: Agent) {
@@ -169,6 +188,7 @@ class DQPolicy : Policy {
   }
 
   proc f(options:[] int, state:[] int) {
+    writeln("what the f?");
     var opstate = concatRight(options, state);
     // This returns a matrix, not a vector
     // In our case, it is just one row tall, so we
