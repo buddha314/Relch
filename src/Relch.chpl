@@ -80,6 +80,10 @@ module Relch {
     /*
      Setting interactions between objects
      */
+
+    /*
+    Creates a FollowTargetPolicy for the agent against the target
+     */
     proc setAgentTarget(agent: Agent, target: Perceivable, sensor: Sensor, avoid:bool=false) {
       if agent.simId < 1 then this.add(agent);
       if target.simId < 1 then this.add(target);
@@ -89,10 +93,9 @@ module Relch {
       return agent;
     }
 
-    proc addAgentSensor(agent: Agent, sensor: Sensor) {
-
+    proc addAgentServo(agent: Agent, servo: Servo) {
+      return agent.add(servo);
     }
-
 
     proc presentOptions(agent: Agent) {
       /* Constructing options is kinda hard, right now just 1 for every
