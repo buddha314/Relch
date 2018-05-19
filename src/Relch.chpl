@@ -24,19 +24,16 @@ module Relch {
   /* Modeled after the AIGym Class: https://github.com/openai/gym/tree/master/gym/envs#how-to-create-new-environments-for-gym* */
   class Environment {
     var name: string,
-        epochs: int,
-        steps: int,
         currentStep: int,
         world: World,
         agents: [1..0] Agent,
         perceivables: [1..0] Perceivable;
 
-    proc init(name: string, epochs:int, steps: int) {
+    proc init(name: string) {
       this.name=name;
-      this.epochs=epochs;
-      this.steps=steps;
       this.currentStep = 1;
     }
+
 
     /*
      This needs to return these things:
@@ -67,14 +64,35 @@ module Relch {
     /* This will actually emit, not render */
     proc render() {}
 
-    proc add(agent: Agent) {
-      agent.simId = this.agents.size +1;
-      this.agents.push_back(agent);
+    proc add(perceivable: Perceivable) {
+      perceivable.simId = this.perceivables.size +1;
+      this.perceivables.push_back(perceivable);
+      return perceivable;
     }
 
-    proc add(perceivable: Perceivable) {
-      this.perceivables.push_back(perceivable);
+    proc add(agent: Agent) {
+      agent.simId = this.perceivables.size + 1;
+      this.perceivables.push_back(agent);
+      this.agents.push_back(agent);
+      return agent;
     }
+
+    /*
+     Setting interactions between objects
+     */
+    proc setAgentTarget(agent: Agent, target: Perceivable, sensor: Sensor, avoid:bool=false) {
+      if agent.simId < 1 then this.add(agent);
+      if target.simId < 1 then this.add(target);
+
+      sensor.targetId = target.simId;
+      agent.addTarget(target, sensor, avoid);
+      return agent;
+    }
+
+    proc addAgentSensor(agent: Agent, sensor: Sensor) {
+
+    }
+
 
     proc presentOptions(agent: Agent) {
       /* Constructing options is kinda hard, right now just 1 for every
@@ -135,7 +153,11 @@ module Relch {
     proc buildAgentState(agent: Agent) {
       var state: [1..agent.sensorDimension()] int;
       for sensor in agent.sensors {
-          var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent);
+          ref you = this.perceivables[sensor.targetId];
+          //writeln("me ", agent);
+          //writeln("you ", you);
+          //writeln("sensor: ", sensor);
+          var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent, you=you);
           state[a.domain] = a;
       }
       return state;
@@ -153,7 +175,7 @@ module Relch {
     // Otherwise all sensors must be done
     proc areYouThroughYet(agent: Agent, any: bool = true) {
       var r: bool = false;
-      if this.currentStep >= this.steps then r = true;
+      //if this.currentStep >= this.steps then r = true;
       if any {
         //for sensor in agent.policy.sensors {
         for sensor in agent.sensors {
@@ -177,16 +199,20 @@ module Relch {
     /*
       Does the actual simulation
      */
-    iter run() {
+    iter run(epochs: int, steps: int) {
       if this.world == nil {
         halt("No world set, aborting");
       }
+      var finalized: bool = true;
       for agent in this.agents {
-        if !agent.finalized then agent.finalize();
+        if !agent.finalized {
+          finalized = finalized && agent.finalize();
+        }
+        if !finalized then halt("Agent ", agent.name, " cannot be finalized, halting.");
       }
-      for i in 1..this.epochs {
+      for i in 1..epochs {
         //writeln("starting epoch ", i);
-        for step in 1..this.steps {
+        for step in 1..steps {
           var sr = new StepReport(epoch=i, step=step);
         //writeln("\tstarting step ", step);
           for agent in this.agents{

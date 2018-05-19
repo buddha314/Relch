@@ -2,8 +2,7 @@ use NumSuch, physics, policies, rewards;
 
 // Should be abstracted to something like DQNAgent
 class Agent : Perceivable {
-  var simId: int,
-      speed: real,
+  var speed: real,
       sensors: [1..0] Sensor,
       servos: [1..0] Servo,
       policy: Policy,
@@ -33,11 +32,13 @@ class Agent : Perceivable {
   }
 
   proc add(servo: Servo) {
-    return this.addServo(servo);
+    return this.addServo(servo);;
+    return this;
   }
 
   proc add(reward: Reward) {
     this.rewards.push_back(reward);
+    return this;
   }
 
   proc addServo(servo: Servo) {
@@ -79,6 +80,7 @@ class Agent : Perceivable {
 
   proc setPolicy(policy: Policy) {
     this.policy=policy;
+    return this;
   }
 
   /* Expects an integer array of options */
@@ -92,6 +94,8 @@ class Agent : Perceivable {
   proc finalize() {
     var t: bool = true;
     t = t && this.policy.finalize(agent = this);
+    t = t && this.servos.size > 0;
+    t = t && this.sensors.size > 0;
     this.finalized = t;
     return this.finalized;
   }
@@ -156,10 +160,12 @@ class Agent : Perceivable {
 
 class Perceivable {
   var name: string,
-      position: Position;
+      position: Position,
+      simId: int;
   proc init(name: string, position: Position) {
     this.name = name;
     this.position = position;
+    this.simId = -1;
   }
 }
 

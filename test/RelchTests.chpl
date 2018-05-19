@@ -14,7 +14,7 @@ class RelchTest : UnitTest {
   /* We use these again and again for testing */
   var hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true),
       angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05),
-      sim = new Environment(name="simulating awesome!", epochs=N_EPOCHS, steps=N_STEPS),
+      sim = new Environment(name="simulating awesome!"),
       boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
       drizella = new StepTiler(nbins=N_STEPS),
       whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false), // Does not wrap
@@ -44,7 +44,7 @@ class RelchTest : UnitTest {
     dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler);
     dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
     fitBit = new StepSensor(name="fit bit", steps=N_STEPS);
-    sim = new Environment(name="simulating awesome!", epochs=N_EPOCHS, steps=N_STEPS);
+    sim = new Environment(name="simulating awesome!");
     boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
     motionServo = new Servo(tiler=angler);
     dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
@@ -73,7 +73,7 @@ class RelchTest : UnitTest {
     dog.addTarget(cat, boxWorld.defaultAngleSensor);
     dog.add(motionServo);
     sim.add(dog);
-    sim.run();
+    sim.run(epochs=N_EPOCHS, steps=N_STEPS);
     assertIntEquals(msg="Dog remembers right amount of things"
       ,expected=N_EPOCHS * N_STEPS, actual=dog.nMemories);
     assertIntEquals(msg="Dog got walked", expected=N_STEPS, actual=dog.currentStep);
@@ -174,16 +174,17 @@ class RelchTest : UnitTest {
 
   proc testBuildSim() {
     var t = this.setUp("BuildSim");
-    var sim = new Environment(name="simulation amazing", epochs=10, steps=10);
+    var sim = new Environment(name="simulation amazing");
     sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
-    /* Build some sensor arrays */
-    var ifs:[1..0] Sensor,
-        wfs:[1..0] Sensor;
+    dog = sim.add(dog);
+    assertIntEquals(msg="Dog has simId 1", expected=1, actual=dog.simId);
+    cat = sim.add(cat);
+    assertIntEquals(msg="Cat has simId 2", expected=2, actual=cat.simId);
 
-    sim.add(dog);
-    sim.add(cat);
+    dog = sim.setAgentTarget(agent=dog, target=cat, sensor=boxWorld.getDefaultAngleSensor());
 
+    /*
     class Seagull : Agent {
       proc init(name:string, position: Position) {
           super.init( name=name,position=position );
@@ -204,6 +205,7 @@ class RelchTest : UnitTest {
     assertRealEquals("centroid has correct x", expected=102.5, actual=centroid.x);
     assertRealEquals("centroid has correct y", expected=107.5, actual=centroid.y);
     return this.tearDown(t);
+    */
   }
 
   proc testPolicies() {
@@ -386,17 +388,17 @@ class RelchTest : UnitTest {
 
   proc run() {
     super.run();
-    testWorld();
-    testTilers();
-    testSensors();
-    testServos();
-    testAgentRelativeMethods();
-    testMemory();
-    testPresentOptions();
-    testRewards();
-    testPolicies();
-    testRunDefault();
     testBuildSim();
+    //testWorld();
+    //testTilers();
+    //testSensors();
+    //testServos();
+    //testAgentRelativeMethods();
+    //testMemory();
+    //testPresentOptions();
+    //testRewards();
+    //testPolicies();
+    //testRunDefault();
     return 0;
   }
 }

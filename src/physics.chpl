@@ -62,6 +62,7 @@ class Sensor {
       stateIndexEnd: int,
       tiler: Tiler,
       target: Perceivable,
+      targetId: int,
       done: bool;
 
   proc init(name:string, tiler: Tiler) {
@@ -250,10 +251,8 @@ class World {
   var radius: real,
       wrap: bool,
       defaultLinearTiler: LinearTiler,
-      defaultDistanceSensor: DistanceSensor,
-      defaultAngleTiler: AngleTiler,
-      defaultAngleSensor: AngleSensor,
-      defaultMotionServo: Servo;
+      defaultAngleTiler: AngleTiler;
+      //defaultMotionServo: Servo;
 
   proc init(width: int, height: int
       ,dimension: int = 2
@@ -267,11 +266,9 @@ class World {
     this.radius = sqrt(this.width**2 + this.height**2);
     this.defaultLinearTiler = new LinearTiler(nbins=defaultDistanceBins, x1=0.0
       ,x2=this.radius, overlap=defaultDistanceOverlap, wrap=this.wrap);
-    this.defaultDistanceSensor = new DistanceSensor(name="Default Distance Sensor", tiler=this.defaultLinearTiler);
     this.defaultAngleTiler = new AngleTiler(nbins=defaultAngleBins
       ,overlap=defaultAngleOverlap);
-    this.defaultAngleSensor = new AngleSensor(name="Default Angle Sensor", tiler=this.defaultAngleTiler);
-    this.defaultMotionServo = new Servo(tiler=this.defaultAngleTiler);
+    //this.defaultMotionServo = new Servo(tiler=this.defaultAngleTiler);
   }
 
   proc randomPosition2D() {
@@ -293,5 +290,13 @@ class World {
     } else {
       return false;
     }
+  }
+
+  proc getDefaultAngleSensor() {
+    return new AngleSensor(name="Default Angle Sensor", tiler=this.defaultAngleTiler);
+  }
+
+  proc getDefaultMotionServo() {
+    return new Servo(tiler=this.defaultAngleTiler);
   }
 }

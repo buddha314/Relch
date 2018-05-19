@@ -13,6 +13,7 @@ var boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
     cat = new Agent(name="cat", position=new Position(x=150, y=130), speed=CAT_SPEED);
 
 
+/*
 // Add sensors and rewards to agents
 var dogSensor = cat.addTarget(dog, boxWorld.defaultAngleSensor, avoid=false);  // Gives the cat the sensor as well
 var catSensor = dog.addTarget(cat, boxWorld.defaultAngleSensor);  // Gives the dog the sensor as well
@@ -22,12 +23,17 @@ var catSensor = dog.addTarget(cat, boxWorld.defaultAngleSensor);  // Gives the d
 // Allow them to move
 dog.add(boxWorld.defaultMotionServo);  // Moves the dog
 cat.add(boxWorld.defaultMotionServo);  // Moves the cat
+*/
 
-// Create the simultation
-var sim = new Environment(name="steppin out", epochs=N_EPOCHS, steps=N_STEPS);
+// Create the simulation
+var sim = new Environment(name="steppin out");
 sim.world = boxWorld;
-sim.add(dog);
-sim.add(cat);
+dog = sim.add(dog);
+cat = sim.add(cat);
+dog = sim.setAgentTarget(agent=dog, target=cat, sensor=boxWorld.getDefaultAngleSensor());
+cat = sim.setAgentTarget(agent=cat, target=dog, sensor=boxWorld.getDefaultAngleSensor(), avoid=true);
+dog = dog.add(boxWorld.getDefaultMotionServo());
+dog = cat.add(boxWorld.getDefaultMotionServo());
 
 writeln("""
   Dog starts at (25, 25). The cat is now an agent and is
@@ -39,6 +45,6 @@ writeln("""
 
   They make me sick they are so stupid. I'm ashamed I invented them...
   """);
-for a in sim.run() {
+for a in sim.run(epochs=N_EPOCHS, steps=N_STEPS) {
   writeln(a);
 }
