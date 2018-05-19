@@ -58,7 +58,8 @@ module Relch {
       agent.currentStep = 1;
       agent.position = agent.initialPosition;
       agent.done = false;
-      for sensor in agent.policy.sensors {
+      //for sensor in agent.policy.sensors {
+      for sensor in agent.sensors {
         sensor.done = false;
       }
     }
@@ -125,9 +126,12 @@ module Relch {
       return (options, state);
     }
 
+    /*
+     This is here so ultimately the environment can edit the sensors
+     */
     proc buildAgentState(agent: Agent) {
       var state: [1..agent.sensorDimension()] int;
-      for sensor in agent.policy.sensors {
+      for sensor in agent.sensors {
           var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent);
           state[a.domain] = a;
       }
@@ -148,7 +152,8 @@ module Relch {
       var r: bool = false;
       if this.currentStep >= this.steps then r = true;
       if any {
-        for sensor in agent.policy.sensors {
+        //for sensor in agent.policy.sensors {
+        for sensor in agent.sensors {
           if sensor.done then return true;
         }
       }
@@ -170,9 +175,13 @@ module Relch {
       Does the actual simulation
      */
     iter run() {
+      for agent in this.agents {
+        if !agent.finalized then agent.finalize();
+      }
       for i in 1..this.epochs {
         //writeln("starting epoch ", i);
         for step in 1..this.steps {
+          var sr = new StepReport(epoch=i, step=step);
         //writeln("\tstarting step ", step);
           for agent in this.agents{
             //writeln("\t\tagent: ", agent);
@@ -190,7 +199,7 @@ module Relch {
             //writeln("\t\tstepping");
             var (nextState, reward, done) = this.step(agent=agent, action=choice);
             // Add the memory
-            agent.add(new Memory(state=nextState, action=choice, reward=reward));
+            try! agent.add(new Memory(state=nextState, action=choice, reward=reward));
             if done {
               agent.done = true;
               break;
@@ -198,15 +207,32 @@ module Relch {
             // Return A
             yield agent;
           }
+          //writeln(sr);
           if this.robotStop() {
             break;
           }
         }
         for agent in this.agents {
+          //writeln("larnin!");
           agent.learn();
           this.reset(agent);
         }
       }
+    }
+  }
+
+  class StepReport {
+    var epoch: int,
+        step: int;
+    proc init(epoch:int, step:int) {
+      this.epoch = epoch;
+      this.step = step;
+    }
+
+    proc readWriteThis(f) {
+      f <~>
+      "epoch: " <~> this.epoch <~>
+      " step: " <~> this.step <~> "\n";
     }
   }
 }

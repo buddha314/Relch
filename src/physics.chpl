@@ -51,6 +51,11 @@ class Position {
   }
 }
 
+
+/*
+ Sensor need to be attached to an agent for constructing state.  They aren't
+ really useful on their own
+ */
 class Sensor {
   var name: string,
       stateIndexStart: int,   // which part of the state space does this populate?
@@ -147,7 +152,7 @@ class Tiler {
   }
   proc checkDim(x:[] int) throws {
     if x.size != this.nbins {
-      const err = new DimensionMatchError(expected = this.nbins, actual=x.size);
+      const err = new DimensionMatchError(msg="checking dimensions on Tiler", expected = this.nbins, actual=x.size);
       throw err;
     }
   }
@@ -235,14 +240,33 @@ class StepTiler : Tiler {
 }
 
 
+/*
+ Provides some basic machinery, including default tilers for sensors
+ */
 class World {
   const width: int,
         height: int;
-  var wrap: bool = false;
+  var radius: real,
+      wrap: bool,
+      defaultLinearTiler: LinearTiler,
+      defaultDistanceSensor: DistanceSensor,
+      defaultAngleTiler: AngleTiler,
+      defaultAngleSensor: AngleSensor;
 
-  proc init(width: int, height: int) {
+  proc init(width: int, height: int
+      ,wrap: bool = false
+      ,defaultDistanceBins: int = 17, defaultDistanceOverlap: real= 0.1
+      ,defaultAngleBins: int = 11, defaultAngleOverlap: real = 0.05
+    ) {
     this.width = width;
     this.height = height;
+    this.radius = sqrt(this.width**2 + this.height**2);
+    this.defaultLinearTiler = new LinearTiler(nbins=defaultDistanceBins, x1=0.0
+      ,x2=this.radius, overlap=defaultDistanceOverlap, wrap=this.wrap);
+    this.defaultDistanceSensor = new DistanceSensor(name="Default Distance Sensor", tiler=this.defaultLinearTiler);
+    this.defaultAngleTiler = new AngleTiler(nbins=defaultAngleBins
+      ,overlap=defaultAngleOverlap);
+    this.defaultAngleSensor = new AngleSensor(name="Default Angle Sensor", tiler=this.defaultAngleTiler);
   }
 
   proc isValidPosition(position: Position ) {

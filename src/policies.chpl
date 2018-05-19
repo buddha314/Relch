@@ -5,8 +5,8 @@ use NumSuch,
 
 
 class Policy {
-  var sensors: [1..0] Sensor,
-      onPolicy: bool,
+  //var sensors: [1..0] Sensor,
+  var onPolicy: bool,
       epsilon: real;   // for epsilon-greedy routines
   proc init(onPolicy: bool = true) {
     this.onPolicy = onPolicy;
@@ -14,25 +14,27 @@ class Policy {
   }
 
   //proc f(me: Agent, options:[] int, state:[] int) {
-  proc f(options:[] int, state:[] int) {
+  proc f(options:[] int, state:[] int) throws {
     var r:[1..options.shape[2]] int;
     r = options[1,..];
     return r;
   }
 
+  /*
   proc add(sensor : Sensor) {
     sensor.stateIndexStart = this.sensorDimension() + 1;
     sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
     this.sensors.push_back(sensor);
-  }
+  } */
 
+  /*
   proc sensorDimension() {
     var n: int = 0;
     for s in this.sensors {
       n += s.dim();
     }
     return n;
-  }
+  } */
 
   proc randomAction(options:[] int) {
     var c = randInt(1,options.shape[1]);
@@ -43,6 +45,12 @@ class Policy {
   proc learn(agent: Agent) {
     return 0;
   }
+
+
+  proc finalize(agent: Agent) {
+    //for sensor in agent.sensors do this.add(sensor);
+    return true;
+  }
 }
 
 class RandomPolicy : Policy {
@@ -52,7 +60,7 @@ class RandomPolicy : Policy {
   }
 
   //proc f(me: Agent, options:[] int, state:[] int) {
-  proc f(options:[] int, state:[] int) {
+  proc f(options:[] int, state:[] int) throws {
     return this.randomAction(options);
   }
 
@@ -70,7 +78,7 @@ class QLearningPolicy : Policy {
     fillRandom(this.Q);
     this.E = 0.0;
   }
-  proc f(options:[] int, state:[] int) {
+  proc f(options:[] int, state:[] int) throws {
     // Need to translate the options into discrete rows
     var choices: [1..options.shape[1]] real = 0.0;
     // The states are discrete, but the input looks like [0 0 1 0]
@@ -99,13 +107,13 @@ class FollowTargetPolicy : Policy {
   proc init(sensor: Sensor, avoid: bool=false) {
     super.init();
     this.complete();
-    this.add(sensor);
-    this.targetSensor = this.sensors[1];
+    //this.add(sensor);
+    this.targetSensor = sensor;
     this.avoid = avoid;
   }
 
   //proc f(me: Agent, options:[] int, state: [] int) {
-  proc f(options:[] int, state: [] int) {
+  proc f(options:[] int, state: [] int) throws {
     var targetAngle = this.targetSensor.tiler.unbin(state[this.targetSensor.stateIndexStart..this.targetSensor.stateIndexEnd]);
     var thetas:[1..options.shape[1]] real;
     var t: [1..options.shape[2]] int;
@@ -126,6 +134,9 @@ class FollowTargetPolicy : Policy {
   }
 }
 
+/*
+ Defaults to a full connected neural net from the Epoch package.
+ */
 class DQPolicy : Policy {
   var model: FCNetwork,
       momentum: real,
@@ -138,7 +149,7 @@ class DQPolicy : Policy {
   proc init(sensor: Sensor, avoid: bool=false) {
       super.init();
       this.complete();
-      this.add(sensor);
+      //this.add(sensor);
       this.momentum = 0.0;
       this.epochs = 100000;
       this.learningRate = 0.01;
@@ -147,14 +158,17 @@ class DQPolicy : Policy {
       this.regularization = "L2";
   }
 
-  proc add(model: FCNetwork) {
-    this.model = model;
+  proc finalize(agent: Agent) {
+    super.finalize(agent=agent);
+    var d: int = agent.optionDimension() + agent.sensorDimension();
+    this.model = new FCNetwork([d,1], ["linear"]);
+    return true;
   }
 
   proc learn(agent: Agent) {
     var n = min reduce [agent.nMemories, agent.maxMemories];
     var y: [1..n] real;
-    var XX: [1..n, 1..agent.memories[1].dim()] int;
+    var XX: [1..n, 1..this.model.inputDim()] int;
     for i in 1..n {
         ref currentMemory = agent.memories[i];
         XX[i,..] = currentMemory.v();
@@ -168,8 +182,11 @@ class DQPolicy : Policy {
     return 0;
   }
 
-  proc f(options:[] int, state:[] int) {
+  proc f(options:[] int, state:[] int) throws {
     var opstate = concatRight(options, state);
+    if opstate.shape[2] != this.model.inputDim() then
+      throw new DimensionMatchError(msg="Wrong input size to model on f()"
+        ,expected=this.model.inputDim(), actual=opstate.shape[2]);
     // This returns a matrix, not a vector
     // In our case, it is just one row tall, so we
     // grab the first row

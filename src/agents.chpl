@@ -3,9 +3,10 @@ use NumSuch, physics, policies, rewards;
 // Should be abstracted to something like DQNAgent
 class Agent : Perceivable {
   var speed: real,
+      sensors: [1..0] Sensor,
       servos: [1..0] Servo,
       policy: Policy,
-      compiled : bool = false,
+      finalized: bool = false,
       currentStep: int,
       rewards: [1..0] Reward,
       nMemories: int,
@@ -31,19 +32,54 @@ class Agent : Perceivable {
   }
 
   proc add(servo: Servo) {
+    return this.addServo(servo);
+  }
+
+  /*
+  proc add(sensor: Sensor) {
+    sensor.stateIndexStart = this.sensorDimension() + 1;
+    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
+    this.sensors.push_back(sensor);
+  }*/
+
+  proc add(reward: Reward) {
+    this.rewards.push_back(reward);
+  }
+
+  proc addServo(servo: Servo) {
     servo.optionIndexStart = this.optionDimension() + 1;
     servo.optionIndexEnd = servo.optionIndexStart + servo.dim();
     this.servos.push_back(servo);
     return this;
   }
 
-  proc add(reward: Reward) {
-    this.rewards.push_back(reward);
-  }
+  proc add(memory: Memory) throws {
+    if memory.state.size != this.sensorDimension() then
+      throw new DimensionMatchError(msg="Memory state. ", expected=this.sensorDimension(), actual=memory.state.size);
+    if memory.action.size != this.optionDimension() then
+      throw new DimensionMatchError(msg="Memory action. ", expected=this.optionDimension(), actual=memory.action.size);
 
-  proc add(memory: Memory) {
     this.memories[this.nMemories % maxMemories + 1] = memory;
     this.nMemories +=1;
+    return this;
+  }
+
+  /*
+  @TODO I don't like this because the Sensor now lives in two places.
+   */
+  proc addTarget(target: Perceivable, sensor: Sensor) {
+      this.policy = new FollowTargetPolicy(sensor=sensor);
+      this.addSensor(target=target, sensor=sensor);
+  }
+
+  /*
+  For the dog to see the cat, it needs a target, a sensor and a tiler
+   */
+  proc addSensor(target: Perceivable, sensor: Sensor) {
+    sensor.target = target;
+    sensor.stateIndexStart = this.sensorDimension() + 1;
+    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
+    this.sensors.push_back(sensor);
   }
 
   proc setPolicy(policy: Policy) {
@@ -52,8 +88,17 @@ class Agent : Perceivable {
 
   /* Expects an integer array of options */
   proc choose(options: [] int, state: [] int) {
+      //writeln("options: ", options);
+      //writeln("state: ", state);
       const choice = this.policy.f(options=options, state=state);
       return choice;
+  }
+
+  proc finalize() {
+    var t: bool = true;
+    t = t && this.policy.finalize(agent = this);
+    this.finalized = t;
+    return this.finalized;
   }
 
   proc act(choice:[] int) {
@@ -65,15 +110,6 @@ class Agent : Perceivable {
 
   proc learn() {
     this.policy.learn(agent=this);
-  }
-
-  proc compile() {
-    var m: int = 1;  // collects the total size of the feature space
-    var n: int = 0;
-    for f in this.sensors{
-      n += f.size;
-    }
-    this.compiled = true;
   }
 
   /*
@@ -109,7 +145,10 @@ class Agent : Perceivable {
   }
 
   proc sensorDimension() {
-    return this.policy.sensorDimension();
+    var n = 0;
+    for sensor in this.sensors do n += sensor.dim();
+    return n;
+    //return this.policy.sensorDimension();
   }
 
   proc readWriteThis(f) throws {

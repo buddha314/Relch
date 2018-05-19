@@ -14,6 +14,8 @@ class RelchTest : UnitTest {
   /* We use these again and again for testing */
   var hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true),
       angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05),
+      sim = new Environment(name="simulating awesome!", epochs=N_EPOCHS, steps=N_STEPS),
+      boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
       drizella = new StepTiler(nbins=N_STEPS),
       whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false), // Does not wrap
       dog = new Agent(name="dog", position=new Position(x=25, y=25)),
@@ -25,7 +27,7 @@ class RelchTest : UnitTest {
       dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler),
       dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler),
       fitBit = new StepSensor(name="fit bit", steps=N_STEPS),
-      boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
+      motionServo = new Servo(tiler=angler),
       dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
 
   proc setUp(name: string = "setup") {
@@ -42,11 +44,10 @@ class RelchTest : UnitTest {
     dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler);
     dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
     fitBit = new StepSensor(name="fit bit", steps=N_STEPS);
+    sim = new Environment(name="simulating awesome!", epochs=N_EPOCHS, steps=N_STEPS);
     boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+    motionServo = new Servo(tiler=angler);
     dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
-    dory.add(new Memory(state = [1,0,0,0], action=[1,0], reward=1.1));
-    dory.add(new Memory(state = [0,1,0,0], action=[1,0], reward=2.2));
-    dory.add(new Memory(state = [0,0,1,0], action=[1,0], reward=3.3));
     return super.setUp(name);
   }
 
@@ -61,13 +62,15 @@ class RelchTest : UnitTest {
 
   proc testRunDefault() {
     var t = this.setUp("RunDefault");
-    catAngleSensor.add(angler);
-    catAngleSensor.target=cat;
-    var sim = new Environment(name="steppin out", epochs=N_EPOCHS, steps=N_STEPS),
-        followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor),
-        motionServo = new Servo(tiler=angler);
+
+    //catAngleSensor.add(angler);
+    //catAngleSensor.target=cat;
+    //var sim = new Environment(name="steppin out", epochs=N_EPOCHS, steps=N_STEPS),
+    //var followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor);
+    var motionServo = new Servo(tiler=boxWorld.defaultAngleTiler);
     sim.world = boxWorld;
-    dog.policy = followCatPolicy;
+    //dog.policy = followCatPolicy;
+    dog.addTarget(cat, boxWorld.defaultAngleSensor);
     dog.add(motionServo);
     sim.add(dog);
     sim.run();
@@ -145,7 +148,7 @@ class RelchTest : UnitTest {
   }
 
   proc testAgentRelativeMethods() {
-    var t = this.setUp("RelativeMethods");
+    var t = this.setUp("Agent RelativeMethods");
     var d: real = 35.3553;
     assertRealApproximates(msg="Distance from dog to cat is correct"
       , expected=d, actual=dog.distanceFromMe(cat)
@@ -209,6 +212,7 @@ class RelchTest : UnitTest {
     var p = new Policy();
     var rp = new RandomPolicy();
     catAngleSensor.target = cat;
+    /*
     var ftp = new FollowTargetPolicy(sensor=catAngleSensor);
     assertIntEquals(msg="Follow Target Policy has correct sensory dims"
       , expected=N_ANGLES, actual=ftp.sensorDimension());
@@ -216,7 +220,7 @@ class RelchTest : UnitTest {
       , expected=1, actual=ftp.targetSensor.stateIndexStart);
     assertIntEquals(msg="Follow Target Policy sensor has correct state index end"
         , expected=5, actual=ftp.targetSensor.stateIndexEnd);
-
+     */
     // Q Learning
     var nActions: int = 4,
         nStates :int = 5;
@@ -243,28 +247,32 @@ class RelchTest : UnitTest {
     var rc = rp.f(options=qactions, state=qstate);
     assertIntEquals(msg="Random Policy returns the correct dimension",expected=N_ANGLES, actual=rc.size);
 
+    /*
     var ftpc = ftp.f(options=qactions, state=qstate);
     // Note, the most direct angle is [0,0,1,0,0] but is not a choice in qactions
     assertIntArrayEquals(msg="Follow Target takes min angle option", expected=[0,1,0,0,0], actual=ftpc);
+     */
 
     var qchoice = qp.f(options=qactions, state=qstate);
     assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
 
-    // Deep Q Network policy
-    var dqm = new FCNetwork([6,1], ["linear"]);
-    var dqp = new DQPolicy(sensor = catAngleSensor);
-    dqp.add(dqm);
-    dqp.epochs = 500;
-    dqp.learn(dory);
-    //var dopts: [{1..2, 1..2}] int = [[0,1], [1,0]];
-    var dopts = Matrix([0,1], [1,0]);
-    var o = dqp.f(options=dopts, state=[0,1,0,1]);
-    assertIntArrayEquals(msg="Option 2 is chosen (may be random)"
-      , expected=[1,0], actual=o);
-
+    // Deep Q Network policy using Dory
     // Run this from Dory's perspective, if she has one
+    dory.addSensor(target=cat, sensor=catAngleSensor);
+    dory.add(motionServo);
+    try! dory.add(new Memory(state = [1,0,0,0,0], action=[1,0,0,0,0], reward=1.1));
+    try! dory.add(new Memory(state = [0,1,0,0,0], action=[0,0,0,1,0], reward=2.2));
+    try! dory.add(new Memory(state = [0,0,1,0,0], action=[0,0,1,0,0], reward=3.3));
+
+    var dqp = new DQPolicy(sensor = catAngleSensor);
+    dqp.epochs = 500;
     dory.setPolicy(dqp);
+    dory.finalize();  // Finalizes the policy
     dory.learn();
+    var dopts = Matrix([0,1,0,0,0], [0,0,0,1,0]);
+    var o = dqp.f(options=dopts, state=[0,1,0,1,0]);
+    assertIntArrayEquals(msg="Option 2 is chosen (may be random)"
+      , expected=[0,0,0,1,0], actual=o);
 
     return this.tearDown(t);
   }
@@ -283,22 +291,30 @@ class RelchTest : UnitTest {
     this.tearDown(t=t);
   }
 
+  proc testWorld() {
+    var t = this.setUp("World");
+    assertRealEquals(msg="World has correct radius", expected=sqrt(WORLD_WIDTH**2 + WORLD_HEIGHT**2), actual=boxWorld.radius);
+    this.tearDown(t=t);
+  }
+
   proc testPresentOptions() {
     var t = this.setUp("Present Options");
 
-    catAngleSensor.target = cat;
+    //catAngleSensor.target = cat;
     var motionServo = new Servo(tiler=angler),
         sim = new Environment(name="simulation amazing", epochs=10, steps=5),
         followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor),
         optAnswer1 = eye(N_ANGLES, int);
 
-    sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
-
-
+    // Add world to sim otherwise seg fault in isValidPosition
+    sim.world = boxWorld;
+    dog.addSensor(target=cat, sensor=boxWorld.defaultAngleSensor);
     dog.policy=followCatPolicy;
     dog.add(motionServo);
     var (options, state) = sim.presentOptions(dog);
-    assertIntArrayEquals(msg="State is correct from Present Options", expected=[0,0,0,1,0], actual=state);
+    // Using default tiler for state which is 11 wide now
+    assertIntArrayEquals(msg="State is correct from Present Options"
+      , expected=[0,0,0,0,0,0,1,0,0,0,0], actual=state);
     dog.add(new Servo(tiler=hundredYardTiler));
     var (options2, state2) = sim.presentOptions(dog);
     assertIntEquals(msg="Options 2 has the correct n rows", expected=35, actual=options2.shape[1]);
@@ -350,30 +366,37 @@ class RelchTest : UnitTest {
   proc testMemory() {
     var t = this.setUp("Memories can't wait");
 
+    dory.addSensor(target=cat, sensor=catAngleSensor);
+    dory.add(motionServo);
+    try! dory.add(new Memory(state = [1,0,0,0,0], action=[1,0,0,0,0], reward=1.1));
+    try! dory.add(new Memory(state = [0,1,0,0,0], action=[0,0,0,1,0], reward=2.2));
+    try! dory.add(new Memory(state = [0,0,1,0,0], action=[0,0,1,0,0], reward=3.3));
+
     assertRealEquals(msg="First memory is of reward 1.1"
       ,expected=1.1, actual=dory.memories[1].reward);
-    dory.add(new Memory(state = [0,0,0,1], action=[1,0], reward=4.4));
+    dory.add(new Memory(state = [0,0,0,1,0], action=[0,0,1,0,0], reward=4.4));
     assertRealEquals(msg="First memory has cycled to reward 4.4"
       , expected=4.4 ,actual=dory.memories[1].reward);
 
-    assertIntEquals(msg="Memory dim is 6", expected=6, actual=dory.memories[1].dim());
+    assertIntEquals(msg="Memory dim is correct", expected=10, actual=dory.memories[1].dim());
     assertIntArrayEquals(msg="First memory has correct action and state space"
-      ,expected=[1,0,0,0,0,1], actual=dory.memories[1].v());
+      ,expected=[0,0,1,0,0,0,0,0,1,0], actual=dory.memories[1].v());
     this.tearDown(t=t);
   }
 
   proc run() {
     super.run();
-    testRunDefault();
+    testWorld();
     testTilers();
     testSensors();
     testServos();
     testAgentRelativeMethods();
-    testBuildSim();
-    testPolicies();
+    testMemory();
     testPresentOptions();
     testRewards();
-    testMemory();
+    testPolicies();
+    testRunDefault();
+    testBuildSim();
     return 0;
   }
 }
