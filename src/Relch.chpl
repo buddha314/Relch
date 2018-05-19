@@ -181,6 +181,7 @@ module Relch {
       for i in 1..this.epochs {
         //writeln("starting epoch ", i);
         for step in 1..this.steps {
+          var sr = new StepReport(epoch=i, step=step);
         //writeln("\tstarting step ", step);
           for agent in this.agents{
             //writeln("\t\tagent: ", agent);
@@ -190,12 +191,12 @@ module Relch {
             //writeln("\t\tpresenting options");
             var (options, currentState) = this.presentOptions(agent);
             // A chooses an action
-            writeln("\t\tagent choosing");
+            //writeln("\t\tagent choosing");
             var choice = agent.choose(options, currentState);
-            writeln("\t\tagent acting");
+            //writeln("\t\tagent acting");
             agent.act(choice);
             // DM rewards
-            writeln("\t\tstepping");
+            //writeln("\t\tstepping");
             var (nextState, reward, done) = this.step(agent=agent, action=choice);
             // Add the memory
             try! agent.add(new Memory(state=nextState, action=choice, reward=reward));
@@ -206,16 +207,32 @@ module Relch {
             // Return A
             yield agent;
           }
+          //writeln(sr);
           if this.robotStop() {
             break;
           }
         }
         for agent in this.agents {
-          writeln("larnin!");
+          //writeln("larnin!");
           agent.learn();
           this.reset(agent);
         }
       }
+    }
+  }
+
+  class StepReport {
+    var epoch: int,
+        step: int;
+    proc init(epoch:int, step:int) {
+      this.epoch = epoch;
+      this.step = step;
+    }
+
+    proc readWriteThis(f) {
+      f <~>
+      "epoch: " <~> this.epoch <~>
+      " step: " <~> this.step <~> "\n";
     }
   }
 }

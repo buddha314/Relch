@@ -64,8 +64,12 @@ class Agent : Perceivable {
     return this;
   }
 
+  /*
+  @TODO I don't like this because the Sensor now lives in two places.
+   */
   proc addTarget(target: Perceivable, sensor: Sensor) {
       this.policy = new FollowTargetPolicy(sensor=sensor);
+      this.addSensor(target=target, sensor=sensor);
   }
 
   /*
@@ -84,6 +88,8 @@ class Agent : Perceivable {
 
   /* Expects an integer array of options */
   proc choose(options: [] int, state: [] int) {
+      //writeln("options: ", options);
+      //writeln("state: ", state);
       const choice = this.policy.f(options=options, state=state);
       return choice;
   }

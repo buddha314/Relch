@@ -62,13 +62,15 @@ class RelchTest : UnitTest {
 
   proc testRunDefault() {
     var t = this.setUp("RunDefault");
-    catAngleSensor.add(angler);
-    catAngleSensor.target=cat;
-    var sim = new Environment(name="steppin out", epochs=N_EPOCHS, steps=N_STEPS),
-        followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor),
-        motionServo = new Servo(tiler=angler);
+
+    //catAngleSensor.add(angler);
+    //catAngleSensor.target=cat;
+    //var sim = new Environment(name="steppin out", epochs=N_EPOCHS, steps=N_STEPS),
+    //var followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor);
+    var motionServo = new Servo(tiler=boxWorld.defaultAngleTiler);
     sim.world = boxWorld;
-    dog.policy = followCatPolicy;
+    //dog.policy = followCatPolicy;
+    dog.addTarget(cat, boxWorld.defaultAngleSensor);
     dog.add(motionServo);
     sim.add(dog);
     sim.run();
@@ -393,7 +395,7 @@ class RelchTest : UnitTest {
     testPresentOptions();
     testRewards();
     testPolicies();
-    //testRunDefault();
+    testRunDefault();
     //testBuildSim();
     return 0;
   }

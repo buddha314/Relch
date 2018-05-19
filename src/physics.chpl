@@ -152,7 +152,7 @@ class Tiler {
   }
   proc checkDim(x:[] int) throws {
     if x.size != this.nbins {
-      const err = new DimensionMatchError(expected = this.nbins, actual=x.size);
+      const err = new DimensionMatchError(msg="checking dimensions on Tiler", expected = this.nbins, actual=x.size);
       throw err;
     }
   }
