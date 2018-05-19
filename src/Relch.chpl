@@ -68,7 +68,8 @@ module Relch {
     proc render() {}
 
     proc add(agent: Agent) {
-        this.agents.push_back(agent);
+      agent.simId = this.agents.size +1;
+      this.agents.push_back(agent);
     }
 
     proc add(perceivable: Perceivable) {
@@ -81,6 +82,7 @@ module Relch {
       var optDom = {1..0, 1..agent.optionDimension()},
           options: [optDom] int = 0;
 
+      //writeln("building options");
       var apos = agent.position;
       for s in 1..agent.servos.size {
         const servo = agent.servos[s];
@@ -121,6 +123,7 @@ module Relch {
 
       // Right now, this just constructs the state from the Agent as a pass
       // through.  Soon it will make decisions;
+      //writeln("building state");
       var state = buildAgentState(agent=agent);
 
       return (options, state);
@@ -175,6 +178,9 @@ module Relch {
       Does the actual simulation
      */
     iter run() {
+      if this.world == nil {
+        halt("No world set, aborting");
+      }
       for agent in this.agents {
         if !agent.finalized then agent.finalize();
       }
@@ -190,6 +196,7 @@ module Relch {
             // DM presents options
             //writeln("\t\tpresenting options");
             var (options, currentState) = this.presentOptions(agent);
+            //if agent.name == "dog" then writeln(options);
             // A chooses an action
             //writeln("\t\tagent choosing");
             var choice = agent.choose(options, currentState);

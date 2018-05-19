@@ -245,21 +245,25 @@ class StepTiler : Tiler {
  */
 class World {
   const width: int,
-        height: int;
+        height: int,
+        dimension: int;
   var radius: real,
       wrap: bool,
       defaultLinearTiler: LinearTiler,
       defaultDistanceSensor: DistanceSensor,
       defaultAngleTiler: AngleTiler,
-      defaultAngleSensor: AngleSensor;
+      defaultAngleSensor: AngleSensor,
+      defaultMotionServo: Servo;
 
   proc init(width: int, height: int
+      ,dimension: int = 2
       ,wrap: bool = false
       ,defaultDistanceBins: int = 17, defaultDistanceOverlap: real= 0.1
       ,defaultAngleBins: int = 11, defaultAngleOverlap: real = 0.05
     ) {
     this.width = width;
     this.height = height;
+    this.dimension = dimension;
     this.radius = sqrt(this.width**2 + this.height**2);
     this.defaultLinearTiler = new LinearTiler(nbins=defaultDistanceBins, x1=0.0
       ,x2=this.radius, overlap=defaultDistanceOverlap, wrap=this.wrap);
@@ -267,6 +271,17 @@ class World {
     this.defaultAngleTiler = new AngleTiler(nbins=defaultAngleBins
       ,overlap=defaultAngleOverlap);
     this.defaultAngleSensor = new AngleSensor(name="Default Angle Sensor", tiler=this.defaultAngleTiler);
+    this.defaultMotionServo = new Servo(tiler=this.defaultAngleTiler);
+  }
+
+  proc randomPosition2D() {
+    const x = rand(1, this.width),
+          y = rand(1, this.height);
+    return new Position(x = x, y=y);
+  }
+
+  proc randomPosition() {
+    return this.randomPosition();
   }
 
   proc isValidPosition(position: Position ) {

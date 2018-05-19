@@ -2,7 +2,8 @@ use NumSuch, physics, policies, rewards;
 
 // Should be abstracted to something like DQNAgent
 class Agent : Perceivable {
-  var speed: real,
+  var simId: int,
+      speed: real,
       sensors: [1..0] Sensor,
       servos: [1..0] Servo,
       policy: Policy,
@@ -35,13 +36,6 @@ class Agent : Perceivable {
     return this.addServo(servo);
   }
 
-  /*
-  proc add(sensor: Sensor) {
-    sensor.stateIndexStart = this.sensorDimension() + 1;
-    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
-    this.sensors.push_back(sensor);
-  }*/
-
   proc add(reward: Reward) {
     this.rewards.push_back(reward);
   }
@@ -67,9 +61,10 @@ class Agent : Perceivable {
   /*
   @TODO I don't like this because the Sensor now lives in two places.
    */
-  proc addTarget(target: Perceivable, sensor: Sensor) {
-      this.policy = new FollowTargetPolicy(sensor=sensor);
+  proc addTarget(target: Perceivable, sensor: Sensor, avoid: bool = false) {
+      this.policy = new FollowTargetPolicy(sensor=sensor, avoid=avoid);
       this.addSensor(target=target, sensor=sensor);
+      return sensor;
   }
 
   /*
@@ -152,7 +147,8 @@ class Agent : Perceivable {
   }
 
   proc readWriteThis(f) throws {
-    f <~> "%25s".format(this.name) <~> " "
+    f <~> "%6i".format(this.simId) <~> " "
+      <~> "%7s".format(this.name) <~> " "
       <~> "%4r".format(this.position.x) <~> " "
       <~> "%4r".format(this.position.y);
   }

@@ -123,13 +123,14 @@ class FollowTargetPolicy : Policy {
       if theta > pi then theta = 2* pi - theta;
       thetas[i] = theta;
     }
+    writeln("thetas: ", thetas);
     var choice: [1..options.shape[2]] int;
     if this.avoid {
         choice = options[argmax(thetas), ..];
     } else {
+        writeln("argmin thetas: ", argmin(thetas));
         choice = options[argmin(thetas), ..];
     }
-    //var choice: [1..options.shape[2]] int = options[argmin(thetas), ..];
     return choice;
   }
 }

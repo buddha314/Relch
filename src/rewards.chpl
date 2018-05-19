@@ -56,5 +56,4 @@ class ProximityReward : Reward {
       return this.stepPenalty;
     }
   }
-
 }

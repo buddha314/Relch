@@ -5,36 +5,26 @@ config const WORLD_WIDTH: int,
              N_DISTS: int,
              N_STEPS: int,
              N_EPOCHS: int,
-             DOG_SPEED: int,
-             CAT_SPEED: int;
+             DOG_SPEED: real,
+             CAT_SPEED: real;
 
-var hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=950, overlap=0.1, wrap=true),
-    angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05),
+var boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
     dog = new Agent(name="dog", position=new Position(x=25, y=25), speed=DOG_SPEED),
-    cat = new Agent(name="cat", position=new Position(x=75, y=75), speed=CAT_SPEED),
-    catAngleSensor = new AngleSensor(name="find the cat angle", tiler=angler),
-    dogAngleSensor = new AngleSensor(name="find the dog angle", tiler=angler),
-    catDistanceSensor = new DistanceSensor(name="find the cat distance", tiler=hundredYardTiler),
-    dogDistanceSensor = new DistanceSensor(name="find the dog distance", tiler=hundredYardTiler),
-    boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
-    sim = new Environment(name="steppin out", epochs=N_EPOCHS, steps=N_STEPS);
+    cat = new Agent(name="cat", position=new Position(x=150, y=130), speed=CAT_SPEED);
 
 
-catAngleSensor.target = cat;
-dogAngleSensor.target = dog;
-catDistanceSensor.target = cat;
-dogDistanceSensor.target = dog;
-var followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor),
-    followDogPolicy = new FollowTargetPolicy(sensor=dogAngleSensor, avoid=true),
-    motionServo = new Servo(tiler=angler);
+// Add sensors and rewards to agents
+var dogSensor = cat.addTarget(dog, boxWorld.defaultAngleSensor, avoid=false);  // Gives the cat the sensor as well
+var catSensor = dog.addTarget(cat, boxWorld.defaultAngleSensor);  // Gives the dog the sensor as well
+// Reward dog if he gets close to the cat
+//dog.add(new ProximityReward(proximity=5, sensor=catSensor));
 
-followCatPolicy.add(catDistanceSensor);
-followDogPolicy.add(dogDistanceSensor);
-dog.policy = followCatPolicy;
-cat.policy = followDogPolicy;
-dog.add(motionServo);
-cat.add(motionServo);
-dog.add(new ProximityReward(proximity=5, sensor=catDistanceSensor));
+// Allow them to move
+dog.add(boxWorld.defaultMotionServo);  // Moves the dog
+cat.add(boxWorld.defaultMotionServo);  // Moves the cat
+
+// Create the simultation
+var sim = new Environment(name="steppin out", epochs=N_EPOCHS, steps=N_STEPS);
 sim.world = boxWorld;
 sim.add(dog);
 sim.add(cat);
