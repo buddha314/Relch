@@ -396,7 +396,7 @@ class RelchTest : UnitTest {
     testRewards();
     testPolicies();
     testRunDefault();
-    //testBuildSim();
+    testBuildSim();
     return 0;
   }
 }
