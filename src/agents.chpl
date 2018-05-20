@@ -13,7 +13,6 @@ class Agent : Perceivable {
       maxMemories: int,
       memoriesDom = {1..0},
       memories: [memoriesDom] Memory,
-      initialPosition: Position,
       done: bool;
 
   proc init(name:string
@@ -28,16 +27,10 @@ class Agent : Perceivable {
     this.nMemories = 0;
     this.maxMemories = maxMemories;
     this.memoriesDom = {1..this.maxMemories};
-    this.initialPosition = position;
   }
 
   proc add(servo: Servo) {
     return this.addServo(servo);;
-    return this;
-  }
-
-  proc add(reward: Reward) {
-    this.rewards.push_back(reward);
     return this;
   }
 
@@ -76,6 +69,19 @@ class Agent : Perceivable {
     sensor.stateIndexStart = this.sensorDimension() + 1;
     sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
     this.sensors.push_back(sensor);
+    return this;
+  }
+
+  proc addSensor(target: Perceivable, sensor: Sensor, reward: Reward) {
+    sensor.target = target;
+    sensor.stateIndexStart = this.sensorDimension() + 1;
+    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
+
+    reward.stateIndexStart = sensor.stateIndexStart;
+    reward.stateIndexEnd = sensor.stateIndexEnd;
+    this.sensors.push_back(sensor);
+    this.rewards.push_back(reward);
+    return this;
   }
 
   proc setPolicy(policy: Policy) {
@@ -96,6 +102,9 @@ class Agent : Perceivable {
     t = t && this.policy.finalize(agent = this);
     t = t && this.servos.size > 0;
     t = t && this.sensors.size > 0;
+    for reward in this.rewards {
+      t = t && reward.finalize();
+    }
     this.finalized = t;
     return this.finalized;
   }
@@ -161,10 +170,12 @@ class Agent : Perceivable {
 class Perceivable {
   var name: string,
       position: Position,
+      initialPosition: Position,
       simId: int;
   proc init(name: string, position: Position) {
     this.name = name;
     this.position = position;
+    this.initialPosition = position;
     this.simId = -1;
   }
 }

@@ -252,7 +252,6 @@ class World {
       wrap: bool,
       defaultLinearTiler: LinearTiler,
       defaultAngleTiler: AngleTiler;
-      //defaultMotionServo: Servo;
 
   proc init(width: int, height: int
       ,dimension: int = 2
@@ -296,7 +295,22 @@ class World {
     return new AngleSensor(name="Default Angle Sensor", tiler=this.defaultAngleTiler);
   }
 
+  /*
+   Uses the default linear tiler over the radius of the world
+   */
+  proc getDefaultDistanceSensor() {
+    return new DistanceSensor(name="Default Distance Sensor", tiler=this.defaultLinearTiler);
+  }
+
   proc getDefaultMotionServo() {
     return new Servo(tiler=this.defaultAngleTiler);
+  }
+
+  /*
+   Default is to be within 1 tile of the target
+   */
+  proc getDefaultProximityReward() {
+    //return new ProximityReward(proximity=3);
+    return new ProximityReward(proximity=1);
   }
 }

@@ -87,15 +87,35 @@ module Relch {
     proc setAgentTarget(agent: Agent, target: Perceivable, sensor: Sensor, avoid:bool=false) {
       if agent.simId < 1 then this.add(agent);
       if target.simId < 1 then this.add(target);
-
       sensor.targetId = target.simId;
       agent.addTarget(target, sensor, avoid);
       return agent;
     }
 
+    /*
+    Pass through
+     */
     proc addAgentServo(agent: Agent, servo: Servo) {
       return agent.add(servo);
     }
+
+    proc addAgentSensor(agent: Agent, target: Perceivable, sensor: Sensor) {
+      if agent.simId <1 then this.add(agent);
+      if target.simId <1 then this.add(target);
+      sensor.targetId = target.simId;
+      agent.addSensor(target=target, sensor=sensor);
+
+      return agent;
+    }
+
+    proc addAgentSensor(agent:Agent, target:Perceivable, sensor:Sensor, reward: Reward) {
+      if agent.simId <1 then this.add(agent);
+      if target.simId <1 then this.add(target);
+      sensor.targetId = target.simId;
+      agent.addSensor(target=target, sensor=sensor, reward=reward);
+      return agent;
+    }
+
 
     proc presentOptions(agent: Agent) {
       /* Constructing options is kinda hard, right now just 1 for every
@@ -180,9 +200,9 @@ module Relch {
       var r: bool = false;
       //if this.currentStep >= this.steps then r = true;
       if any {
-        //for sensor in agent.policy.sensors {
-        for sensor in agent.sensors {
-          if sensor.done then return true;
+        for reward in agent.rewards {
+          if reward.accomplished then writeln("sim halted by agent ", agent.name);
+          if reward.accomplished then return true;
         }
       }
       return r;
@@ -208,14 +228,18 @@ module Relch {
       }
       var finalized: bool = true;
       for agent in this.agents {
+        writeln("finalizing ", agent.name);
         if !agent.finalized {
           finalized = finalized && agent.finalize();
         }
-        if !finalized then halt("Agent ", agent.name, " cannot be finalized, halting.");
+        if !agent.finalized then halt("Agent ", agent.name, " cannot be finalized, halting.");
       }
       for i in 1..epochs {
-        //writeln("starting epoch ", i);
-        for step in 1..steps {
+        writeln("starting epoch ", i);
+        var keepSteppin: bool = true,
+            step: int = 1;
+        //for step in 1..steps {
+        while keepSteppin {
           var sr = new StepReport(epoch=i, step=step);
         //writeln("\tstarting step ", step);
           for agent in this.agents{
@@ -245,8 +269,10 @@ module Relch {
           }
           //writeln(sr);
           if this.robotStop() {
-            break;
+            keepSteppin = false;
           }
+          step += 1;
+          if steps > 0 && step >= steps then keepSteppin = false;
         }
         for agent in this.agents {
           //writeln("larnin!");
