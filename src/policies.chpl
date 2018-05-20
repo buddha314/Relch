@@ -123,12 +123,12 @@ class FollowTargetPolicy : Policy {
       if theta > pi then theta = 2* pi - theta;
       thetas[i] = theta;
     }
-    writeln("thetas: ", thetas);
+    //writeln("thetas: ", thetas);
     var choice: [1..options.shape[2]] int;
     if this.avoid {
         choice = options[argmax(thetas), ..];
     } else {
-        writeln("argmin thetas: ", argmin(thetas));
+        //writeln("argmin thetas: ", argmin(thetas));
         choice = options[argmin(thetas), ..];
     }
     return choice;
@@ -147,7 +147,8 @@ class DQPolicy : Policy {
       alphaR: real,
       regularization: string;
 
-  proc init(sensor: Sensor, avoid: bool=false) {
+  //proc init(sensor: Sensor, avoid: bool=false) {
+  proc init(avoid: bool=false) {
       super.init();
       this.complete();
       //this.add(sensor);

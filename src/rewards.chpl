@@ -3,57 +3,78 @@ use physics, agents;
 class Reward {
   var tDom = {1..0, 1..0},
       target:[tDom] int,
-      sensor: Sensor,
-      reward: real,
-      stepPenalty: real;
+      //sensor: Sensor,
+      stateIndexStart: int,
+      stateIndexEnd: int,
+      value: real,
+      penalty: real,
+      accomplished: bool;
 
-  proc init(reward:real = 10.0, stepPenalty: real = -1.0) {
-    this.reward = reward;
-    this.stepPenalty = stepPenalty;
+  proc init(value:real = 10.0, penalty: real = -1.0) {
+    this.value = value;
+    this.penalty = penalty;
+    this.accomplished = false;
   }
 
-  proc init(target: [] int, sensor: Sensor, reward=10.0, stepPenalty=-1.0) {
-    this.tDom = target.domain;
-    this.target = target;
-    this.sensor = sensor;
-    this.reward = reward;
-    this.stepPenalty = stepPenalty;
-  }
-  proc f(state:[] int, sensor: Sensor) {
-    var v:[1..sensor.dim()] int = state[sensor.stateIndexStart..sensor.stateIndexEnd];
-    for i in 1..target.shape[1] {
-      var t:[1..sensor.dim()] int = target[i,..];
-      if t.equals(v) {
-        sensor.done = true;
-        return this.reward;
-      }
-    }
-    return this.stepPenalty;
+  proc buildTargets() {
+    this.tDom = {1..1, this.stateIndexEnd..this.stateIndexStart};
+    this.target = 0;
+    return true;
   }
 
   proc f(state:[] int) {
-    return this.f(state=state, sensor=this.sensor);
+    return this.value;
   }
+
+  proc finalize() {
+    return this.buildTargets();
+  }
+
 }
 
+/*
+ Proximity is an integer to reflect the tiling. So is is the number
+ of tiles away the target can be.
+ */
 class ProximityReward : Reward {
-  var proximity: real;
-  proc init(proximity: real, sensor:Sensor, reward: real = 10.0, stepPenalty: real = -1) {
+  var proximity: int;
+  proc init(proximity: int, reward: real = 10.0, penalty: real = -1) {
     var x:[1..1,1..1] int;
-    super.init(target=x, sensor=sensor, reward=reward, stepPenalty=stepPenalty);
+    super.init(value=value, penalty=penalty);
     this.complete();
     this.proximity = proximity;
   }
 
-  proc f(state:[] int, sensor: Sensor) {
-    var d = sensor.tiler.unbin(state[sensor.stateIndexStart..sensor.stateIndexEnd]);
-    // Needs to be cast as the median of the bin it inhabits
-    var prox = sensor.tiler.unbin( sensor.tiler.bin(this.proximity));
-    if d <= prox {
-      sensor.done = true;
-      return this.reward;
-    } else {
-      return this.stepPenalty;
+  proc buildTargets() {
+    var rows: int = 2*this.proximity- 1;
+    this.tDom = {1..rows, this.stateIndexStart..this.stateIndexEnd}; // Keep the state domain
+    this.target[1,stateIndexStart] = 1;
+    for i in 2..proximity {
+      this.target[i,stateIndexStart + i-1] = 1;
+      // To handle overlap on the inside distance
+      this.target[proximity + i-1, stateIndexStart + i-2] = 1;
+      this.target[proximity + i-1, stateIndexStart + i-1] = 1;
     }
+    //writeln(this.target);
+    return true;
+  }
+
+  proc f(state:[] int) {
+    var substate = state[this.stateIndexStart..this.stateIndexEnd];
+    //writeln("substate: ", substate);
+    for i in 1..this.target.shape[1] {
+      const x:[substate.domain] int = this.target[i,..];
+      //writeln("checking for x: ", x);
+      if substate.equals(x) {
+        this.accomplished = true;
+        //writeln("yes, there is a match");
+        return this.value;
+      }
+    }
+    return this.penalty;
+  }
+
+  proc finalize() {
+    return this.buildTargets();
   }
 }
