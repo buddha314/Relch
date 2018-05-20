@@ -51,7 +51,14 @@ module Relch {
         return (state, reward, done);
     }
 
-    proc reset(agent: Agent) {
+    proc reset() {
+      this.resetAgents();
+    }
+
+    proc resetAgents() {
+      for agent in this.agents do this.resetAgent(agent);
+    }
+    proc resetAgent(agent: Agent) {
       agent.currentStep = 1;
       agent.position = agent.initialPosition;
       agent.done = false;
@@ -59,6 +66,7 @@ module Relch {
       for sensor in agent.sensors {
         sensor.done = false;
       }
+      for reward in agent.rewards do reward.accomplished = false;
     }
 
     /* This will actually emit, not render */
@@ -274,11 +282,12 @@ module Relch {
           step += 1;
           if steps > 0 && step >= steps then keepSteppin = false;
         }
+        step = 0;
         for agent in this.agents {
           //writeln("larnin!");
           agent.learn();
-          this.reset(agent);
         }
+        this.reset();
       }
     }
   }
