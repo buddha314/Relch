@@ -208,7 +208,7 @@ module Relch {
      This is here so ultimately the environment can edit the sensors
      */
     proc buildAgentState(agent: Agent) {
-      writeln("building state for ", agent.name);
+      //writeln("building state for ", agent.name);
 
       var state: [1..agent.sensorDimension()] int;
       for sensor in agent.sensors {
@@ -219,7 +219,7 @@ module Relch {
           var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent, you=you);
           state[a.domain] = a;
       }
-      writeln("exiting build state for ", agent.name);
+      //writeln("exiting build state for ", agent.name);
       return state;
     }
 
@@ -265,14 +265,14 @@ module Relch {
       }
       var finalized: bool = true;
       for agent in this.agents {
-        writeln("finalizing ", agent.name);
+        //writeln("finalizing ", agent.name);
         if !agent.finalized {
           finalized = finalized && agent.finalize();
         }
         if !agent.finalized then halt("Agent ", agent.name, " cannot be finalized, halting.");
       }
       for i in 1..epochs {
-        writeln("starting epoch ", i);
+        //writeln("starting epoch ", i);
         var keepSteppin: bool = true,
             step: int = 1;
         //for step in 1..steps {
@@ -284,16 +284,16 @@ module Relch {
             if agent.done then continue;
             agent.currentStep = step;
             // DM presents options
-            writeln("\t\tpresenting options");
+            //writeln("\t\tpresenting options");
             var (options, currentState) = this.presentOptions(agent);
             //if agent.name == "dog" then writeln(options);
             // A chooses an action
-            writeln("\t\tagent choosing");
+            //writeln("\t\tagent choosing");
             var choice = agent.choose(options, currentState);
-            writeln("\t\tagent acting");
+            //writeln("\t\tagent acting");
             agent.act(choice);
             // DM rewards
-            writeln("\t\tstepping");
+            //writeln("\t\tstepping");
             var (nextState, reward, done) = this.step(agent=agent, action=choice);
             // Add the memory
             try! agent.add(new Memory(state=nextState, action=choice, reward=reward));
@@ -313,7 +313,7 @@ module Relch {
         }
         step = 0;
         for agent in this.agents {
-          writeln("larnin!");
+          //writeln("larnin!");
           agent.learn();
         }
         this.reset();
