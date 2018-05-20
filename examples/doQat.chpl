@@ -18,7 +18,8 @@ var sim = new Environment(name="simulatin' amazing!"),
 sim.world = boxWorld;
 dog = sim.add(dog);
 cat = sim.add(cat);
-dog = sim.setAgentTarget(agent=dog, target=cat, sensor=boxWorld.getDefaultAngleSensor());
+//dog = sim.setAgentTarget(agent=dog, target=cat, sensor=boxWorld.getDefaultAngleSensor());
+dog = sim.setAgentPolicy(agent=dog, policy=new DQPolicy(avoid=false));
 cat = sim.setAgentTarget(agent=cat, target=dog, sensor=boxWorld.getDefaultAngleSensor(), avoid=true);
 dog = sim.addAgentServo(dog, boxWorld.getDefaultMotionServo());
 cat = sim.addAgentServo(cat, boxWorld.getDefaultMotionServo());

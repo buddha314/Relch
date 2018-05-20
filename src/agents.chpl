@@ -36,7 +36,7 @@ class Agent : Perceivable {
 
   proc addServo(servo: Servo) {
     servo.optionIndexStart = this.optionDimension() + 1;
-    servo.optionIndexEnd = servo.optionIndexStart + servo.dim();
+    servo.optionIndexEnd = servo.optionIndexStart + servo.dim() - 1;
     this.servos.push_back(servo);
     return this;
   }

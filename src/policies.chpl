@@ -147,7 +147,8 @@ class DQPolicy : Policy {
       alphaR: real,
       regularization: string;
 
-  proc init(sensor: Sensor, avoid: bool=false) {
+  //proc init(sensor: Sensor, avoid: bool=false) {
+  proc init(avoid: bool=false) {
       super.init();
       this.complete();
       //this.add(sensor);
