@@ -1,4 +1,5 @@
 use Relch;
+
 config const WORLD_WIDTH: int,
              WORLD_HEIGHT: int,
              N_ANGLES: int,

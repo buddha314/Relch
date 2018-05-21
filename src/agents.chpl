@@ -165,6 +165,18 @@ class Agent : Perceivable {
       <~> "%4r".format(this.position.x) <~> " "
       <~> "%4r".format(this.position.y);
   }
+
+  proc writeRecord() {
+    return new AgentRecord(simId=this.simId, name=this.name
+      , x=this.position.x, y=this.position.y);
+  }
+}
+
+record AgentRecord {
+  var simId: int,
+      name: string,
+      x: real,
+      y: real;
 }
 
 class Perceivable {
