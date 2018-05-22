@@ -220,7 +220,6 @@ module Relch {
       //if this.currentStep >= this.steps then r = true;
       if any {
         for reward in agent.rewards {
-          if reward.accomplished then writeln("sim halted by agent ", agent.name);
           if reward.accomplished then erpt.winner = agent.name;
           if reward.accomplished then return true;
         }
