@@ -15,7 +15,7 @@ class RelchTest : UnitTest {
   var hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true),
       angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05),
       sim = new Environment(name="simulating awesome!"),
-      boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
+      boxWorld = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT),
       drizella = new StepTiler(nbins=N_STEPS),
       whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false), // Does not wrap
       dog = new Agent(name="dog", position=new Position(x=25, y=25)),
@@ -45,7 +45,7 @@ class RelchTest : UnitTest {
     dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
     fitBit = new StepSensor(name="fit bit", steps=N_STEPS);
     sim = new Environment(name="simulating awesome!");
-    boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+    boxWorld = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT);
     motionServo = new Servo(tiler=angler);
     dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
     return super.setUp(name);
@@ -109,8 +109,9 @@ class RelchTest : UnitTest {
 
   proc testSensors() {
     var t = this.setUp("Sensors");
-    var sim = new Environment(name="simulation amazing", epochs=10, steps=5);
-    sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+    //var sim = new Environment(name="simulation amazing", epochs=10, steps=5);
+    var sim = new Environment(name="simulation amazing");
+    sim.world = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT);
 
     class Seagull : Agent {
       proc init(name:string, position: Position) {
@@ -175,7 +176,7 @@ class RelchTest : UnitTest {
   proc testBuildSim() {
     var t = this.setUp("BuildSim");
     var sim = new Environment(name="simulation amazing");
-    sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+    sim.world = boxWorld;
 
     dog = sim.add(dog);
     assertIntEquals(msg="Dog has simId 1", expected=1, actual=dog.simId);
@@ -389,10 +390,10 @@ class RelchTest : UnitTest {
   proc run() {
     super.run();
     testBuildSim();
-    //testWorld();
-    //testTilers();
-    //testSensors();
-    //testServos();
+    testWorld();
+    testTilers();
+    testSensors();
+    testServos();
     //testAgentRelativeMethods();
     //testMemory();
     //testPresentOptions();
