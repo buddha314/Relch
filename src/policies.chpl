@@ -148,16 +148,20 @@ class DQPolicy : Policy {
       regularization: string;
 
   //proc init(sensor: Sensor, avoid: bool=false) {
-  proc init(avoid: bool=false) {
+  proc init(avoid: bool=false
+    ,momentum: real =0.0, epochs: int = 1000
+    ,learningRate: real = 0.01, alphaR: real = 0
+    ,regularization: string = "L2"
+  ) {
       super.init();
       this.complete();
       //this.add(sensor);
-      this.momentum = 0.0;
-      this.epochs = 100000;
-      this.learningRate = 0.01;
-      this.reportInterval = 1000;
-      this.alphaR = 0;
-      this.regularization = "L2";
+      this.momentum = momentum;
+      this.epochs = epochs;
+      this.learningRate = learningRate;
+      this.reportInterval = this.epochs;
+      this.alphaR = alphaR;
+      this.regularization = regularization;
   }
 
   proc finalize(agent: Agent) {
@@ -168,13 +172,14 @@ class DQPolicy : Policy {
   }
 
   proc learn(agent: Agent) {
+    //writeln("In DQ Learning");
     var n = min reduce [agent.nMemories, agent.maxMemories];
-    var y: [1..n] real;
+    var y: [1..1, 1..n] real;
     var XX: [1..n, 1..this.model.inputDim()] int;
     for i in 1..n {
         ref currentMemory = agent.memories[i];
         XX[i,..] = currentMemory.v();
-        y[i] = agent.memories[i].reward;
+        y[1, i] = agent.memories[i].reward;
     }
     //this.model.train(X = XX ,Y = y
     this.model.train(X = XX.T ,Y = y
