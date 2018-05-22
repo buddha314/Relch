@@ -1,25 +1,7 @@
 /* Documentation for Relch */
 module Relch {
   use Math, NumSuch;
-  use agents, policies, physics, rewards;
-
-  /*
-  use worlds;
-  config const N_EPISODES: int,
-               PRINT_PATHS: bool,
-               LEARNING_STEPS: int,
-               BOARD_WIDTH: int,
-               BOARD_HEIGHT: int,
-               STEP_PENALTY: int,
-               DEATH_PENALTY: int,
-               GOAL_REWARD: int,
-               INITIAL_STATE: string,
-               GOAL_STATE: string,
-               LEARNING_RATE: real,   // alpha
-               DISCOUNT_FACTOR: real, // gamma
-               TRACE_DECAY: real;     // lambda
-
-  */
+  use agents, policies, physics, rewards, dtos;
 
   /* Modeled after the AIGym Class: https://github.com/openai/gym/tree/master/gym/envs#how-to-create-new-environments-for-gym* */
   class Environment {
@@ -43,10 +25,10 @@ module Relch {
      4. New Position: In several sims, the actual position is not part of the state space
         so use this to give the agent his new position
      */
-    proc step(agent: Agent, action:[] int) {
+    proc step(erpt: EpochDTO, agent: Agent, action:[] int) {
         var state: [1..agent.sensorDimension()] int = buildAgentState(agent=agent);
         var reward = this.dispenseReward(agent=agent, state=state);
-        var done: bool = this.areYouThroughYet(agent=agent, any=true);  // Yes, this is a Steve Martin reference
+        var done: bool = this.areYouThroughYet(erpt=erpt, agent=agent, any=true);  // Yes, this is a Steve Martin reference
         agent.currentStep += 1;
         return (state, reward, done);
     }
@@ -233,12 +215,13 @@ module Relch {
 
     // If any sensor is done, you are done
     // Otherwise all sensors must be done
-    proc areYouThroughYet(agent: Agent, any: bool = true) {
+    proc areYouThroughYet(erpt: EpochDTO, agent: Agent, any: bool = true) {
       var r: bool = false;
       //if this.currentStep >= this.steps then r = true;
       if any {
         for reward in agent.rewards {
           if reward.accomplished then writeln("sim halted by agent ", agent.name);
+          if reward.accomplished then erpt.winner = agent.name;
           if reward.accomplished then return true;
         }
       }
@@ -259,7 +242,7 @@ module Relch {
     /*
       Does the actual simulation
      */
-    iter run(epochs: int, steps: int) {
+    iter run(epochs: int, steps: int) : DTO {
       if this.world == nil {
         halt("No world set, aborting");
       }
@@ -272,6 +255,7 @@ module Relch {
         if !agent.finalized then halt("Agent ", agent.name, " cannot be finalized, halting.");
       }
       for i in 1..epochs {
+        var erpt = new EpochDTO(id=i);
         //writeln("starting epoch ", i);
         var keepSteppin: bool = true,
             step: int = 1;
@@ -294,7 +278,7 @@ module Relch {
             agent.act(choice);
             // DM rewards
             //writeln("\t\tstepping");
-            var (nextState, reward, done) = this.step(agent=agent, action=choice);
+            var (nextState, reward, done) = this.step(erpt=erpt, agent=agent, action=choice);
             // Add the memory
             try! agent.add(new Memory(state=nextState, action=choice, reward=reward));
             if done {
@@ -302,7 +286,7 @@ module Relch {
               break;
             }
             // Return A
-            yield agent;
+            yield new AgentDTO(agent);
           }
           //writeln(sr);
           if this.robotStop() {
@@ -311,12 +295,14 @@ module Relch {
           step += 1;
           if steps > 0 && step >= steps then keepSteppin = false;
         }
+        erpt.steps = step;
         step = 0;
         for agent in this.agents {
           //writeln("larnin!");
           agent.learn();
         }
         this.reset();
+        yield erpt;
       }
     }
   }
@@ -335,4 +321,5 @@ module Relch {
       " step: " <~> this.step <~> "\n";
     }
   }
+
 }

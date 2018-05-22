@@ -172,12 +172,6 @@ class Agent : Perceivable {
   }
 }
 
-record AgentRecord {
-  var simId: int,
-      name: string,
-      x: real,
-      y: real;
-}
 
 class Perceivable {
   var name: string,
