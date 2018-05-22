@@ -8,9 +8,9 @@ class Policy {
   //var sensors: [1..0] Sensor,
   var onPolicy: bool,
       epsilon: real;   // for epsilon-greedy routines
-  proc init(onPolicy: bool = true) {
+  proc init(onPolicy: bool = true, epsilon: real = -1) {
     this.onPolicy = onPolicy;
-    this.epsilon = -1.0;
+    this.epsilon = epsilon;
   }
 
   //proc f(me: Agent, options:[] int, state:[] int) {
@@ -148,12 +148,12 @@ class DQPolicy : Policy {
       regularization: string;
 
   //proc init(sensor: Sensor, avoid: bool=false) {
-  proc init(avoid: bool=false
+  proc init(epsilon: real
     ,momentum: real =0.0, epochs: int = 1000
     ,learningRate: real = 0.01, alphaR: real = 0
     ,regularization: string = "L2"
   ) {
-      super.init();
+      super.init(onPolicy=true, epsilon=epsilon);
       this.complete();
       //this.add(sensor);
       this.momentum = momentum;
@@ -197,6 +197,9 @@ class DQPolicy : Policy {
     // This returns a matrix, not a vector
     // In our case, it is just one row tall, so we
     // grab the first row
+    var rn:[1..1] real;
+    fillRandom(rn);
+    if this.epsilon > 0 && rn[1] < this.epsilon then return this.randomAction(options);
     //var a = this.model.predict(opstate);
     var a = this.model.predict(opstate.T);
     var r:[1..options.shape[2]] int;
