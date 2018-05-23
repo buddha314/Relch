@@ -6,6 +6,24 @@ class MotionServo : Servo {
     super.init(tiler=tiler);
     this.complete();
   }
+  proc f(agent: Agent, choice: [] int) {
+    const o:[1..this.dim()] int = choice[this.optionIndexStart..this.optionIndexEnd];
+    const d: real = this.tiler.unbin(o);
+    agent.moveAgentAlong(d);
+    return agent;
+  }
+}
+
+/*
+ Used to collect items like in Gem Hunter (coming soon!)
+ */
+class CollectingServo: Servo {
+  proc init() {
+    super.init();
+    this.complete();
+  }
+
+
 }
 
 class Servo {
@@ -19,9 +37,6 @@ class Servo {
   }
 
   proc f(agent: Agent, choice: [] int) {
-    const o:[1..this.dim()] int = choice[this.optionIndexStart..this.optionIndexEnd];
-    const d: real = this.tiler.unbin(o);
-    agent.moveAgentAlong(d);
     return agent;
   }
 
@@ -30,33 +45,19 @@ class Servo {
   }
 }
 
-/* Returns a position from the original point along theta */
-proc moveAlong(from: Position, theta: real, speed: real) {
-  const p = new Position(x=from.x + speed*cos(theta), y=from.y + speed*sin(theta) );
-  return p;
-}
-
-proc dist(me: Agent, you: Agent) {
-  return dist(me.position, you.position);
-}
-proc dist(me: Agent, you: Position) {
-  return dist(me.position, you);
-}
-proc dist(origin: Position, target: Position) {
-  return sqrt((origin.x - target.x)**2 + (origin.y - target.y)**2);
-}
-
-proc angle(origin: Position, target: Position) {
-  return atan2((target.y - origin.y) , (target.x - origin.x));
-}
-
-class Position {
+class Position2D: Position {
   var x: real,
       y: real;
   proc init(x: real = 0, y: real = 0) {
+    super.init();
+    this.complete();
     this.x = x;
     this.y = y;
   }
+}
+
+class Position {
+  proc init() {}
 }
 
 

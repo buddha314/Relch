@@ -7,13 +7,18 @@ module Relch {
   class Environment {
     var name: string,
         currentStep: int,
-        world: World,
-        agents: [1..0] Agent,
-        perceivables: [1..0] Perceivable;
+        world: World;
+        //agents: [1..0] Agent,
+        //perceivables: [1..0] Perceivable;
 
     proc init(name: string) {
       this.name=name;
       this.currentStep = 1;
+    }
+
+    proc init(name: string, world:World) {
+      this.init(name=name);
+      this.world = world;
     }
 
 
@@ -55,15 +60,15 @@ module Relch {
     proc render() {}
 
     proc add(perceivable: Perceivable) {
-      perceivable.simId = this.perceivables.size +1;
-      this.perceivables.push_back(perceivable);
+      perceivable.id = this.world.perceivables.size +1;
+      this.world.perceivables.push_back(perceivable);
       return perceivable;
     }
 
     proc add(agent: Agent) {
-      agent.simId = this.perceivables.size + 1;
-      this.perceivables.push_back(agent);
-      this.agents.push_back(agent);
+      agent.id = this.world.perceivables.size + 1;
+      this.world.perceivables.push_back(agent);
+      this.world.agents.push_back(agent);
       return agent;
     }
 
@@ -75,9 +80,9 @@ module Relch {
     Creates a FollowTargetPolicy for the agent against the target
      */
     proc setAgentTarget(agent: Agent, target: Perceivable, sensor: Sensor, avoid:bool=false) {
-      if agent.simId < 1 then this.add(agent);
-      if target.simId < 1 then this.add(target);
-      sensor.targetId = target.simId;
+      if agent.id < 1 then this.add(agent);
+      if target.id < 1 then this.add(target);
+      sensor.targetId = target.id;
       agent.addTarget(target, sensor, avoid);
       return agent;
     }
@@ -90,23 +95,14 @@ module Relch {
     }
 
     proc addAgentSensor(agent: Agent, target: Perceivable, sensor: Sensor) {
-      if agent.simId <1 then this.add(agent);
-      if target.simId <1 then this.add(target);
-      sensor.targetId = target.simId;
-      agent.addSensor(target=target, sensor=sensor);
-
-      return agent;
+      return this.world.addAgentSensor(agent=agent, target=target, sensor=sensor);
     }
 
     /*
      Add a sensor with a reward attached
      */
     proc addAgentSensor(agent:Agent, target:Perceivable, sensor:Sensor, reward: Reward) {
-      if agent.simId <1 then this.add(agent);
-      if target.simId <1 then this.add(target);
-      sensor.targetId = target.simId;
-      agent.addSensor(target=target, sensor=sensor, reward=reward);
-      return agent;
+      return this.world.addAgentSensor(agent=agent, target=target, sensor=sensor, reward=reward);
     }
 
     /*
@@ -120,6 +116,17 @@ module Relch {
     proc presentOptions(agent: Agent) {
       /* Constructing options is kinda hard, right now just 1 for every
          element of the sensors */
+
+      var options: [1..0, 1..0] int;
+      for s in 1..agent.servos.size {
+        if s > 1 {
+          halt("No more than one servo supported at the moment");
+        }
+        var servo = agent.servos[s];
+        options = this.world.getMotionServoOptions(agent=agent, servo=servo);
+      }
+
+      /*
       var optDom = {1..0, 1..agent.optionDimension()},
           options: [optDom] int = 0;
 
@@ -149,7 +156,6 @@ module Relch {
             } else {
               halt("Only one servo supported.");
             }
-             /*
              else if s > 1 && nAddedOptions == 0 {   // First new option, so add to the empty space
               writeln("s> 1, nop 0");
               const nr = optSnapshot.domain.dims()(1).high;
@@ -165,7 +171,7 @@ module Relch {
                 optDom = {1..optDom.dims()(1).high+1, optDom.dims()(2)};
                 options[optDom.dims()(1).high, ..] = currentRow;
               }
-            } */
+            }
 
             nAddedOptions += 1;
             currentRowNumber += 1;
@@ -174,7 +180,7 @@ module Relch {
             //writeln("Not a valid position: ", p);
           }
         }
-      }
+      } */
 
       // Right now, this just constructs the state from the Agent as a pass
       // through.  Soon it will make decisions;

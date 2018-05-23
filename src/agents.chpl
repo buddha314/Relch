@@ -15,6 +15,11 @@ class Agent : Perceivable {
       memories: [memoriesDom] Memory,
       done: bool;
 
+  proc init(name:string) {
+    super.init(name=name, new Position2D());
+    this.complete();
+  }
+
   proc init(name:string
       , position:Position = new Position()
       , speed: real = 3.0
@@ -160,14 +165,14 @@ class Agent : Perceivable {
   }
 
   proc readWriteThis(f) throws {
-    f <~> "%6i".format(this.simId) <~> " "
+    f <~> "%6i".format(this.id) <~> " "
       <~> "%7s".format(this.name) <~> " "
       <~> "%4r".format(this.position.x) <~> " "
       <~> "%4r".format(this.position.y);
   }
 
   proc writeRecord() {
-    return new AgentRecord(simId=this.simId, name=this.name
+    return new AgentRecord(id=this.id, name=this.name
       , x=this.position.x, y=this.position.y);
   }
 }
@@ -177,12 +182,12 @@ class Perceivable {
   var name: string,
       position: Position,
       initialPosition: Position,
-      simId: int;
+      id: int;
   proc init(name: string, position: Position) {
     this.name = name;
     this.position = position;
     this.initialPosition = position;
-    this.simId = -1;
+    this.id = -1;
   }
 }
 
@@ -194,23 +199,6 @@ class Herd : Perceivable {
     this.complete();
   }
 
-  proc findCentroid(agents: [] Agent) {
-      var x: real = 0.0,
-          y: real = 0.0,
-          n: int = 0;
-      var p = new Position();
-      for agent in agents {
-        // Make sure we have the correct target agent class
-        if agent:this.species != nil {
-          x += agent.position.x;
-          y += agent.position.y;
-          n += 1;
-        }
-      }
-      p.x = x/n;
-      p.y = y/n;
-      return p;
-  }
 
   proc findPositionOfNearestMember(me: Agent, agents: [] Agent) {
     var p = new Position(),
@@ -241,6 +229,16 @@ class Herd : Perceivable {
       }
     }
     return a;
+  }
+}
+
+class ConcealedCarryAgent: Agent {
+  var packDom: domain = {1..0},
+      pack: [1..0] int;
+  proc init(name: string, capacity:int) {
+      super.init(name=name);
+      this.complete();
+      this.packDom = {1..capacity};
   }
 }
 

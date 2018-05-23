@@ -18,8 +18,8 @@ class RelchTest : UnitTest {
       boxWorld = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT),
       drizella = new StepTiler(nbins=N_STEPS),
       whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false), // Does not wrap
-      dog = new Agent(name="dog", position=new Position(x=25, y=25)),
-      cat = new Agent(name="cat", position=new Position(x=50, y=50)),
+      dog = new Agent(name="dog", position=new Position2D(x=25, y=25)),
+      cat = new Agent(name="cat", position=new Position2D(x=50, y=50)),
       aSensor = new AngleSensor(name="s1", tiler=angler),
       dSensor = new DistanceSensor(name="d1", tiler=hundredYardTiler),
       catAngleSensor = new AngleSensor(name="find the cat", tiler=angler),
@@ -28,15 +28,15 @@ class RelchTest : UnitTest {
       dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler),
       fitBit = new StepSensor(name="fit bit", steps=N_STEPS),
       motionServo = new Servo(tiler=angler),
-      dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
+      dory = new Agent(name="Dory", position=new Position2D(x=17, y=23), maxMemories = 3);
 
   proc setUp(name: string = "setup") {
     hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true);
     angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05);
     drizella = new StepTiler(nbins=N_STEPS);
     whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false); // Does not wrap
-    dog = new Agent(name="dog", position=new Position(x=25, y=25));
-    cat = new Agent(name="cat", position=new Position(x=50, y=50));
+    dog = new Agent(name="dog", position=new Position2D(x=25, y=25));
+    cat = new Agent(name="cat", position=new Position2D(x=50, y=50));
     aSensor = new AngleSensor(name="s1", tiler=angler);
     dSensor = new DistanceSensor(name="d1", tiler=hundredYardTiler);
     catAngleSensor = new AngleSensor(name="find the cat", tiler=angler);
@@ -47,7 +47,7 @@ class RelchTest : UnitTest {
     sim = new Environment(name="simulating awesome!");
     boxWorld = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT);
     motionServo = new Servo(tiler=angler);
-    dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
+    dory = new Agent(name="Dory", position=new Position2D(x=17, y=23), maxMemories = 3);
     return super.setUp(name);
   }
 
@@ -110,25 +110,24 @@ class RelchTest : UnitTest {
   proc testSensors() {
     var t = this.setUp("Sensors");
     //var sim = new Environment(name="simulation amazing", epochs=10, steps=5);
-    var sim = new Environment(name="simulation amazing");
-    sim.world = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT);
+    var sim = new Environment(name="simulation amazing", new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT));
 
     class Seagull : Agent {
-      proc init(name:string, position: Position) {
+      proc init(name:string, position: Position2D) {
           super.init( name=name,position=position );
           this.complete();
       }
     }
-    var mike = new Seagull(name="mike", position=new Position(x=100, y=100));
-    var pondo = new Seagull(name="pando", position=new Position(x=110, y=110));
-    var kevin = new Seagull(name="kevin", position=new Position(x=100, y=110));
-    var gord = new Seagull(name="gord", position=new Position(x=100, y=110));
+    var mike = new Seagull(name="mike", position=new Position2D(x=100, y=100));
+    var pondo = new Seagull(name="pando", position=new Position2D(x=110, y=110));
+    var kevin = new Seagull(name="kevin", position=new Position2D(x=100, y=110));
+    var gord = new Seagull(name="gord", position=new Position2D(x=100, y=110));
 
     sim.add(mike);
     sim.add(pondo);
     sim.add(kevin);
     sim.add(gord);
-    var aflocka = new Herd(name="aflocka", position=new Position(), species=Seagull);
+    var aflocka = new Herd(name="aflocka", position=new Position2D(), species=Seagull);
 
     var s1flockangle: [1..N_ANGLES] int = [0, 0, 0, 1, 0],
         s2flockdist:  [1..N_DISTS] int = [1, 0, 0, 0, 0, 0, 0],
@@ -136,9 +135,10 @@ class RelchTest : UnitTest {
         s2gorddist: [1..N_DISTS] int = [1,0,0,0,0,0,0];
 
     assertIntArrayEquals(msg="Sensor 1 picks up angle to flock"
-      , expected=s1flockangle, actual=aSensor.v(mike, aflocka.findCentroid(sim.agents)));
+      //, expected=s1flockangle, actual=aSensor.v(mike, aflocka.findCentroid(sim.world.agents)));
+      , expected=s1flockangle, actual=aSensor.v(mike, sim.world.findCentroid(herd=aflocka)));
     assertIntArrayEquals(msg="Sensor 1 picks up dist to flock"
-      , expected=s2flockdist, actual=dSensor.v(mike, aflocka.findCentroid(sim.agents)));
+      , expected=s2flockdist, actual=dSensor.v(mike, sim.world.findCentroid(herd=aflocka)));
 
     var nn = aflocka.findPositionOfNearestMember(dog, sim.agents);
     assertRealEquals("Sensor finds that mike is closest to dog (x)", expected=100.0,actual=nn.x);
@@ -179,9 +179,9 @@ class RelchTest : UnitTest {
     sim.world = boxWorld;
 
     dog = sim.add(dog);
-    assertIntEquals(msg="Dog has simId 1", expected=1, actual=dog.simId);
+    assertIntEquals(msg="Dog has id 1", expected=1, actual=dog.id);
     cat = sim.add(cat);
-    assertIntEquals(msg="Cat has simId 2", expected=2, actual=cat.simId);
+    assertIntEquals(msg="Cat has id 2", expected=2, actual=cat.id);
 
     dog = sim.setAgentTarget(agent=dog, target=cat, sensor=boxWorld.getDefaultAngleSensor());
 
@@ -205,8 +205,8 @@ class RelchTest : UnitTest {
     var centroid = aflocka.findCentroid(sim.agents);
     assertRealEquals("centroid has correct x", expected=102.5, actual=centroid.x);
     assertRealEquals("centroid has correct y", expected=107.5, actual=centroid.y);
-    return this.tearDown(t);
     */
+    return this.tearDown(t);
   }
 
   proc testPolicies() {
