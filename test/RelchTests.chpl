@@ -59,7 +59,8 @@ class RelchTest : UnitTest {
     sim = new Environment(name="simulating amazing!");
     world = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT, wrap=false);
     dog = world.addAgent(name="dog", position=new Position2D(x=25, y=25));
-    cat = world.addAgent(name="cat", position=new Position2D(x=50, y=50));
+    cat = world.addAgent(name="cat", position=new Position2D(x=150, y=150));
+    world.addAgentSensor(agent=dog, target=cat, sensor=world.getDefaultDistanceSensor());
     return super.setUp(name);
   }
 
@@ -78,6 +79,9 @@ class RelchTest : UnitTest {
       ,actual=world.isValidPosition(new Position2D(x=WORLD_WIDTH+10, y=WORLD_HEIGHT+10)));
     assertBoolEquals(msg="Point outside the world", expected=true
           ,actual=world.isValidPosition(new Position2D(x=WORLD_WIDTH-10, y=WORLD_HEIGHT-10)));
+
+    assertRealEquals(msg="Dog has correct x position", expected=25, actual=dog.position.x);
+    assertRealEquals(msg="Cat has correct x position", expected=150, actual=cat.position.x);
     this.tearDown(t);
   }
 
@@ -85,6 +89,25 @@ class RelchTest : UnitTest {
     var t = this.setUp("Build a Basic BoxWorld Sim");
     assertStringEquals(msg="Dog is first agent", expected="dog", actual=world.agents[1].name);
     assertStringEquals(msg="Cat is second agent", expected="cat", actual=world.agents[2].name);
+    this.tearDown(t);
+  }
+
+  proc testSensors() {
+    var t = this.setUp("Testing Sensors");
+    //writeln(world.agents[1].sensors);
+    var sensor = world.agents[1].sensors[1],
+        me = world.agents[sensor.meId],
+        you = world.agents[sensor.youId];
+    assertIntArrayEquals(msg="Dog's first sensor gives correct array"
+      ,expected=[0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      ,actual=sensor.v(me, you));
+
+    world.addAgentSensor(agent=dog, target=cat, sensor=world.getDefaultAngleSensor());
+    var angleSensor = world.agents[1].sensors[2];
+    //writeln(angleSensor.v(me, you));
+    assertIntArrayEquals(msg="Dog's angle sensor gives correct array"
+      ,expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+      ,actual=angleSensor.v(me, you));
 
     this.tearDown(t);
   }
@@ -93,9 +116,9 @@ class RelchTest : UnitTest {
     super.run();
     testWorldProperties();
     testBuildSim();
-    //testWorld();
+    testSensors();
     //testTilers();
-    //testSensors();
+    //testWorld();
     //testServos();
     //testAgentRelativeMethods();
     //testMemory();

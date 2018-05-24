@@ -31,8 +31,8 @@ class World {
    Add a sensor with a reward attached
    */
   proc addAgentSensor(agent:Agent, target:Perceivable, sensor:Sensor, reward: Reward) {
-    if agent.id <1 then this.add(agent);
-    if target.id <1 then this.add(target);
+    if agent.id < 1 then this.add(agent);
+    if target.id < 1 then this.add(target);
     sensor.targetId = target.id;
     agent.addSensor(target=target, sensor=sensor, reward=reward);
     return agent;
@@ -53,25 +53,7 @@ class World {
    Gets the options on a single motion servo
    */
   proc getMotionServoOptions(agent: Agent, servo: MotionServo) {
-    var sDom = {servo.optionIndexStart..servo.optionIndexEnd},
-        optDom = {1..1, sDom},
-        options: [optDom] int = 0;
-
-    // Add a null action (should always be an option)
-    optDom[1,..] = 0;
-    // Build a one-hot for each option
-    var currentRow = 1;
-    for i in sDom {
-      var a:[sDom] int = 0;
-      a[i] = 1;
-      var p = this.moveAlong(from=agent.position, theta=servo.tiler.unbin(a), speed=agent.speed);
-      if this.isValidPosition(p) {
-        optDom = {1..optDom.high+1, sDom};
-        //for j in sDom do optDom[currentRow, j] = a[j];
-        optDom[currentRow, ..] = a;
-        currentRow += 1;
-      }
-    }
+    var options:[1..0] int;
     return options;
   }
 
@@ -151,11 +133,48 @@ class BoxWorld: World {
   }
 
   proc addAgent(name: string, position: Position2D, speed: real = 3.0) {
-    var agent = new BoxWorldAgent(name=name, position=new Position2D(x=25, y=25), speed=3.0);
+    var agent = new BoxWorldAgent(name=name, position=position, speed=3.0);
     agent.id = this.agents.size+1;
     this.agents.push_back(agent);
     return agent;
   }
+
+  proc addAgentSensor(agent: BoxWorldAgent, target: BoxWorldAgent, sensor: Sensor) {
+    if agent.id <1 then this.addAgent(agent);
+    if target.id <1 then this.addAgent(target);
+    sensor.meId = agent.id;
+    sensor.youId = target.id;
+    agent.addSensor(sensor=sensor);
+    return agent;
+  }
+
+
+  /*
+   Gets the options on a single motion servo
+   */
+  proc getMotionServoOptions(agent: Agent, servo: MotionServo) {
+    var sDom = {servo.optionIndexStart..servo.optionIndexEnd},
+        optDom = {1..1, sDom},
+        options: [optDom] int = 0;
+
+    // Add a null action (should always be an option)
+    optDom[1,..] = 0;
+    // Build a one-hot for each option
+    var currentRow = 1;
+    for i in sDom {
+      var a:[sDom] int = 0;
+      a[i] = 1;
+      var p = this.moveAlong(from=agent.position, theta=servo.tiler.unbin(a), speed=agent.speed);
+      if this.isValidPosition(p) {
+        optDom = {1..optDom.high+1, sDom};
+        //for j in sDom do optDom[currentRow, j] = a[j];
+        optDom[currentRow, ..] = a;
+        currentRow += 1;
+      }
+    }
+    return options;
+  }
+
 
   proc randomPosition() {
     const x = rand(1, this.width),
@@ -185,6 +204,19 @@ class BoxWorld: World {
     return p;
   }
 
+  proc getDefaultDistanceSensor() {
+    return new LinearSensor(nbins=this.defaultDistanceBins
+      ,x1=0, x2=this.radius
+      ,overlap=this.defaultDistanceOverlap
+      ,wrap=this.wrap);
+  }
+
+  proc getDefaultAngleSensor() {
+    return new AngleSensor2D(nbins = this.defaultAngleBins
+      ,overlap=this.defaultAngleOverlap
+      ,theta0=-pi, theta1=pi, wrap=true);
+  }
+
   proc dist(me: Agent, you: Agent) {
     return dist(me.position, you.position);
   }
@@ -194,11 +226,6 @@ class BoxWorld: World {
   proc dist(origin: Position, target: Position) {
     return sqrt((origin.x - target.x)**2 + (origin.y - target.y)**2);
   }
-
-  proc angle(origin: Position, target: Position) {
-    return atan2((target.y - origin.y) , (target.x - origin.x));
-  }
-
 }
 
 
@@ -220,13 +247,28 @@ class Sensor {
     this.dom = {1..nbins, 1..2};
   }
 
-  proc v(state:[] int) {}
+  proc v(me:Agent, you:Agent) {
+    writeln("default v");
+    var state:[1..0] int;
+    return state;
+  }
 
   proc unbin(state:[] int) {
     return 0.0;
   }
 
-  proc makeBins() {}
+  proc makeBins(x1: real, x2: real){
+    const width = (x2-x1)/this.nbins;
+    if this.overlap <= 0 {
+      this.overlap = 0;
+    } else {
+      this.overlap = this.overlap * width;
+    }
+    for i in 1..this.nbins {
+      this.bins[i, 1] = x1 + (i-1)*(width) - this.overlap;
+      this.bins[i, 2] = x1 + (i)*(width) + this.overlap;
+    }
+  }
 
   proc dim() {
     return this.nbins;
@@ -236,6 +278,24 @@ class Sensor {
       const err = new DimensionMatchError(msg="checking dimensions on Tiler", expected = this.nbins, actual=x.size);
       throw err;
     }
+  }
+
+  proc bin(x: real) {
+    var v:[1..this.nbins] int = 0;
+    for i in 1..this.nbins {
+      if x >= this.bins[i,1] && x <= this.bins[i,2] {
+          v[i] = 1;
+        }
+    }
+    if this.wrap {
+      // Note the right bracket already has this.overlap added
+      if x >= this.bins[this.nbins,2] - 2* this.overlap && x <= this.bins[this.nbins,2] {
+        v[1] = 1;
+      } else if x >= this.bins[1,1]  && x <= this.bins[1,1] + 2*this.overlap {
+        v[this.nbins] = 1;
+      }
+    }
+    return v;
   }
 }
 
@@ -290,18 +350,32 @@ class LinearSensor: Sensor {
     }
     return v;
   }
+
+  proc v(me:Agent, you:Agent) {
+    var m = me: BoxWorldAgent,
+        y = you: BoxWorldAgent;
+    var d = sqrt((m.position.x-y.position.x)**2 + (m.position.y-y.position.y)**2);
+    return this.bin(d);
+  }
 }
 
 class AngleSensor2D: Sensor {
   proc init(nbins: int, overlap:real, theta0=-pi, theta1=pi, wrap:bool=true) {
     super.init(nbins=nbins, overlap:real, wrap: bool);
     this.complete();
-    this.makeBins();
+    this.makeBins(x1=theta0, x2=theta1);
   }
 
-  proc v(me: Agent, you: Position) {
-    const a = angle2D(me.position, you);
-    const v:[1..this.dim()] int = this.bin(a);
+  proc v(me: Agent, you: Agent) {
+    var m = me:BoxWorldAgent,
+        y = you:BoxWorldAgent;
+    const a = angle2D(m.position, y.position);
+    var v:[1..this.dim()] int = this.bin(a);
     return v;
   }
+
+}
+
+proc angle2D(x:Position2D, y: Position2D) {
+  return atan2((y.y - x.y) , (y.x - x.x));
 }

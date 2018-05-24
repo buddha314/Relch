@@ -63,10 +63,9 @@ class Agent {
   /*
   For the dog to see the cat, it needs a target, a sensor and a tiler
    */
-  proc addSensor(target: Perceivable, sensor: Sensor) {
-    sensor.target = target;
+  proc addSensor(sensor: Sensor) {
     sensor.stateIndexStart = this.sensorDimension() + 1;
-    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
+    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.dim() - 1;
     this.sensors.push_back(sensor);
     return this;
   }
