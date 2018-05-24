@@ -1,15 +1,13 @@
 /* Documentation for Relch */
 module Relch {
   use Math, NumSuch;
-  use agents, policies, physics, rewards, dtos, worlds;
+  use agents, policies, physics, rewards, dtos, worlds, boxWorld;
 
   /* Modeled after the AIGym Class: https://github.com/openai/gym/tree/master/gym/envs#how-to-create-new-environments-for-gym* */
   class Environment {
     var name: string,
         currentStep: int,
         world: World;
-        //agents: [1..0] Agent,
-        //perceivables: [1..0] Perceivable;
 
     proc init(name: string) {
       this.name=name;
@@ -68,62 +66,6 @@ module Relch {
         var servo = agent.servos[s];
         options = this.world.getMotionServoOptions(agent=agent, servo=servo);
       }
-
-      /*
-      var optDom = {1..0, 1..agent.optionDimension()},
-          options: [optDom] int = 0;
-
-      //writeln("building options");
-      var apos = agent.position;
-      for s in 1..agent.servos.size {
-        const servo = agent.servos[s];
-        //writeln("servo ", servo);
-        // Copying this so we can repeat it for later sensors
-        var optSnapshot: [1..options.shape[1], 1..options.shape[2]] int  = options;
-        var nAddedOptions: int = 0;
-        var sDom = {servo.optionIndexStart..servo.optionIndexEnd};
-        var currentRowNumber = 0;
-        for i in sDom {
-          var a: [sDom] int = 0;
-          a[i] = 1;
-          var theta = servo.tiler.unbin(a);
-          var p = moveAlong(from=agent.position, theta=theta, speed=agent.speed);
-          // Need to add a row to the options
-          if this.world.isValidPosition(p) {
-            //writeln("valid point ", p);
-            // Might be the first one
-            if s == 1 {
-              //writeln("s==1");
-              optDom = {1..optDom.dims()(1).high +1, optDom.dims()(2)};
-              for x in sDom do options[optDom.dims()(1).high,x] = a[x];
-            } else {
-              halt("Only one servo supported.");
-            }
-             else if s > 1 && nAddedOptions == 0 {   // First new option, so add to the empty space
-              writeln("s> 1, nop 0");
-              const nr = optSnapshot.domain.dims()(1).high;
-              for j in 1..nr {
-                for x in servo.optionIndexStart..servo.optionIndexEnd do options[j,x] = a[x-servo.optionIndexStart+1];
-              }
-            } else if s > 1 && nAddedOptions > 0 {  // In this case you have to copy all the previous lines and add the options
-              writeln("s> 1, nop > 0");
-              const nr = optSnapshot.shape[1];
-              for j in 1..nr {
-                var currentRow: [1..optDom.dims()(2).high] int = options[j,..];
-                currentRow[servo.optionIndexStart..servo.optionIndexEnd] = a;
-                optDom = {1..optDom.dims()(1).high+1, optDom.dims()(2)};
-                options[optDom.dims()(1).high, ..] = currentRow;
-              }
-            }
-
-            nAddedOptions += 1;
-            currentRowNumber += 1;
-            //writeln("end valid point");
-          } else {
-            //writeln("Not a valid position: ", p);
-          }
-        }
-      } */
 
       // Right now, this just constructs the state from the Agent as a pass
       // through.  Soon it will make decisions;
