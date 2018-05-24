@@ -58,8 +58,8 @@ class World {
   }
 
   /* Returns a position from the original point along theta */
-  proc moveAlong(from: Position, theta: real, speed: real) {
-    const p = new Position(x=from.x + speed*cos(theta), y=from.y + speed*sin(theta) );
+  proc moveAlong(from: Position2D, theta: real, speed: real) {
+    const p = new Position2D(x=from.x + speed*cos(theta), y=from.y + speed*sin(theta) );
     return p;
   }
 
@@ -148,28 +148,40 @@ class BoxWorld: World {
     return agent;
   }
 
+  proc addAgentServo(agent: BoxWorldAgent, servo: Servo, sensor: Sensor) {
+    if agent.id < 1 then this.addAgent(agent);
+    // Sensor has not been assigned, need to add it, then get last sensor added
+    if sensor.meId < 1 then agent.addSensor(sensor);
+    servo.sensorId = sensor.id;
+    servo.optionIndexStart = agent.optionDimension() + 1;
+    servo.optionIndexEnd = servo.optionIndexStart + sensor.dim() -1;
+    agent.addServo(servo);
+    return agent;
+  }
 
   /*
    Gets the options on a single motion servo
    */
-  proc getMotionServoOptions(agent: Agent, servo: MotionServo) {
+  proc getMotionServoOptions(agent: BoxWorldAgent, servo: MotionServo) {
     var sDom = {servo.optionIndexStart..servo.optionIndexEnd},
-        optDom = {1..1, sDom},
-        options: [optDom] int = 0;
+        optDom: domain(2),
+        options: [optDom] int = 0,
+        sensor: Sensor,
+        currentRow: int = 1; // We will populate the first row for sure
 
+    optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
     // Add a null action (should always be an option)
-    optDom[1,..] = 0;
+    sensor = agent.sensors[servo.sensorId];
+    options[currentRow,..] = 0;
     // Build a one-hot for each option
-    var currentRow = 1;
-    for i in sDom {
-      var a:[sDom] int = 0;
+    for i in servo.optionIndexStart..servo.optionIndexEnd {
+      var a:[servo.optionIndexStart..servo.optionIndexEnd] int = 0;
       a[i] = 1;
-      var p = this.moveAlong(from=agent.position, theta=servo.tiler.unbin(a), speed=agent.speed);
+      var p = this.moveAlong(from=agent.position, theta=sensor.unbin(a), speed=agent.speed);
       if this.isValidPosition(p) {
-        optDom = {1..optDom.high+1, sDom};
-        //for j in sDom do optDom[currentRow, j] = a[j];
-        optDom[currentRow, ..] = a;
         currentRow += 1;
+        optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
+        options[currentRow, ..] = a;
       }
     }
     return options;
@@ -241,20 +253,32 @@ class Sensor {
       meId: int,
       youId: int,
       stateIndexStart: int,
-      stateIndexEnd: int;
+      stateIndexEnd: int,
+      id: int;  // internal id
   proc init(nbins: int, overlap:real, wrap:bool) {
     this.nbins = nbins;
     this.dom = {1..nbins, 1..2};
+    this.meId = -1;
+    this.id = -1;
   }
 
   proc v(me:Agent, you:Agent) {
-    writeln("default v");
     var state:[1..0] int;
     return state;
   }
 
-  proc unbin(state:[] int) {
-    return 0.0;
+  proc unbin(x:[] int) {
+    // x has a sub-domain of state, so need to normalize
+    var y: [1..x.size] int = x;
+    this.checkDim(x);
+    var r: real = 0.0;
+    for i in y.domain {
+      if y[i] == 1 {
+        r = (this.bins[i,1] + this.bins[i,2]) / 2 ;
+        break;
+      }
+    }
+    return r;
   }
 
   proc makeBins(x1: real, x2: real){

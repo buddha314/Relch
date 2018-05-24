@@ -2,13 +2,14 @@ use policies, agents;
   /* I really have no idea how I'm going to handle this yet */
 
 class MotionServo : Servo {
-  proc init(tiler:Tiler){
-    super.init(tiler=tiler);
+  proc init() {
+    super.init();
     this.complete();
   }
   proc f(agent: Agent, choice: [] int) {
     const o:[1..this.dim()] int = choice[this.optionIndexStart..this.optionIndexEnd];
-    const d: real = this.tiler.unbin(o);
+    var sensor = agent.sensors[this.sensorId];
+    const d: real = sensor.unbin(o);
     agent.moveAgentAlong(d);
     return agent;
   }
@@ -27,21 +28,18 @@ class CollectingServo: Servo {
 }
 
 class Servo {
-  var tiler: Tiler,
+  var sensorId: int,
       optionIndexStart: int,
       optionIndexEnd: int;
 
   proc init() {}
-  proc init(tiler: Tiler) {
-    this.tiler=tiler;
-  }
 
   proc f(agent: Agent, choice: [] int) {
     return agent;
   }
 
   proc dim() {
-    return this.tiler.nbins;
+    return this.optionIndexEnd-this.optionIndexStart+1;
   }
 }
 

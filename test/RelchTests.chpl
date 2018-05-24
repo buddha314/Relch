@@ -93,7 +93,7 @@ class RelchTest : UnitTest {
   }
 
   proc testSensors() {
-    var t = this.setUp("Testing Sensors");
+    var t = this.setUp("Sensors");
     //writeln(world.agents[1].sensors);
     var sensor = world.agents[1].sensors[1],
         me = world.agents[sensor.meId],
@@ -104,10 +104,24 @@ class RelchTest : UnitTest {
 
     world.addAgentSensor(agent=dog, target=cat, sensor=world.getDefaultAngleSensor());
     var angleSensor = world.agents[1].sensors[2];
-    //writeln(angleSensor.v(me, you));
     assertIntArrayEquals(msg="Dog's angle sensor gives correct array"
       ,expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
       ,actual=angleSensor.v(me, you));
+
+    this.tearDown(t);
+  }
+
+  proc testServos() {
+    var t = this.setUp("Servos");
+    // New servo
+    dog = world.addAgentServo(agent=dog, servo=new MotionServo(), sensor=world.getDefaultAngleSensor());
+    var servo=dog.servos;
+
+    var options = world.getMotionServoOptions(agent=dog, servo=dog.servos[1]: MotionServo);
+    assertIntEquals(msg="Interior point has 12 options", expected=12, actual=options.shape[1]);
+    dog.position = new Position2D(x=0, y=25);
+    var options2 = world.getMotionServoOptions(agent=dog, servo=dog.servos[1]: MotionServo);
+    assertIntEquals(msg="Boundary point has only 6 options", expected=6, actual=options2.shape[1]);
 
     this.tearDown(t);
   }
@@ -117,9 +131,9 @@ class RelchTest : UnitTest {
     testWorldProperties();
     testBuildSim();
     testSensors();
+    testServos();
     //testTilers();
     //testWorld();
-    //testServos();
     //testAgentRelativeMethods();
     //testMemory();
     //testPresentOptions();

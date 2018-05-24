@@ -34,8 +34,8 @@ class Agent {
   }
 
   proc addServo(servo: Servo) {
-    servo.optionIndexStart = this.optionDimension() + 1;
-    servo.optionIndexEnd = servo.optionIndexStart + servo.dim() - 1;
+    //servo.optionIndexStart = this.optionDimension() + 1;
+    //servo.optionIndexEnd = servo.optionIndexStart + servo.dim() - 1;
     this.servos.push_back(servo);
     return this;
   }
@@ -64,6 +64,7 @@ class Agent {
   For the dog to see the cat, it needs a target, a sensor and a tiler
    */
   proc addSensor(sensor: Sensor) {
+    sensor.id = this.sensors.size+1;
     sensor.stateIndexStart = this.sensorDimension() + 1;
     sensor.stateIndexEnd = sensor.stateIndexStart + sensor.dim() - 1;
     this.sensors.push_back(sensor);
@@ -72,12 +73,10 @@ class Agent {
 
   proc addSensor(target: Perceivable, sensor: Sensor, reward: Reward) {
     sensor.target = target;
-    sensor.stateIndexStart = this.sensorDimension() + 1;
-    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
+    this.addSensor(sensor=sensor);
 
     reward.stateIndexStart = sensor.stateIndexStart;
     reward.stateIndexEnd = sensor.stateIndexEnd;
-    this.sensors.push_back(sensor);
     this.rewards.push_back(reward);
     return this;
   }
@@ -145,7 +144,7 @@ class Agent {
   proc optionDimension() {
     var n: int = 0;
     for servo in this.servos {
-      n += servo.tiler.nbins;
+      n += servo.dim();
     }
     return n;
   }
