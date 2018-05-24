@@ -1,36 +1,30 @@
-use NumSuch, physics, policies, rewards;
+use NumSuch, worlds, policies, rewards;
 
 // Should be abstracted to something like DQNAgent
-class Agent : Perceivable {
-  var speed: real,
+//class Agent : Perceivable {
+class Agent {
+  var name: string,
+      maxMemories: int,
+      currentStep: int,
+      nMemories: int,
+      done: bool,
+      id: int,
       sensors: [1..0] Sensor,
       servos: [1..0] Servo,
       policy: Policy,
       finalized: bool = false,
-      currentStep: int,
       rewards: [1..0] Reward,
-      nMemories: int,
-      maxMemories: int,
       memoriesDom = {1..0},
-      memories: [memoriesDom] Memory,
-      done: bool;
-
-  proc init(name:string) {
-    super.init(name=name, new Position2D());
-    this.complete();
-  }
+      memories: [memoriesDom] Memory;
 
   proc init(name:string
-      , position:Position = new Position()
-      , speed: real = 3.0
       , maxMemories: int = 100000) {
-    super.init(name=name, position=position);
-    this.complete();
-    this.speed=speed;
-    this.currentStep = 1;
-    this.done = false;
-    this.nMemories = 0;
+    //this.speed=speed;
+    this.name=name;
     this.maxMemories = maxMemories;
+    this.currentStep = 1;
+    this.nMemories = 0;
+    this.done = false;
     this.memoriesDom = {1..this.maxMemories};
   }
 
@@ -166,9 +160,9 @@ class Agent : Perceivable {
 
   proc readWriteThis(f) throws {
     f <~> "%6i".format(this.id) <~> " "
-      <~> "%7s".format(this.name) <~> " "
-      <~> "%4r".format(this.position.x) <~> " "
-      <~> "%4r".format(this.position.y);
+      <~> "%7s".format(this.name) <~> " ";
+      //<~> "%4r".format(this.position.x) <~> " "
+      //<~> "%4r".format(this.position.y);
   }
 
   proc writeRecord() {
@@ -239,6 +233,18 @@ class ConcealedCarryAgent: Agent {
       super.init(name=name);
       this.complete();
       this.packDom = {1..capacity};
+  }
+}
+
+class BoxWorldAgent : Agent {
+  var position: Position2D,
+      speed: real;
+
+  proc init(name: string, speed: real, position: Position2D) {
+    super.init(name=name);
+    this.complete();
+    this.speed= speed;
+    this.position=position;
   }
 }
 

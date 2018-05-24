@@ -56,63 +56,6 @@ module Relch {
       for reward in agent.rewards do reward.accomplished = false;
     }
 
-    /* This will actually emit, not render */
-    proc render() {}
-
-    proc add(perceivable: Perceivable) {
-      perceivable.id = this.world.perceivables.size +1;
-      this.world.perceivables.push_back(perceivable);
-      return perceivable;
-    }
-
-    proc add(agent: Agent) {
-      agent.id = this.world.perceivables.size + 1;
-      this.world.perceivables.push_back(agent);
-      this.world.agents.push_back(agent);
-      return agent;
-    }
-
-    /*
-     Setting interactions between objects
-     */
-
-    /*
-    Creates a FollowTargetPolicy for the agent against the target
-     */
-    proc setAgentTarget(agent: Agent, target: Perceivable, sensor: Sensor, avoid:bool=false) {
-      if agent.id < 1 then this.add(agent);
-      if target.id < 1 then this.add(target);
-      sensor.targetId = target.id;
-      agent.addTarget(target, sensor, avoid);
-      return agent;
-    }
-
-    /*
-    Pass through
-     */
-    proc addAgentServo(agent: Agent, servo: Servo) {
-      return agent.add(servo);
-    }
-
-    proc addAgentSensor(agent: Agent, target: Perceivable, sensor: Sensor) {
-      return this.world.addAgentSensor(agent=agent, target=target, sensor=sensor);
-    }
-
-    /*
-     Add a sensor with a reward attached
-     */
-    proc addAgentSensor(agent:Agent, target:Perceivable, sensor:Sensor, reward: Reward) {
-      return this.world.addAgentSensor(agent=agent, target=target, sensor=sensor, reward=reward);
-    }
-
-    /*
-     Set the Agent Policy
-     */
-    proc setAgentPolicy(agent: Agent, policy: Policy) {
-      agent.setPolicy(policy);
-      return agent;
-    }
-
     proc presentOptions(agent: Agent) {
       /* Constructing options is kinda hard, right now just 1 for every
          element of the sensors */

@@ -45,7 +45,8 @@ class Servo {
   }
 }
 
-class Position2D: Position {
+//class Position2D: Position {
+class Position2D{
   var x: real,
       y: real;
   proc init(x: real = 0, y: real = 0) {
@@ -60,85 +61,6 @@ class Position {
   proc init() {}
 }
 
-
-/*
- Sensor need to be attached to an agent for constructing state.  They aren't
- really useful on their own
- */
-class Sensor {
-  var name: string,
-      stateIndexStart: int,   // which part of the state space does this populate?
-      stateIndexEnd: int,
-      tiler: Tiler,
-      target: Perceivable,
-      targetId: int,
-      done: bool;
-
-  proc init(name:string, tiler: Tiler) {
-    this.name=name;
-    this.stateIndexStart = 0;
-    this.stateIndexEnd = 0;
-    this.tiler = tiler;
-  }
-
-  proc add(tiler: Tiler) {
-    this.tiler = tiler;
-  }
-
-  proc v(me: Agent, you: Position) {
-    var v:[1..this.dim()] int = 0;
-    return v;
-  }
-
-  proc v(me: Agent, you: Perceivable) {
-    return this.v(me=me, you=you.position);
-  }
-
-  proc v(me: Agent) {
-    return this.v(me=me, you=this.target);
-  }
-
-  proc dim() {
-    var n: int = 0;
-    if this.tiler != nil {
-      n += this.tiler.nbins;
-    }
-    return n;
-  }
-}
-
-class AngleSensor : Sensor {
-  proc init(name:string, tiler:Tiler) {
-    super.init(name=name, tiler=tiler);
-    this.complete();
-  }
-
-  proc v(me: Agent, you: Position) {
-    const a = angle(me.position, you);
-    const v:[1..this.dim()] int = this.tiler.bin(a);
-    return v;
-  }
-}
-
-class DistanceSensor : Sensor {
-  proc init(name:string, tiler:Tiler) {
-    super.init(name=name, tiler=tiler);
-    this.complete();
-  }
-  proc v(me:Agent, you: Position) {
-    const a = dist(me.position, you);
-    const v:[1..this.dim()] int = this.tiler.bin(a);
-    //writeln("sensor says distance is ", a, " -> ", v, " -> ", this.tiler.unbin(v));
-    return v;
-  }
-}
-
-class StepSensor : Sensor {
-  proc init(name: string, steps: int) {
-    super.init(name=name, tiler=new StepTiler(nbins=steps));
-    this.complete();
-  }
-}
 
 class Tiler {
   var nbins: int,

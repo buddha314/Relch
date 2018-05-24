@@ -3,29 +3,21 @@ use physics, agents;
  Provides some basic machinery, including default tilers for sensors
  */
 class World {
-  var radius: real,
-      wrap: bool,
-      agents: [1..0] Agent,
-      perceivables: [1..0] Perceivable,
-      defaultLinearTiler: LinearTiler,
-      defaultAngleTiler: AngleTiler;
+  var agents: [1..0] Agent,
+      perceivables: [1..0] Perceivable;
 
-  proc init(wrap: bool = false
-      ,defaultDistanceBins: int = 17, defaultDistanceOverlap: real= 0.1
-      ,defaultAngleBins: int = 11, defaultAngleOverlap: real = 0.05
-    ) {
-    this.defaultLinearTiler = new LinearTiler(nbins=defaultDistanceBins, x1=0.0
-      ,x2=this.radius, overlap=defaultDistanceOverlap, wrap=this.wrap);
-    this.defaultAngleTiler = new AngleTiler(nbins=defaultAngleBins
-      ,overlap=defaultAngleOverlap);
-    //this.defaultMotionServo = new Servo(tiler=this.defaultAngleTiler);
+  proc init() {
   }
 
-  proc addAgent(agent: Agent, position=new Position) {
-    agent.position=position;
+  proc addAgent(agent:Agent) {
+    agent.id = this.agents.size+1;
     this.agents.push_back(agent);
     return agent;
   }
+  /*
+  proc addAgent(agent: Agent, position: Position) {
+    return agent;
+  } */
 
   proc addAgentSensor(agent: Agent, target: Perceivable, sensor: Sensor) {
     if agent.id <1 then this.add(agent);
@@ -120,29 +112,34 @@ class World {
   proc findCentroid(herd: Herd, perceivables: [] Perceivable) {
     return new Position();
   }
-
-  /*
-   Provides just the raw theta, not the tiling
-   */
-  proc findAngle(me: Perceivable, you: Perceivable) {
-    return atan2((target.y - origin.y) , (target.x - origin.x));
-  }
 }
 
-class BoxWorld : World {
-  const width: int,
-        height: int,
-        dimension: int,
-        radius: real;
-  proc init(width:int, height: int, dimension:int = 2) {
-      super.init();
+class BoxWorld: World {
+  var wrap: bool,
+      defaultDistanceBins: int,
+      defaultDistanceOverlap: real,
+      defaultAngleBins: int,
+      defaultAngleOverlap: real,
+      width: int,
+      height: int,
+      radius: real;
+
+  proc init(width:int, height: int
+      ,wrap: bool = false
+      ,defaultDistanceBins: int = 17, defaultDistanceOverlap: real= 0.1
+      ,defaultAngleBins: int = 11, defaultAngleOverlap: real = 0.05
+    ) {
+      this.wrap = wrap;
+      this.defaultDistanceBins = defaultDistanceBins;
+      this.defaultDistanceOverlap = defaultDistanceOverlap;
+      this.defaultAngleBins = defaultAngleBins;
+      this.defaultAngleOverlap = defaultAngleOverlap;
       this.width=width;
       this.height=height;
       this.radius = sqrt(this.width**2 + this.height**2);
-      this.complete();
   }
 
-  proc isValidPosition(position: Position ) {
+  proc isValidPosition(position: Position2D ) {
     if wrap {
       return true;
     } else if position.x >= 0 && position.x < this.width
@@ -151,6 +148,13 @@ class BoxWorld : World {
     } else {
       return false;
     }
+  }
+
+  proc addAgent(name: string, position: Position2D, speed: real = 3.0) {
+    var agent = new BoxWorldAgent(name=name, position=new Position2D(x=25, y=25), speed=3.0);
+    agent.id = this.agents.size+1;
+    this.agents.push_back(agent);
+    return agent;
   }
 
   proc randomPosition() {
@@ -214,7 +218,6 @@ class Sensor {
   proc init(nbins: int, overlap:real, wrap:bool) {
     this.nbins = nbins;
     this.dom = {1..nbins, 1..2};
-    this.makeBins();
   }
 
   proc v(state:[] int) {}
@@ -239,6 +242,7 @@ class Sensor {
 class LinearSensor: Sensor {
   proc init(nbins: int, x1: real, x2: real, overlap:real=-1, wrap:bool=false) {
     super.init(nbins=nbins, overlap=overlap, wrap=wrap);
+    this.complete();
     this.makeBins(x1=x1, x2=x2);
   }
 
@@ -292,6 +296,7 @@ class AngleSensor2D: Sensor {
   proc init(nbins: int, overlap:real, theta0=-pi, theta1=pi, wrap:bool=true) {
     super.init(nbins=nbins, overlap:real, wrap: bool);
     this.complete();
+    this.makeBins();
   }
 
   proc v(me: Agent, you: Position) {
@@ -299,8 +304,4 @@ class AngleSensor2D: Sensor {
     const v:[1..this.dim()] int = this.bin(a);
     return v;
   }
-}
-
-proc angle2D(me: Position2D, you: Position2D) {
-
 }
