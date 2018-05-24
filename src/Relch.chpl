@@ -1,7 +1,7 @@
 /* Documentation for Relch */
 module Relch {
   use Math, NumSuch;
-  use agents, policies, physics, rewards, dtos, worlds, boxWorld;
+  use agents, policies, physics, rewards, dtos, worlds, boxWorld, mazeWorld;
 
   /* Modeled after the AIGym Class: https://github.com/openai/gym/tree/master/gym/envs#how-to-create-new-environments-for-gym* */
   class Environment {

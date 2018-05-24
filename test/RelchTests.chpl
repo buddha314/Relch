@@ -126,12 +126,20 @@ class RelchTest : UnitTest {
     this.tearDown(t);
   }
 
+  proc testMaze() {
+    var t = this.setUp("Maze World");
+    var maze = new Maze(width=10, height=10, wrap=true);
+
+    this.tearDown(t);
+  }
+
   proc run() {
     super.run();
     testWorldProperties();
     testBuildSim();
     testSensors();
     testServos();
+    testMaze();
     //testTilers();
     //testWorld();
     //testAgentRelativeMethods();
