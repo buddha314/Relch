@@ -70,7 +70,8 @@ module Relch {
       // Right now, this just constructs the state from the Agent as a pass
       // through.  Soon it will make decisions;
       //writeln("building state for ", agent.name);
-      var state = buildAgentState(agent=agent);
+      //var state = buildAgentState(agent=agent);
+      var state = this.world.buildAgentState(agent=agent);
       //var state: [1..3] int = [0, 0, 1];
 
       //writeln("exiting presentOptions");

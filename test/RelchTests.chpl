@@ -132,13 +132,18 @@ class RelchTest : UnitTest {
     var t = this.setUp("Maze World");
     var pos = new MazePosition(cellId=1);
     var theseus = maze.addAgent(name="theseus", position=new MazePosition(1));
+    theseus = maze.addAgentSensor(agent=theseus, target=new SecretAgent(), sensor=maze.getDefaultCellSensor());
     theseus = maze.addAgentServo(agent=theseus, servo=maze.getDefaultMotionServo()
       ,sensor=maze.getDefaultCellSensor());
 
+    var options = maze.getMotionServoOptions(agent=theseus, servo=theseus.servos[1]);
+    //maze.presentOptions(agent=theseus);
+    /*
+    writeln(options);
     var mm = maze.getDefaultMotionServo();
     writeln(theseus.position);
     mm.f(agent=theseus, choice=[1,0,0,0]);
-    writeln(theseus.position);
+    writeln(theseus.position); */
 
     this.tearDown(t);
   }

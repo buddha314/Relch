@@ -10,14 +10,14 @@ TESTDIR=test
 EXEC=relch
 TEST_MODULES=-M$(CHARCOAL_HOME)/src -M$(SRCDIR)
 
-default: $(SRCDIR)/Relch.chpl
-	$(CC) $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o $(BINDIR)/$(EXEC) $<
+default: $(wildcard src/*.chpl)
+	$(CC) $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o $(BINDIR)/$(EXEC) $(SRCDIR)/Relch.chpl
 
 run:
 	./$(BINDIR)/$(EXEC) -f qlearn.cfg
 
 
-test: $(SRCDIR)/Relch.chpl $(SRCDIR)/policies.chpl $(SRCDIR)/agents.chpl $(SRCDIR)/physics.chpl $(SRCDIR)/worlds.chpl $(TESTDIR)/RelchTests.chpl
+test: $(wildcard src/*.chpl) $(TESTDIR)/RelchTests.chpl
 	$(CC) $(MODULES) $(TEST_MODULES) $(FLAGS) ${INCLUDES} ${LIBS} --devel -o $(TESTDIR)/test $(TESTDIR)/RelchTests.chpl ;\
 	./$(TESTDIR)/test ; \
 	rm $(TESTDIR)/test

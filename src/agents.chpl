@@ -246,6 +246,14 @@ class BoxWorldAgent : Agent {
   }
 }
 
+// Used for default targets like CellSensor or ClockSensor
+class SecretAgent: Agent {
+  proc init() {
+    super.init(name="Secret Agent");
+    this.complete();
+  }
+}
+
 class Memory {
   var stateDom = {1..0},
       actionDom = {1..0},

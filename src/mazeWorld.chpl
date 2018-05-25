@@ -28,12 +28,11 @@ class Maze: World {
     return agent;
   }
 
-  //proc addAgentSensor(agent: MazeAgent, target: MazeAgent, sensor: Sensor) {
-  proc addAgentSensor(agent: MazeAgent, sensor: Sensor) {
+  proc addAgentSensor(agent: MazeAgent, target: Agent, sensor: Sensor) {
     if agent.id <1 then this.addAgent(agent);
-    //if target.id <1 then this.addAgent(target);
+    if target.id <1 then this.addAgent(target);
     sensor.meId = agent.id;
-    //sensor.youId = target.id;
+    sensor.youId = target.id;
     agent.addSensor(sensor=sensor);
     return agent;
   }
@@ -44,7 +43,11 @@ class Maze: World {
     if sensor.meId < 1 then agent.addSensor(sensor);
     servo.sensorId = sensor.id;
     servo.optionIndexStart = agent.optionDimension() + 1;
-    servo.optionIndexEnd = servo.optionIndexStart + sensor.dim() -1;
+    if servo: MazeMotionServo != nil {
+      servo.optionIndexEnd = servo.optionIndexStart + this.moves.size() -1;
+    } else {
+      servo.optionIndexEnd = servo.optionIndexStart + sensor.dim() -1;
+    }
     agent.addServo(servo);
     return agent;
   }
@@ -55,15 +58,23 @@ class Maze: World {
   }
 
   proc getDefaultCellSensor() {
-    var s = new CellSensor(nbins=this.width*this.height, wrap=this.wrap);
+    var s = new CellSensor(nbins=this.width*this.height, moves=this.moves, wrap=this.wrap);
     return s;
   }
 
+  proc canMove(agent: MazeAgent, dir: string) {
+    //return this.board.canMove(c);
+    return this.canMove(position=agent.position, dir=dir);
+  }
+
+  proc canMove(position:MazePosition, dir: string) {
+    return this.board.canMove(fromId=position.cellId, dir=dir);
+  }
 
   /*
   Only NEWS motion allowed
    */
-  proc getMotionServoOptions(agent:Agent, servo:Servo){
+  proc getMotionServoOptions(agent:MazeAgent, servo:Servo){
     var optDom: domain(2),
       options: [optDom] int = 0,
       sensor: Sensor,
@@ -74,17 +85,33 @@ class Maze: World {
     sensor = agent.sensors[servo.sensorId];
     options[currentRow,..] = 0;
     // Build a one-hot for each option
-    for i in servo.optionIndexStart..servo.optionIndexEnd {
-      var a:[servo.optionIndexStart..servo.optionIndexEnd] int = 0;
-      a[i] = 1;
-      var p = this.moveAlong(from=agent.position, theta=sensor.unbin(a), speed=agent.speed);
-      if this.isValidPosition(p) {
-        currentRow += 1;
-        optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
-        options[currentRow, ..] = a;
+    if servo: MazeMotionServo != nil {
+      for i in servo.optionIndexStart..servo.optionIndexEnd {
+        var dir = this.moves.get(i-servo.optionIndexStart+1);
+        if this.canMove(agent=agent, dir=dir) {
+          var a:[servo.optionIndexStart..servo.optionIndexEnd] int = 0;
+          a[i] = 1;
+          currentRow += 1;
+          optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
+          options[currentRow, ..] = a;
+        }
       }
     }
     return options;
+  }
+
+  proc presentOptions(agent: MazeAgent) {
+    var options: [1..0, 1..0] int;
+    for s in 1..agent.servos.size {
+      if s > 1 {
+        halt("No more than one servo supported at the moment");
+      }
+      var servo = agent.servos[s];
+      options = this.getMotionServoOptions(agent=agent, servo=servo);
+    }
+
+    var state = this.buildAgentState(agent=agent);
+    return (options, state);
   }
 }
 
@@ -107,15 +134,25 @@ class MazeAgent: Agent {
 
 // Senses the cell in a maze
 class CellSensor: Sensor {
-  proc init(nbins: int, wrap:bool=false) {
+  var moves: BiMap;
+  proc init(nbins: int, moves:BiMap, wrap:bool=false) {
     super.init(nbins=nbins, overlap=0, wrap=wrap);
     this.complete();
+    this.moves=moves;
   }
 
   proc v(agent: MazeAgent) {
     var state:[this.stateIndexStart..this.stateIndexEnd] int = 0;
     state[agent.position.id] = 1;
     return state;
+  }
+
+  proc unbin(x:[] int) {
+    var y: real;
+    for i in 1..x.size {
+      if x[i] == 1 then y = i:real;
+    }
+    return y;
   }
 }
 
