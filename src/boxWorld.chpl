@@ -67,8 +67,7 @@ class BoxWorld: World {
    Gets the options on a single motion servo
    */
   proc getMotionServoOptions(agent: BoxWorldAgent, servo: MotionServo) {
-    var sDom = {servo.optionIndexStart..servo.optionIndexEnd},
-        optDom: domain(2),
+    var optDom: domain(2),
         options: [optDom] int = 0,
         sensor: Sensor,
         currentRow: int = 1; // We will populate the first row for sure

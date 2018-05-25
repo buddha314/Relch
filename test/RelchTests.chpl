@@ -15,7 +15,8 @@ class RelchTest : UnitTest {
   var sim = new Environment(name="simulating amazing!"),
       world = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT),
       dog: BoxWorldAgent,
-      cat: BoxWorldAgent;
+      cat: BoxWorldAgent,
+      maze = new Maze(width=10, height=10, wrap=true);
 
   /*
   var hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true),
@@ -61,6 +62,7 @@ class RelchTest : UnitTest {
     dog = world.addAgent(name="dog", position=new Position2D(x=25, y=25));
     cat = world.addAgent(name="cat", position=new Position2D(x=150, y=150));
     world.addAgentSensor(agent=dog, target=cat, sensor=world.getDefaultDistanceSensor());
+    maze = new Maze(width=10, height=10, wrap=true);
     return super.setUp(name);
   }
 
@@ -128,7 +130,15 @@ class RelchTest : UnitTest {
 
   proc testMaze() {
     var t = this.setUp("Maze World");
-    var maze = new Maze(width=10, height=10, wrap=true);
+    var pos = new MazePosition(cellId=1);
+    var theseus = maze.addAgent(name="theseus", position=new MazePosition(1));
+    theseus = maze.addAgentServo(agent=theseus, servo=maze.getDefaultMotionServo()
+      ,sensor=maze.getDefaultCellSensor());
+
+    var mm = maze.getDefaultMotionServo();
+    writeln(theseus.position);
+    mm.f(agent=theseus, choice=[1,0,0,0]);
+    writeln(theseus.position);
 
     this.tearDown(t);
   }

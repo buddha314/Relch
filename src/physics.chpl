@@ -57,12 +57,3 @@ class Position2D: Position {
     this.y = y;
   }
 }
-
-class MazePosition {
-  var i: int,
-      j: int;
-  proc init(i: int, j: int) {
-    this.i = i;
-    this.j = j;
-  }
-}
