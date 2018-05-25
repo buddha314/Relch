@@ -4,13 +4,15 @@ use worlds;
 class Maze: World {
   var wrap: bool,
       width: int,
-      height: int;
+      height: int,
+      board: GameBoard;
   proc init(width: int, height: int, wrap: bool) {
     super.init();
     this.complete();
     this.wrap=wrap;
     this.width=width;
     this.height=height;
+    this.board = new GameBoard(width=width, height=height, wrap=wrap);
   }
 
   proc isValidPosition(position: MazePosition) {
@@ -23,13 +25,18 @@ class Maze: World {
 }
 
 class GameBoard: Graph {
-  var width: int,
+  var wrap: bool,
+      width: int,
       height: int;
 
   proc init(width:int, height: int, wrap:bool) {
+    var n: [1..0] string;
+    for a in gridNames(i=height,j=width) do n.push_back(a);
+    var X = buildGameGrid(c=width,r=height);
+    super.init(X=X, name="Game Board", directed=false, vnames=n);
+    this.wrap=wrap;
     this.width=width;
     this.height=height;
-    this.wrap=wrap;
   }
 }
 
