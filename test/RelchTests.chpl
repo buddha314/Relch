@@ -1,5 +1,6 @@
 use Relch,
     NumSuch,
+    LinearAlgebra,
     Charcoal;
 
 class RelchTest : UnitTest {
@@ -112,7 +113,24 @@ class RelchTest : UnitTest {
       ,expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
       ,actual=angleSensor.v(me, you));
 
+   var optAnswer = Matrix(
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
+    var stateAnswer = Vector(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
+
     var (options, currentState) = world.presentOptions(agent=dog);
+    assertIntArrayEquals(msg="Dog has correct options", expected=optAnswer, actual=options);
+    assertIntArrayEquals(msg="Dog has correct state", expected=stateAnswer, actual=currentState);
 
     this.tearDown(t);
   }
@@ -142,14 +160,18 @@ class RelchTest : UnitTest {
     theseus = maze.addAgentServo(agent=theseus, servo=maze.getDefaultMotionServo()
       ,sensor=csense);
 
-    var options = maze.getMotionServoOptions(agent=theseus, servo=theseus.servos[1]);
-    writeln(options);
-    var state = maze.buildAgentState(theseus);
-    writeln(state);
-    var (opts, currentState) = maze.presentOptions(theseus);
+    //var options = maze.getMotionServoOptions(agent=theseus, servo=theseus.servos[1]);
 
-    var choice = theseus.choose(opts, currentState);
-    writeln(choice);
+    var optAnswer = Matrix( [0,0,0,0],[0,1,0,0], [0,0,0,1] ),
+        stateAnswer: [1..100] int = 0;
+    stateAnswer[1] = 1;
+
+    var (options, currentState) = maze.presentOptions(theseus);
+    assertIntArrayEquals(msg="Theseus has correct options", expected=optAnswer, actual=options );
+    assertIntArrayEquals(msg="Theseus has correct state", expected=stateAnswer, actual=currentState);
+
+    var choice = theseus.choose(options, currentState);
+    writeln("maze choice: ", choice);
 
     this.tearDown(t);
   }

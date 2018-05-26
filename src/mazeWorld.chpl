@@ -101,18 +101,23 @@ class Maze: World {
   }
 
   proc presentOptions(agent: MazeAgent) {
-    var options: [1..0, 1..0] int;
+    var optDom: domain(2),
+        options: [optDom] int;
     for s in 1..agent.servos.size {
       if s > 1 {
         halt("No more than one servo supported at the moment");
       }
       var servo = agent.servos[s];
-      options = this.getMotionServoOptions(agent=agent, servo=servo);
+      if servo: MazeMotionServo != nil {
+        var opts = this.getMotionServoOptions(agent=agent, servo=servo:MazeMotionServo);
+        optDom = opts.domain;
+        options = opts;
+      }
     }
 
     var state = this.buildAgentState(agent=agent);
     return (options, state);
-  } 
+  }
 }
 
 class MazePosition: Position {

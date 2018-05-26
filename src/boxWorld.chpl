@@ -91,7 +91,6 @@ class BoxWorld: World {
   }
 
   proc presentOptions(agent: BoxWorldAgent) {
-    //var options: [1..0, 1..0] int;
     var optDom: domain(2),
         options: [optDom] int;
 
