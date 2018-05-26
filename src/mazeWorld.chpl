@@ -112,7 +112,7 @@ class Maze: World {
 
     var state = this.buildAgentState(agent=agent);
     return (options, state);
-  }
+  } 
 }
 
 class MazePosition: Position {
@@ -157,7 +157,7 @@ class CellSensor: Sensor {
   }
 }
 
-class MazeMotionServo: Servo {
+class MazeMotionServo: MotionServo {
   var moves: BiMap,
       width: int,
       height: int;

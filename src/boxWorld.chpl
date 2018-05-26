@@ -90,6 +90,26 @@ class BoxWorld: World {
     return options;
   }
 
+  proc presentOptions(agent: BoxWorldAgent) {
+    //var options: [1..0, 1..0] int;
+    var optDom: domain(2),
+        options: [optDom] int;
+
+    for s in 1..agent.servos.size {
+      if s > 1 {
+        halt("No more than one servo supported at the moment");
+      }
+      var servo = agent.servos[s];
+      if servo: MotionServo != nil {
+        var opts = this.getMotionServoOptions(agent=agent, servo=servo:MotionServo);
+        optDom = opts.domain;
+        options = opts;
+      }
+    }
+
+    var state = this.buildAgentState(agent=agent);
+    return (options, state);
+  }
 
   proc randomPosition() {
     const x = rand(1, this.width),
@@ -131,6 +151,7 @@ class BoxWorld: World {
       ,overlap=this.defaultAngleOverlap
       ,theta0=-pi, theta1=pi, wrap=true);
   }
+
 
   proc dist(me: Agent, you: Agent) {
     return dist(me.position, you.position);

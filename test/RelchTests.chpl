@@ -104,11 +104,15 @@ class RelchTest : UnitTest {
       ,expected=[0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
       ,actual=sensor.v(me, you));
 
-    world.addAgentSensor(agent=dog, target=cat, sensor=world.getDefaultAngleSensor());
+    var catAngleSensor = world.getDefaultAngleSensor();
+    world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor);
+    world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo());
     var angleSensor = world.agents[1].sensors[2];
     assertIntArrayEquals(msg="Dog's angle sensor gives correct array"
       ,expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
       ,actual=angleSensor.v(me, you));
+
+    var (options, currentState) = world.presentOptions(agent=dog);
 
     this.tearDown(t);
   }

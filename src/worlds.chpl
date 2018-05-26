@@ -1,4 +1,4 @@
-use physics, agents, sensors;
+use physics, agents, sensors, mazeWorld;
 /*
  Provides some basic machinery, including default tilers for sensors
  */
@@ -36,6 +36,10 @@ class World {
     sensor.targetId = target.id;
     agent.addSensor(target=target, sensor=sensor, reward=reward);
     return agent;
+  }
+
+  proc setAgentPolicy(agent: Agent, policy: Policy) {
+    return agent.setPolicy(policy);
   }
 
   proc randomPosition() {
@@ -76,7 +80,7 @@ class World {
   }
 
   proc getDefaultMotionServo() {
-    return new Servo(tiler=this.defaultAngleTiler);
+    return new MotionServo();
   }
 
   /*
@@ -99,8 +103,7 @@ class World {
    This is here so ultimately the environment can edit the sensors
    */
   proc buildAgentState(agent: Agent) {
-    writeln("building state for ", agent.name);
-
+    //writeln("building state for ", agent.name);
     var state: [1..agent.sensorDimension()] int;
     for sensor in agent.sensors {
       //writeln("looking at sensor ", sensor);
