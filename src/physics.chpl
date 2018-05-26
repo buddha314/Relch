@@ -7,11 +7,15 @@ class MotionServo : Servo {
     this.complete();
   }
   proc f(agent: Agent, choice: [] int) {
+    if agent: BoxWorldAgent == nil then halt("Not an agent with a position");
+    var a = agent: BoxWorldAgent;
     const o:[1..this.dim()] int = choice[this.optionIndexStart..this.optionIndexEnd];
-    var sensor = agent.sensors[this.sensorId];
+    //var sensor = agent.sensors[this.sensorId];
+    var sensor = a.sensors[this.sensorId];
     const d: real = sensor.unbin(o);
-    agent.moveAgentAlong(d);
-    return agent;
+    //agent.moveAgentAlong(d);
+    a.moveAgentAlong(d);
+    return a;
   }
 }
 

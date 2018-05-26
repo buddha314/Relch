@@ -15,7 +15,9 @@ class Agent {
       finalized: bool = false,
       rewards: [1..0] Reward,
       memoriesDom = {1..0},
-      memories: [memoriesDom] Memory;
+      memories: [memoriesDom] Memory,
+      position: Position,
+      speed: real;
 
   proc init(name:string
       , maxMemories: int = 100000) {
@@ -235,8 +237,7 @@ class ConcealedCarryAgent: Agent {
 }
 
 class BoxWorldAgent : Agent {
-  var position: Position2D,
-      speed: real;
+  var position: Position2D;
 
   proc init(name: string, speed: real, position: Position2D) {
     super.init(name=name);

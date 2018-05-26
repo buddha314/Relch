@@ -1,4 +1,4 @@
-use physics, agents, sensors, mazeWorld;
+use physics, agents, sensors, mazeWorld, dtos;
 /*
  Provides some basic machinery, including default tilers for sensors
  */
@@ -75,6 +75,24 @@ class World {
     return p;
   }
 
+  proc canMove(agent: Agent, servo: Servo, option:[] int) {
+    return true;
+  }
+
+  /*
+   This needs to return these things:
+   1. The new state (e.g. relative positions to other objects), [] int
+   2. Reward: real
+   3. Done: bool, should the simumlation stop now?
+   4. New Position: In several sims, the actual position is not part of the state space
+      so use this to give the agent his new position
+   */
+  proc step(erpt: EpochDTO, agent: Agent, action:[] int) {
+    var nextState:[1..0] int,
+        reward: real,
+        done:bool;
+    return (nextState, reward, done);
+  }
 
   proc getDefaultAngleSensor() {
     return new AngleSensor(name="Default Angle Sensor", tiler=this.defaultAngleTiler);

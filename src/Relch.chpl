@@ -19,23 +19,6 @@ module Relch {
       this.world = world;
     }
 
-
-    /*
-     This needs to return these things:
-     1. The new state (e.g. relative positions to other objects), [] int
-     2. Reward: real
-     3. Done: bool, should the simumlation stop now?
-     4. New Position: In several sims, the actual position is not part of the state space
-        so use this to give the agent his new position
-     */
-    proc step(erpt: EpochDTO, agent: Agent, action:[] int) {
-        var state: [1..agent.sensorDimension()] int = buildAgentState(agent=agent);
-        var reward = this.dispenseReward(agent=agent, state=state);
-        var done: bool = this.areYouThroughYet(erpt=erpt, agent=agent, any=true);  // Yes, this is a Steve Martin reference
-        agent.currentStep += 1;
-        return (state, reward, done);
-    }
-
     proc reset() {
       this.resetAgents();
     }
@@ -147,10 +130,11 @@ module Relch {
             //writeln("\t\tagent choosing");
             var choice = agent.choose(options, currentState);
             //writeln("\t\tagent acting");
-            agent.act(choice);
+            //agent.act(choice);
             // DM rewards
             //writeln("\t\tstepping");
-            var (nextState, reward, done) = this.step(erpt=erpt, agent=agent, action=choice);
+            //var (nextState, reward, done) = this.step(erpt=erpt, agent=agent, action=choice);
+            var (nextState, reward, done) = this.world.step(erpt=erpt, agent=agent, action=choice);
             // Add the memory
             try! agent.add(new Memory(state=nextState, action=choice, reward=reward));
             if done {

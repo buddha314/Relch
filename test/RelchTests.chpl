@@ -95,6 +95,21 @@ class RelchTest : UnitTest {
     this.tearDown(t);
   }
 
+  proc testServos() {
+    var t = this.setUp("Servos");
+    // New servo
+    dog = world.addAgentServo(agent=dog, servo=new MotionServo(), sensor=world.getDefaultAngleSensor());
+    var servo=dog.servos;
+
+    var options = world.getMotionServoOptions(agent=dog, servo=dog.servos[1]: MotionServo);
+    assertIntEquals(msg="Interior point has 12 options", expected=12, actual=options.shape[1]);
+    dog.position = new Position2D(x=0, y=25);
+    var options2 = world.getMotionServoOptions(agent=dog, servo=dog.servos[1]: MotionServo);
+    assertIntEquals(msg="Boundary point has only 6 options", expected=6, actual=options2.shape[1]);
+
+    this.tearDown(t);
+  }
+
   proc testSensors() {
     var t = this.setUp("Sensors");
     //writeln(world.agents[1].sensors);
@@ -113,44 +128,43 @@ class RelchTest : UnitTest {
       ,expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
       ,actual=angleSensor.v(me, you));
 
-   var optAnswer = Matrix(
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
-    var stateAnswer = Vector(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
-
-    var (options, currentState) = world.presentOptions(agent=dog);
-    assertIntArrayEquals(msg="Dog has correct options", expected=optAnswer, actual=options);
-    assertIntArrayEquals(msg="Dog has correct state", expected=stateAnswer, actual=currentState);
-
-    world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor);
-
-
     this.tearDown(t);
   }
 
-  proc testServos() {
-    var t = this.setUp("Servos");
-    // New servo
-    dog = world.addAgentServo(agent=dog, servo=new MotionServo(), sensor=world.getDefaultAngleSensor());
-    var servo=dog.servos;
+  proc testBoxWorld() {
+    var t = this.setUp("Box World");
+    var catAngleSensor = world.getDefaultAngleSensor();
+    world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor);
+    world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo());
 
-    var options = world.getMotionServoOptions(agent=dog, servo=dog.servos[1]: MotionServo);
-    assertIntEquals(msg="Interior point has 12 options", expected=12, actual=options.shape[1]);
-    dog.position = new Position2D(x=0, y=25);
-    var options2 = world.getMotionServoOptions(agent=dog, servo=dog.servos[1]: MotionServo);
-    assertIntEquals(msg="Boundary point has only 6 options", expected=6, actual=options2.shape[1]);
+    var optAnswer = Matrix(
+     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
+     //var stateAnswer = Vector(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
+     var stateAnswer  = Vector(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
 
-    this.tearDown(t);
+     world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor);
+     var (options, currentState) = world.presentOptions(agent=dog);
+     assertIntArrayEquals(msg="Dog has correct options", expected=optAnswer, actual=options);
+     //writeln("dog currentState ", currentState);
+     assertIntArrayEquals(msg="Dog has correct state", expected=stateAnswer, actual=currentState);
+
+     var choice = dog.choose(options, currentState);
+     assertIntArrayEquals(msg="Dog has correct choice"
+       , expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], actual=choice);
+     var (nextState, reward, done) = world.step(erpt=new EpochDTO(id=1), agent=dog, action=choice);
+
+     this.tearDown(t);
   }
 
   proc testMaze() {
@@ -162,8 +176,7 @@ class RelchTest : UnitTest {
     theseus = maze.addAgentSensor(agent=theseus, target=new SecretAgent(), sensor=csense);
     theseus = maze.addAgentServo(agent=theseus, servo=maze.getDefaultMotionServo()
       ,sensor=csense);
-
-    //var options = maze.getMotionServoOptions(agent=theseus, servo=theseus.servos[1]);
+    maze.setAgentPolicy(agent=theseus, policy=new RandomPolicy());
 
     var optAnswer = Matrix( [0,0,0,0],[0,1,0,0], [0,0,0,1] ),
         stateAnswer: [1..100] int = 0;
@@ -173,10 +186,10 @@ class RelchTest : UnitTest {
     assertIntArrayEquals(msg="Theseus has correct options", expected=optAnswer, actual=options );
     assertIntArrayEquals(msg="Theseus has correct state", expected=stateAnswer, actual=currentState);
 
-    maze.setAgentPolicy(agent=theseus, policy=new RandomPolicy());
     var choice = theseus.choose(options, currentState);
     assertIntEquals(msg="Theseus choice is 4 long", expected=4, actual=choice.size);
     writeln("maze choice: ", choice);
+    //theseus.act(choice=[0,1,0,0]);
 
     this.tearDown(t);
   }
@@ -187,6 +200,7 @@ class RelchTest : UnitTest {
     testBuildSim();
     testSensors();
     testServos();
+    testBoxWorld();
     testMaze();
     //testTilers();
     //testWorld();

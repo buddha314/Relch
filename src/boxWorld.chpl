@@ -36,6 +36,12 @@ class BoxWorld: World {
     }
   }
 
+  proc canMove(agent:BoxWorldAgent, sensor:Sensor, choice:[] int) {
+      var a = agent:BoxWorldAgent;
+      var p = this.moveAlong(from=a.position, theta=sensor.unbin(choice), speed=agent.speed);
+      return this.isValidPosition(p);
+  }
+
   proc addAgent(name: string, position: Position2D, speed: real = 3.0) {
     var agent = new BoxWorldAgent(name=name, position=position, speed=3.0);
     agent.id = this.agents.size+1;
@@ -80,8 +86,7 @@ class BoxWorld: World {
     for i in servo.optionIndexStart..servo.optionIndexEnd {
       var a:[servo.optionIndexStart..servo.optionIndexEnd] int = 0;
       a[i] = 1;
-      var p = this.moveAlong(from=agent.position, theta=sensor.unbin(a), speed=agent.speed);
-      if this.isValidPosition(p) {
+      if this.canMove(agent=agent, sensor=sensor, choice=a) {
         currentRow += 1;
         optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
         options[currentRow, ..] = a;
@@ -108,6 +113,13 @@ class BoxWorld: World {
 
     var state = this.buildAgentState(agent=agent);
     return (options, state);
+  }
+
+  proc step(erpt: EpochDTO, agent: BoxWorldAgent, action:[] int) {
+    var nextState:[1..0] int,
+        reward: real,
+        done:bool;
+    return (nextState, reward, done);
   }
 
   proc randomPosition() {
