@@ -99,17 +99,16 @@ class World {
    This is here so ultimately the environment can edit the sensors
    */
   proc buildAgentState(agent: Agent) {
-    //writeln("building state for ", agent.name);
+    writeln("building state for ", agent.name);
 
     var state: [1..agent.sensorDimension()] int;
     for sensor in agent.sensors {
-        //ref you = this.perceivables[sensor.youId];
+      //writeln("looking at sensor ", sensor);
+      if sensor.youId > 0 {
         ref you = this.agents[sensor.youId];
-        //writeln("me ", agent);
-        //writeln("you ", you);
-        //writeln("sensor: ", sensor);
         var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent, you=you);
         state[a.domain] = a;
+      }
     }
     //writeln("exiting build state for ", agent.name);
     return state;

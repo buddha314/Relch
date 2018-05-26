@@ -141,9 +141,10 @@ class CellSensor: Sensor {
     this.moves=moves;
   }
 
-  proc v(agent: MazeAgent) {
+  proc v(me: Agent, you: Agent) {
+    var me2: MazeAgent = me:MazeAgent;
     var state:[this.stateIndexStart..this.stateIndexEnd] int = 0;
-    state[agent.position.id] = 1;
+    state[me2.position.cellId] = 1;
     return state;
   }
 

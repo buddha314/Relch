@@ -131,15 +131,19 @@ class RelchTest : UnitTest {
   proc testMaze() {
     var t = this.setUp("Maze World");
     var pos = new MazePosition(cellId=1);
-    var theseus = maze.addAgent(name="theseus", position=new MazePosition(1));
-    theseus = maze.addAgentSensor(agent=theseus, target=new SecretAgent(), sensor=maze.getDefaultCellSensor());
+    var theseus = maze.addAgent(name="theseus", position=new MazePosition(1)),
+        csense = maze.getDefaultCellSensor();
+
+    theseus = maze.addAgentSensor(agent=theseus, target=new SecretAgent(), sensor=csense);
     theseus = maze.addAgentServo(agent=theseus, servo=maze.getDefaultMotionServo()
-      ,sensor=maze.getDefaultCellSensor());
+      ,sensor=csense);
 
     var options = maze.getMotionServoOptions(agent=theseus, servo=theseus.servos[1]);
-    //maze.presentOptions(agent=theseus);
-    /*
     writeln(options);
+    var state = maze.buildAgentState(theseus);
+    writeln(state);
+    var (opts, currentState) = maze.presentOptions(theseus);
+    /*
     var mm = maze.getDefaultMotionServo();
     writeln(theseus.position);
     mm.f(agent=theseus, choice=[1,0,0,0]);

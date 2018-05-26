@@ -17,6 +17,7 @@ class Sensor {
     this.nbins = nbins;
     this.dom = {1..nbins, 1..2};
     this.meId = -1;
+    this.youId = -1;
     this.id = -1;
   }
 
