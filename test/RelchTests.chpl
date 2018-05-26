@@ -143,11 +143,9 @@ class RelchTest : UnitTest {
     var state = maze.buildAgentState(theseus);
     writeln(state);
     var (opts, currentState) = maze.presentOptions(theseus);
-    /*
-    var mm = maze.getDefaultMotionServo();
-    writeln(theseus.position);
-    mm.f(agent=theseus, choice=[1,0,0,0]);
-    writeln(theseus.position); */
+
+    var choice = theseus.choose(opts, currentState);
+    writeln(choice);
 
     this.tearDown(t);
   }

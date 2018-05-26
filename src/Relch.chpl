@@ -78,25 +78,6 @@ module Relch {
       return (options, state);
     }
 
-    /*
-     This is here so ultimately the environment can edit the sensors
-     */
-    proc buildAgentState(agent: Agent) {
-      //writeln("building state for ", agent.name);
-
-      var state: [1..agent.sensorDimension()] int;
-      for sensor in agent.sensors {
-          ref you = this.perceivables[sensor.targetId];
-          //writeln("me ", agent);
-          //writeln("you ", you);
-          //writeln("sensor: ", sensor);
-          var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent, you=you);
-          state[a.domain] = a;
-      }
-      //writeln("exiting build state for ", agent.name);
-      return state;
-    }
-
     proc dispenseReward(agent: Agent, state: [] int) {
       var r: real = 0.0;
       for reward in agent.rewards {
