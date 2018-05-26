@@ -114,12 +114,12 @@ class FollowTargetPolicy : Policy {
 
   //proc f(me: Agent, options:[] int, state: [] int) {
   proc f(options:[] int, state: [] int) throws {
-    var targetAngle = this.targetSensor.tiler.unbin(state[this.targetSensor.stateIndexStart..this.targetSensor.stateIndexEnd]);
+    var targetAngle = this.targetSensor.unbin(state[this.targetSensor.stateIndexStart..this.targetSensor.stateIndexEnd]);
     var thetas:[1..options.shape[1]] real;
     var t: [1..options.shape[2]] int;
     for i in 1..options.shape[1] {
       t = options[i,..];
-      var theta = abs(targetAngle - this.targetSensor.tiler.unbin(t)) ;
+      var theta = abs(targetAngle - this.targetSensor.unbin(t)) ;
       if theta > pi then theta = 2* pi - theta;
       thetas[i] = theta;
     }

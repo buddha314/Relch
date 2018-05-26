@@ -132,6 +132,9 @@ class RelchTest : UnitTest {
     assertIntArrayEquals(msg="Dog has correct options", expected=optAnswer, actual=options);
     assertIntArrayEquals(msg="Dog has correct state", expected=stateAnswer, actual=currentState);
 
+    world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor);
+
+
     this.tearDown(t);
   }
 
@@ -170,7 +173,9 @@ class RelchTest : UnitTest {
     assertIntArrayEquals(msg="Theseus has correct options", expected=optAnswer, actual=options );
     assertIntArrayEquals(msg="Theseus has correct state", expected=stateAnswer, actual=currentState);
 
+    maze.setAgentPolicy(agent=theseus, policy=new RandomPolicy());
     var choice = theseus.choose(options, currentState);
+    assertIntEquals(msg="Theseus choice is 4 long", expected=4, actual=choice.size);
     writeln("maze choice: ", choice);
 
     this.tearDown(t);

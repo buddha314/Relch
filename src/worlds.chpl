@@ -42,6 +42,14 @@ class World {
     return agent.setPolicy(policy);
   }
 
+  proc setAgentTarget(agent: Agent, target: Agent, sensor: Sensor, avoid: bool=false) {
+    if agent.id < 1 then this.addAgent(agent);
+    if target.id < 1 then this.addAgent(target);
+    sensor.youId = target.id;
+    agent.addTarget(target=target, sensor=sensor, avoid=avoid);
+    return agent;
+  }
+
   proc randomPosition() {
     return this.randomPosition();
   }
