@@ -79,6 +79,30 @@ class World {
     return true;
   }
 
+  proc dispenseReward(agent: Agent, state: [] int) {
+    var r: real = 0.0;
+    for reward in agent.rewards {
+      r += reward.f(state);
+    }
+    return r;
+  }
+
+
+  // If any sensor is done, you are done
+  // Otherwise all sensors must be done
+  proc areYouThroughYet(erpt: EpochDTO, agent: Agent, any: bool = true) {
+    var r: bool = false;
+    //if this.currentStep >= this.steps then r = true;
+    if any {
+      for reward in agent.rewards {
+        if reward.accomplished then erpt.winner = agent.name;
+        if reward.accomplished then return true;
+      }
+    }
+    return r;
+  }
+
+
   /*
    This needs to return these things:
    1. The new state (e.g. relative positions to other objects), [] int
@@ -91,6 +115,9 @@ class World {
     var nextState:[1..0] int,
         reward: real,
         done:bool;
+    nextState = this.buildAgentState(agent=agent);
+    reward = dispenseReward(agent=agent, state=nextState);
+    done = areYouThroughYet(agent);
     return (nextState, reward, done);
   }
 

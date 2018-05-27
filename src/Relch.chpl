@@ -61,16 +61,18 @@ module Relch {
       return (options, state);
     }
 
+    /*
     proc dispenseReward(agent: Agent, state: [] int) {
       var r: real = 0.0;
       for reward in agent.rewards {
         r += reward.f(state);
       }
       return r;
-    }
+    } */
 
     // If any sensor is done, you are done
     // Otherwise all sensors must be done
+    /*
     proc areYouThroughYet(erpt: EpochDTO, agent: Agent, any: bool = true) {
       var r: bool = false;
       //if this.currentStep >= this.steps then r = true;
@@ -81,7 +83,7 @@ module Relch {
         }
       }
       return r;
-    }
+    } */
 
     /*
     This should probably be a class;
