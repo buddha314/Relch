@@ -182,11 +182,13 @@ class RelchTest : UnitTest {
     var exitReward = new Reward(value=10, penalty=-1);
     var exitState:[1..1, 1..100] int=0;
     exitState[1,11]=1;
-    exitReward.target = exitState;
+    exitReward = exitReward.buildTargets(targets=exitState);
 
     theseus = maze.addAgentSensor(agent=theseus, target=new SecretAgent()
       , sensor=csense, reward=exitReward);
       //, sensor=csense);
+
+    exitReward.finalize();
     theseus = maze.addAgentServo(agent=theseus, servo=maze.getDefaultMotionServo()
       ,sensor=csense);
     maze.setAgentPolicy(agent=theseus, policy=new RandomPolicy());
@@ -207,7 +209,7 @@ class RelchTest : UnitTest {
     // Since Theseus is using a random policy, we force his choice for the test
     var (nextState, reward, done) = world.step(erpt=new EpochDTO(id=1), agent=theseus, action=[0,0,0,1]);
     assertRealEquals(msg="Theseus gets reward for stepping south", expected=10.0, actual=reward);
-    assertBoolEquals(msg="Theseus ain't done yet", expected=false, actual=done);
+    assertBoolEquals(msg="Theseus ain't done yet", expected=true, actual=done);
     var nextStateAnswer: [1..100] int = 0;
     nextStateAnswer[11] = 1;
     assertIntArrayEquals(msg="Theseus has take the correct step", expected=nextStateAnswer, actual=nextState);

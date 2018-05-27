@@ -74,7 +74,6 @@ class Agent {
   }
 
   proc addSensor(target, sensor: Sensor, reward: Reward) {
-    writeln("agent add sensor w/ reward");
     sensor.meId = target.id;
     sensor.youId = target.id;
     this.addSensor(sensor=sensor);

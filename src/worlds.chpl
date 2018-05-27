@@ -18,9 +18,7 @@ class World {
     return agent;
   } */
 
-  //proc addAgentSensor(agent: Agent, target: Agent, sensor: Sensor) {
   proc addAgentSensor(agent, target, sensor: Sensor) {
-    writeln(" ** default add agent sensor");
     if agent.id <1 then this.addAgent(agent);
     if target.id <1 then this.addAgent(target);
     sensor.meId = agent.id;
@@ -33,13 +31,10 @@ class World {
    Add a sensor with a reward attached
    */
   proc addAgentSensor(agent, target, sensor:Sensor, reward: Reward) {
-    writeln("default sensor reward");
     if agent.id < 1 then this.addAgent(agent);
     if target.id < 1 then this.addAgent(target);
     sensor.youId = target.id;
     agent.addSensor(target=target, sensor=sensor, reward=reward);
-    //reward.stateIndexStart = sensor.stateIndexStart;
-    //reward.stateIndexEnd = sensor.stateIndexEnd;
     return agent;
   }
 
@@ -87,7 +82,6 @@ class World {
   proc dispenseReward(agent: Agent, state: [] int) {
     var r: real = 0.0;
     for reward in agent.rewards {
-      writeln(" ** adding reward for ", agent.name);
       r += reward.f(state);
     }
     return r;
@@ -98,7 +92,6 @@ class World {
   // Otherwise all sensors must be done
   proc areYouThroughYet(erpt: EpochDTO, agent: Agent, any: bool = true) {
     var r: bool = false;
-    //if this.currentStep >= this.steps then r = true;
     if any {
       for reward in agent.rewards {
         if reward.accomplished then erpt.winner = agent.name;

@@ -3,7 +3,6 @@ use physics, agents;
 class Reward {
   var tDom = {1..0, 1..0},
       target:[tDom] int,
-      //sensor: Sensor,
       stateIndexStart: int,
       stateIndexEnd: int,
       value: real,
@@ -16,18 +15,36 @@ class Reward {
     this.accomplished = false;
   }
 
-  proc buildTargets() {
-    this.tDom = {1..1, this.stateIndexEnd..this.stateIndexStart};
-    this.target = 0;
-    return true;
+  proc buildTargets(targets:[] int) {
+    this.tDom = targets.domain;
+    for i in 1..targets.shape[1] {
+      for j in 1..targets.shape[2] {
+        this.target[i,j] = targets[i, j];
+      }
+    }
+    return this;
   }
 
   proc f(state:[] int) {
-    return this.value;
+    var substate = state[this.stateIndexStart..this.stateIndexEnd];
+    //writeln("substate: ", substate);
+    //writeln(" reward shape ", this.target.shape);
+    for i in 1..this.target.shape[1] {
+      const x:[substate.domain] int = this.target[i,..];
+      //writeln("checking for x: ", x);
+      if substate.equals(x) {
+        this.accomplished = true;
+        //writeln("yes, there is a match");
+        return this.value;
+      }
+    }
+    return this.penalty;
   }
 
   proc finalize() {
-    return this.buildTargets();
+    var dom = {1..this.target.shape[1], this.stateIndexStart..this.stateIndexEnd};
+    reshape(this.target, dom);
+    return true;
   }
 
 }
@@ -46,6 +63,7 @@ class ProximityReward : Reward {
   }
 
   proc buildTargets() {
+    //writeln(" ** proximity build targets");
     var rows: int = 2*this.proximity- 1;
     this.tDom = {1..rows, this.stateIndexStart..this.stateIndexEnd}; // Keep the state domain
     this.target[1,stateIndexStart] = 1;
