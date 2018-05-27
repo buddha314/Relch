@@ -18,22 +18,28 @@ class World {
     return agent;
   } */
 
-  proc addAgentSensor(agent: Agent, target: Agent, sensor: Sensor) {
-    if agent.id <1 then this.add(agent);
-    if target.id <1 then this.add(target);
-    sensor.targetId = target.id;
-    agent.addSensor(target=target, sensor=sensor);
+  //proc addAgentSensor(agent: Agent, target: Agent, sensor: Sensor) {
+  proc addAgentSensor(agent, target, sensor: Sensor) {
+    writeln(" ** default add agent sensor");
+    if agent.id <1 then this.addAgent(agent);
+    if target.id <1 then this.addAgent(target);
+    sensor.meId = agent.id;
+    sensor.youId = target.id;
+    agent.addSensor(sensor=sensor);
     return agent;
   }
 
   /*
    Add a sensor with a reward attached
    */
-  proc addAgentSensor(agent, target: Agent, sensor:Sensor, reward: Reward) {
+  proc addAgentSensor(agent, target, sensor:Sensor, reward: Reward) {
+    writeln("default sensor reward");
     if agent.id < 1 then this.addAgent(agent);
     if target.id < 1 then this.addAgent(target);
     sensor.youId = target.id;
     agent.addSensor(target=target, sensor=sensor, reward=reward);
+    //reward.stateIndexStart = sensor.stateIndexStart;
+    //reward.stateIndexEnd = sensor.stateIndexEnd;
     return agent;
   }
 
@@ -81,6 +87,7 @@ class World {
   proc dispenseReward(agent: Agent, state: [] int) {
     var r: real = 0.0;
     for reward in agent.rewards {
+      writeln(" ** adding reward for ", agent.name);
       r += reward.f(state);
     }
     return r;

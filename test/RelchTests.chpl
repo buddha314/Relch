@@ -179,7 +179,14 @@ class RelchTest : UnitTest {
     var theseus = maze.addAgent(name="theseus", position=new MazePosition(1)),
         csense = maze.getDefaultCellSensor();
 
-    theseus = maze.addAgentSensor(agent=theseus, target=new SecretAgent(), sensor=csense);
+    var exitReward = new Reward(value=10, penalty=-1);
+    var exitState:[1..1, 1..100] int=0;
+    exitState[1,11]=1;
+    exitReward.target = exitState;
+
+    theseus = maze.addAgentSensor(agent=theseus, target=new SecretAgent()
+      , sensor=csense, reward=exitReward);
+      //, sensor=csense);
     theseus = maze.addAgentServo(agent=theseus, servo=maze.getDefaultMotionServo()
       ,sensor=csense);
     maze.setAgentPolicy(agent=theseus, policy=new RandomPolicy());
@@ -191,12 +198,15 @@ class RelchTest : UnitTest {
     var (options, currentState) = maze.presentOptions(theseus);
     assertIntArrayEquals(msg="Theseus has correct options", expected=optAnswer, actual=options );
     assertIntArrayEquals(msg="Theseus has correct state", expected=stateAnswer, actual=currentState);
+    //writeln("theseus position: ", theseus.position);
+    //writeln("theseus state: ", currentState);
 
     var choice = theseus.choose(options, currentState);
     assertIntEquals(msg="Theseus choice is 4 long", expected=4, actual=choice.size);
     //writeln("maze choice: ", choice);
     // Since Theseus is using a random policy, we force his choice for the test
     var (nextState, reward, done) = world.step(erpt=new EpochDTO(id=1), agent=theseus, action=[0,0,0,1]);
+    assertRealEquals(msg="Theseus gets reward for stepping south", expected=10.0, actual=reward);
     assertBoolEquals(msg="Theseus ain't done yet", expected=false, actual=done);
     var nextStateAnswer: [1..100] int = 0;
     nextStateAnswer[11] = 1;
