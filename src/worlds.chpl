@@ -111,13 +111,18 @@ class World {
    4. New Position: In several sims, the actual position is not part of the state space
       so use this to give the agent his new position
    */
-  proc step(erpt: EpochDTO, agent: Agent, action:[] int) {
+  proc step(erpt: EpochDTO, agent, action:[] int) {
     var nextState:[1..0] int,
         reward: real,
         done:bool;
+
+    // Agent has to actually move now.
+    for servo in agent.servos {
+      servo.f(agent=agent, choice=action);
+    }
     nextState = this.buildAgentState(agent=agent);
     reward = dispenseReward(agent=agent, state=nextState);
-    done = areYouThroughYet(agent);
+    done = areYouThroughYet(erpt=erpt, agent=agent, any=true);
     return (nextState, reward, done);
   }
 
@@ -155,8 +160,9 @@ class World {
   /*
    This is here so ultimately the environment can edit the sensors
    */
-  proc buildAgentState(agent: Agent) {
-    //writeln("building state for ", agent.name);
+  //proc buildAgentState(agent: Agent) {
+  proc buildAgentState(agent) {
+    writeln("building state for ", agent.name);
     var state: [1..agent.sensorDimension()] int;
     for sensor in agent.sensors {
       //writeln("looking at sensor ", sensor);

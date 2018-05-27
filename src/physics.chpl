@@ -6,16 +6,16 @@ class MotionServo : Servo {
     super.init();
     this.complete();
   }
-  proc f(agent: Agent, choice: [] int) {
+  proc f(agent: BoxWorldAgent, choice: [] int) {
     if agent: BoxWorldAgent == nil then halt("Not an agent with a position");
-    var a = agent: BoxWorldAgent;
     const o:[1..this.dim()] int = choice[this.optionIndexStart..this.optionIndexEnd];
-    //var sensor = agent.sensors[this.sensorId];
-    var sensor = a.sensors[this.sensorId];
+    var sensor = agent.sensors[this.sensorId];
     const d: real = sensor.unbin(o);
-    //agent.moveAgentAlong(d);
-    a.moveAgentAlong(d);
-    return a;
+    var p = new Position2D(
+       x=agent.position.x + agent.speed * cos(d)
+      ,y=agent.position.y + agent.speed * sin(d) );
+    agent.position = p;
+    return agent;
   }
 }
 
@@ -38,7 +38,7 @@ class Servo {
 
   proc init() {}
 
-  proc f(agent: Agent, choice: [] int) {
+  proc f(agent, choice: [] int) {
     return agent;
   }
 

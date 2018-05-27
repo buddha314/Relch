@@ -115,12 +115,13 @@ class BoxWorld: World {
     return (options, state);
   }
 
+  /*
   proc step(erpt: EpochDTO, agent: BoxWorldAgent, action:[] int) {
     var nextState:[1..0] int,
         reward: real,
         done:bool;
     return (nextState, reward, done);
-  }
+  } */
 
   proc randomPosition() {
     const x = rand(1, this.width),

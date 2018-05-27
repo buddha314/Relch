@@ -134,8 +134,9 @@ class RelchTest : UnitTest {
   proc testBoxWorld() {
     var t = this.setUp("Box World");
     var catAngleSensor = world.getDefaultAngleSensor();
-    world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor);
-    world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo());
+    dog = world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    dog = world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    dog = world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo());
 
     var optAnswer = Matrix(
      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -150,10 +151,8 @@ class RelchTest : UnitTest {
      [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
      [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
-     //var stateAnswer = Vector(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
      var stateAnswer  = Vector(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
 
-     world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor);
      var (options, currentState) = world.presentOptions(agent=dog);
      assertIntArrayEquals(msg="Dog has correct options", expected=optAnswer, actual=options);
      //writeln("dog currentState ", currentState);
@@ -163,7 +162,11 @@ class RelchTest : UnitTest {
      assertIntArrayEquals(msg="Dog has correct choice"
        , expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], actual=choice);
      var (nextState, reward, done) = world.step(erpt=new EpochDTO(id=1), agent=dog, action=choice);
-
+     assertBoolEquals(msg="Dog is not done", expected=false, actual=done);
+     assertRealApproximates(msg="Dog x has moved", expected=27.5238, actual=dog.position.x, error=1e-4);
+     assertIntEquals(msg="Dog state is not empty", expected=3, actual = nextState.size);
+     writeln("dog next state: ", nextState);
+     
      this.tearDown(t);
   }
 
