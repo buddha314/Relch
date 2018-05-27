@@ -42,7 +42,8 @@ class World {
     return agent.setPolicy(policy);
   }
 
-  proc setAgentTarget(agent: Agent, target: Agent, sensor: Sensor, avoid: bool=false) {
+  //proc setAgentTarget(agent: Agent, target: Agent, sensor: Sensor, avoid: bool=false) {
+  proc setAgentTarget(agent, target, sensor: Sensor, avoid: bool=false) {
     if agent.id < 1 then this.addAgent(agent);
     if target.id < 1 then this.addAgent(target);
     sensor.youId = target.id;
@@ -64,8 +65,11 @@ class World {
   /*
    Gets the options on a single motion servo
    */
-  proc getMotionServoOptions(agent: Agent, servo: MotionServo) {
-    var options:[1..0] int;
+  //proc getMotionServoOptions(agent: Agent, servo: MotionServo) {
+  proc getMotionServoOptions(agent, servo: MotionServo) {
+    var optDom: domain(2),
+        options:[optDom] int;
+    writeln(" default getMotionServoOptions");
     return options;
   }
 

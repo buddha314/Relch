@@ -24,30 +24,27 @@ module Relch {
     }
 
     proc resetAgents() {
-      for agent in this.agents do this.resetAgent(agent);
-    }
-    proc resetAgent(agent: Agent) {
-      agent.currentStep = 1;
-      agent.position = agent.initialPosition;
-      agent.done = false;
-      //for sensor in agent.policy.sensors {
-      for sensor in agent.sensors {
-        sensor.done = false;
-      }
-      for reward in agent.rewards do reward.accomplished = false;
+      for agent in this.world.agents do agent.reset();
     }
 
-    proc presentOptions(agent: Agent) {
+    //proc presentOptions(agent: Agent) {
+    proc presentOptions(agent) {
       /* Constructing options is kinda hard, right now just 1 for every
          element of the sensors */
+      var optDom: domain(2),
+          options: [optDom] int;
 
-      var options: [1..0, 1..0] int;
       for s in 1..agent.servos.size {
         if s > 1 {
           halt("No more than one servo supported at the moment");
         }
         var servo = agent.servos[s];
-        options = this.world.getMotionServoOptions(agent=agent, servo=servo);
+        if servo: MotionServo != nil {
+          var opts = this.world.getMotionServoOptions(agent=agent, servo=servo:MotionServo);
+          writeln(" env opts ", opts.domain);
+          optDom = opts.domain;
+          options = opts;
+        }
       }
 
       // Right now, this just constructs the state from the Agent as a pass
@@ -67,7 +64,7 @@ module Relch {
     Yes, this is a King Gizzard reference
      */
     proc robotStop() {
-      for agent in this.agents  {
+      for agent in this.world.agents  {
         if agent.done then return true;
       }
       return false;
@@ -81,7 +78,8 @@ module Relch {
         halt("No world set, aborting");
       }
       var finalized: bool = true;
-      for agent in this.agents {
+      //for agent in this.agents {
+      for agent in this.world.agents {
         //writeln("finalizing ", agent.name);
         if !agent.finalized {
           finalized = finalized && agent.finalize();
@@ -97,7 +95,7 @@ module Relch {
         while keepSteppin {
           var sr = new StepReport(epoch=i, step=step);
         //writeln("\tstarting step ", step);
-          for agent in this.agents{
+          for agent in this.world.agents{
             //writeln("\t\tagent: ", agent);
             if agent.done then continue;
             agent.currentStep = step;
@@ -121,7 +119,7 @@ module Relch {
               break;
             }
             // Return A
-            yield new AgentDTO(agent);
+            yield agent.DTO();
           }
           //writeln(sr);
           if this.robotStop() {
@@ -132,7 +130,7 @@ module Relch {
         }
         erpt.steps = step;
         step = 0;
-        for agent in this.agents {
+        for agent in this.world.agents {
           //writeln("larnin!");
           agent.learn();
         }

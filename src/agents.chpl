@@ -1,4 +1,4 @@
-use NumSuch, worlds, policies, rewards;
+use NumSuch, worlds, policies, rewards, dtos;
 
 // Should be abstracted to something like DQNAgent
 //class Agent : Perceivable {
@@ -170,6 +170,16 @@ class Agent {
     return new AgentRecord(id=this.id, name=this.name
       , x=this.position.x, y=this.position.y);
   }
+
+  proc DTO() {
+    return new AgentDTO(id=this.id, name=this.name);
+  }
+
+  proc reset() {
+    this.currentStep = 1;
+    this.done = false;
+    for reward in this.rewards do reward.accomplished = false;
+  }
 }
 
 
@@ -238,13 +248,25 @@ class ConcealedCarryAgent: Agent {
 }
 
 class BoxWorldAgent : Agent {
-  var position: Position2D;
+  var initialPosition: Position2D,
+      position: Position2D;
 
   proc init(name: string, speed: real, position: Position2D) {
     super.init(name=name);
     this.complete();
     this.speed= speed;
     this.position=position;
+    this.initialPosition = position;
+  }
+
+  proc DTO() {
+    return new BoxWorldAgentDTO(
+      id=this.id, name=this.name, x=this.position.x, y=this.position.y);
+  }
+
+  proc reset(){
+    super.reset();
+    this.position = initialPosition;
   }
 }
 

@@ -3,29 +3,37 @@ use Relch, agents;
 
 class DTO {
   var id: int;
-  proc init() {};
+  proc init(id: int) {
+    this.id=id;
+  };
 }
 
 class EpochDTO : DTO {
     var steps: int,
         winner: string;
     proc init(id: int) {
-      super.init();
+      super.init(id=id);
       this.complete();
-      this.id = id;
     }
 }
 
+
 class AgentDTO : DTO {
-  var name: string,
-      x: real,
-      y: real;
-  proc init(agent: Agent) {
-    super.init();
+  var name: string;
+  proc init(id: int, name:string) {
+    super.init(id=id);
     this.complete();
-    this.id = agent.simId;
-    this.name = agent.name;
-    this.x = agent.position.x;
-    this.y = agent.position.y;
+    this.name=name;
+  }
+}
+
+class BoxWorldAgentDTO : AgentDTO {
+  var x: real,
+      y: real;
+  proc init(id: int, name:string, x:real, y:real) {
+    super.init(id=id, name=name);
+    this.complete();
+    this.x = x;
+    this.y = y;
   }
 }
