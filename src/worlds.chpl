@@ -3,8 +3,7 @@ use physics, agents, sensors, mazeWorld, dtos;
  Provides some basic machinery, including default tilers for sensors
  */
 class World {
-  var agents: [1..0] Agent,
-      perceivables: [1..0] Perceivable;
+  var agents: [1..0] Agent;
 
   proc init() {
   }
@@ -19,7 +18,7 @@ class World {
     return agent;
   } */
 
-  proc addAgentSensor(agent: Agent, target: Perceivable, sensor: Sensor) {
+  proc addAgentSensor(agent: Agent, target: Agent, sensor: Sensor) {
     if agent.id <1 then this.add(agent);
     if target.id <1 then this.add(target);
     sensor.targetId = target.id;
@@ -30,10 +29,10 @@ class World {
   /*
    Add a sensor with a reward attached
    */
-  proc addAgentSensor(agent:Agent, target:Perceivable, sensor:Sensor, reward: Reward) {
-    if agent.id < 1 then this.add(agent);
-    if target.id < 1 then this.add(target);
-    sensor.targetId = target.id;
+  proc addAgentSensor(agent, target: Agent, sensor:Sensor, reward: Reward) {
+    if agent.id < 1 then this.addAgent(agent);
+    if target.id < 1 then this.addAgent(target);
+    sensor.youId = target.id;
     agent.addSensor(target=target, sensor=sensor, reward=reward);
     return agent;
   }
@@ -112,17 +111,13 @@ class World {
       so use this to give the agent his new position
    */
   proc step(erpt: EpochDTO, agent, action:[] int) {
-    var nextState:[1..0] int,
-        reward: real,
-        done:bool;
-
     // Agent has to actually move now.
     for servo in agent.servos {
       servo.f(agent=agent, choice=action);
     }
-    nextState = this.buildAgentState(agent=agent);
-    reward = dispenseReward(agent=agent, state=nextState);
-    done = areYouThroughYet(erpt=erpt, agent=agent, any=true);
+    var nextState = this.buildAgentState(agent=agent);
+    var reward = dispenseReward(agent=agent, state=nextState);
+    var done = areYouThroughYet(erpt=erpt, agent=agent, any=true);
     return (nextState, reward, done);
   }
 
@@ -150,10 +145,10 @@ class World {
   }
 
   proc findCentroid(herd: Herd) {
-    return this.findCentroid(herd=herd, perceivables=this.perceivables);
+    return this.findCentroid(herd=herd, agents=this.agents);
   }
 
-  proc findCentroid(herd: Herd, perceivables: [] Perceivable) {
+  proc findCentroid(herd: Herd, agents: [] Agent) {
     return new Position();
   }
 
@@ -162,17 +157,17 @@ class World {
    */
   //proc buildAgentState(agent: Agent) {
   proc buildAgentState(agent) {
-    writeln("building state for ", agent.name);
+    //writeln("building state for ", agent.name);
     var state: [1..agent.sensorDimension()] int;
     for sensor in agent.sensors {
-      //writeln("looking at sensor ", sensor);
       if sensor.youId > 0 {
         ref you = this.agents[sensor.youId];
         var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent, you=you);
+        //writeln("  a: ", a);
         state[a.domain] = a;
       }
     }
-    //writeln("exiting build state for ", agent.name);
+    //writeln("exiting build state for ", agent.name, " with state ", state);
     return state;
   }
 

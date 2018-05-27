@@ -102,7 +102,8 @@ class LinearSensor: Sensor {
     }
   }
 
-  proc v(me:Agent, you:Agent) {
+  //proc v(me:Agent, you:Agent) {
+  proc v(me, you) {
     var m = me: BoxWorldAgent,
         y = you: BoxWorldAgent;
     var d = sqrt((m.position.x-y.position.x)**2 + (m.position.y-y.position.y)**2);
@@ -117,7 +118,8 @@ class AngleSensor2D: Sensor {
     this.makeBins(x1=theta0, x2=theta1);
   }
 
-  proc v(me: Agent, you: Agent) {
+  //proc v(me: Agent, you: Agent) {
+  proc v(me, you) {
     var m = me:BoxWorldAgent,
         y = you:BoxWorldAgent;
     const a = angle2D(m.position, y.position);

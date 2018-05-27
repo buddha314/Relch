@@ -136,6 +136,8 @@ class RelchTest : UnitTest {
     var catAngleSensor = world.getDefaultAngleSensor();
     dog = world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
     dog = world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    dog = world.addAgentSensor(agent=dog, target=cat
+      ,sensor=world.getDefaultDistanceSensor(), reward=world.getDefaultProximityReward());
     dog = world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo());
 
     var optAnswer = Matrix(
@@ -164,9 +166,10 @@ class RelchTest : UnitTest {
      var (nextState, reward, done) = world.step(erpt=new EpochDTO(id=1), agent=dog, action=choice);
      assertBoolEquals(msg="Dog is not done", expected=false, actual=done);
      assertRealApproximates(msg="Dog x has moved", expected=27.5238, actual=dog.position.x, error=1e-4);
-     assertIntEquals(msg="Dog state is not empty", expected=3, actual = nextState.size);
+     assertIntEquals(msg="Dog state is not empty", expected=39, actual = nextState.size);
+     assertRealEquals(msg="Dog gets a negativiy biscuit", expected=-1.0, actual=reward);
      writeln("dog next state: ", nextState);
-     
+
      this.tearDown(t);
   }
 
@@ -191,8 +194,14 @@ class RelchTest : UnitTest {
 
     var choice = theseus.choose(options, currentState);
     assertIntEquals(msg="Theseus choice is 4 long", expected=4, actual=choice.size);
-    writeln("maze choice: ", choice);
-    //theseus.act(choice=[0,1,0,0]);
+    //writeln("maze choice: ", choice);
+    // Since Theseus is using a random policy, we force his choice for the test
+    var (nextState, reward, done) = world.step(erpt=new EpochDTO(id=1), agent=theseus, action=[0,0,0,1]);
+    assertBoolEquals(msg="Theseus ain't done yet", expected=false, actual=done);
+    var nextStateAnswer: [1..100] int = 0;
+    nextStateAnswer[11] = 1;
+    assertIntArrayEquals(msg="Theseus has take the correct step", expected=nextStateAnswer, actual=nextState);
+
 
     this.tearDown(t);
   }

@@ -73,8 +73,8 @@ class Agent {
     return this;
   }
 
-  proc addSensor(target: Perceivable, sensor: Sensor, reward: Reward) {
-    sensor.target = target;
+  proc addSensor(target: Agent, sensor: Sensor, reward: Reward) {
+    sensor.youId = target.id;
     this.addSensor(sensor=sensor);
 
     reward.stateIndexStart = sensor.stateIndexStart;
