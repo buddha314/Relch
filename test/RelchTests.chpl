@@ -154,10 +154,11 @@ class RelchTest : UnitTest {
      [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
      [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
-     var stateAnswer  = Vector(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
 
+     var stateAnswer = Vector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
      var (options, currentState) = world.presentOptions(agent=dog);
      assertIntArrayEquals(msg="Dog has correct options", expected=optAnswer, actual=options);
+
      //writeln("dog currentState ", currentState);
      assertIntArrayEquals(msg="Dog has correct state", expected=stateAnswer, actual=currentState);
 
@@ -169,7 +170,17 @@ class RelchTest : UnitTest {
      assertRealApproximates(msg="Dog x has moved", expected=27.5238, actual=dog.position.x, error=1e-4);
      assertIntEquals(msg="Dog state is not empty", expected=39, actual = nextState.size);
      assertRealEquals(msg="Dog gets a negativiy biscuit", expected=-1.0, actual=reward);
-     writeln("dog next state: ", nextState);
+     // Note, the dog moves at speed 3 but the bins are larger than that,
+     //  so there does not appear to be a difference in state.
+     assertIntArrayEquals(msg="Dog have moved but state has not", expected=stateAnswer, actual=nextState);
+     //writeln("dog next state: ", nextState-stateAnswer);
+
+     // Crank up the speed to see the tiling change
+     dog.speed = 50;
+     var (nextStateFast, rewardFast, doneFast) = world.step(erpt=new EpochDTO(id=2), agent=dog, action=choice);
+     assertRealApproximates(msg="Dog y has moved fast", expected=53.654, actual=dog.position.y, error=1e-4);
+     var stateAnswerFast = Vector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+     assertIntArrayEquals(msg="Dog have moved fast and state changed", expected=stateAnswerFast, actual=nextStateFast);
 
      this.tearDown(t);
   }
