@@ -11,9 +11,11 @@ class DTO {
 class EpochDTO : DTO {
     var steps: int,
         winner: string;
-    proc init(id: int) {
+    proc init(id: int, steps:int, winner:string) {
       super.init(id=id);
       this.complete();
+      this.steps = steps;
+      this.winner = winner;
     }
 }
 

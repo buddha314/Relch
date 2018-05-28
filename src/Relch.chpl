@@ -87,7 +87,7 @@ module Relch {
         if !agent.finalized then halt("Agent ", agent.name, " cannot be finalized, halting.");
       }
       for i in 1..epochs {
-        var erpt = new EpochDTO(id=i);
+        var erpt = new EpochReport(id=i);
         //writeln("starting epoch ", i);
         var keepSteppin: bool = true,
             step: int = 1;
@@ -135,7 +135,7 @@ module Relch {
           agent.learn();
         }
         this.reset();
-        yield erpt;
+        yield erpt.DTO();
       }
     }
   }
@@ -152,6 +152,19 @@ module Relch {
       f <~>
       "epoch: " <~> this.epoch <~>
       " step: " <~> this.step <~> "\n";
+    }
+  }
+
+  class EpochReport {
+    var id: int,
+        steps: int,
+        winner:string;
+    proc init(id: int) {
+      this.id = id;
+    }
+
+    proc DTO() {
+      return new EpochDTO(id=this.id, steps=this.steps, winner=this.winner);
     }
   }
 

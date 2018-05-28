@@ -94,7 +94,7 @@ class World {
 
   // If any sensor is done, you are done
   // Otherwise all sensors must be done
-  proc areYouThroughYet(erpt: EpochDTO, agent: Agent, any: bool = true) {
+  proc areYouThroughYet(erpt: EpochReport, agent: Agent, any: bool = true) {
     var r: bool = false;
     if any {
       for reward in agent.rewards {
@@ -114,7 +114,7 @@ class World {
    4. New Position: In several sims, the actual position is not part of the state space
       so use this to give the agent his new position
    */
-  proc step(erpt: EpochDTO, agent, action:[] int) {
+  proc step(erpt: EpochReport, agent, action:[] int) {
     // Agent has to actually move now.
     for servo in agent.servos {
       servo.f(agent=agent, choice=action);

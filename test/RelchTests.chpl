@@ -165,7 +165,7 @@ class RelchTest : UnitTest {
      var choice = dog.choose(options, currentState);
      assertIntArrayEquals(msg="Dog has correct choice"
        , expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], actual=choice);
-     var (nextState, reward, done) = world.step(erpt=new EpochDTO(id=1), agent=dog, action=choice);
+     var (nextState, reward, done) = world.step(erpt=new EpochReport(id=1), agent=dog, action=choice);
      assertBoolEquals(msg="Dog is not done", expected=false, actual=done);
      assertRealApproximates(msg="Dog x has moved", expected=27.5238, actual=dog.position.x, error=1e-4);
      assertIntEquals(msg="Dog state is not empty", expected=39, actual = nextState.size);
@@ -177,7 +177,7 @@ class RelchTest : UnitTest {
 
      // Crank up the speed to see the tiling change
      dog.speed = 50;
-     var (nextStateFast, rewardFast, doneFast) = world.step(erpt=new EpochDTO(id=2), agent=dog, action=choice);
+     var (nextStateFast, rewardFast, doneFast) = world.step(erpt=new EpochReport(id=2), agent=dog, action=choice);
      assertRealApproximates(msg="Dog y has moved fast", expected=53.654, actual=dog.position.y, error=1e-4);
      var stateAnswerFast = Vector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
      assertIntArrayEquals(msg="Dog have moved fast and state changed", expected=stateAnswerFast, actual=nextStateFast);
@@ -190,6 +190,7 @@ class RelchTest : UnitTest {
 
     world = env.addWorld(world);
     assertBoolEquals(msg="World is still correct type", expected=false, actual=world:BoxWorld == nil);
+    for e in env.run(epochs=2, steps=3) do writeln(e);
     //assertStringEquals(msg="Dog is first agent", expected="dog", actual=world.agents[1].name);
     //assertStringEquals(msg="Cat is second agent", expected="cat", actual=world.agents[2].name);
     this.tearDown(t);
@@ -229,7 +230,7 @@ class RelchTest : UnitTest {
     assertIntEquals(msg="Theseus choice is 4 long", expected=4, actual=choice.size);
     //writeln("maze choice: ", choice);
     // Since Theseus is using a random policy, we force his choice for the test
-    var (nextState, reward, done) = world.step(erpt=new EpochDTO(id=1), agent=theseus, action=[0,0,0,1]);
+    var (nextState, reward, done) = world.step(erpt=new EpochReport(id=1), agent=theseus, action=[0,0,0,1]);
     assertRealEquals(msg="Theseus gets reward for stepping south", expected=10.0, actual=reward);
     assertBoolEquals(msg="Theseus ain't done yet", expected=true, actual=done);
     var nextStateAnswer: [1..100] int = 0;
