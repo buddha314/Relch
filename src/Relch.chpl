@@ -155,4 +155,8 @@ module Relch {
     }
   }
 
+  proc Environment.addWorld(world) {
+    this.world = world;
+    return world;
+  }
 }

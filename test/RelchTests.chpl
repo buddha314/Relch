@@ -13,7 +13,7 @@ class RelchTest : UnitTest {
         N_STEPS: int = 5;
 
   /* We use these again and again for testing */
-  var sim = new Environment(name="simulating amazing!"),
+  var env = new Environment(name="simulating amazing!"),
       world = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT),
       dog: BoxWorldAgent,
       cat: BoxWorldAgent,
@@ -58,7 +58,7 @@ class RelchTest : UnitTest {
     dory = new Agent(name="Dory", position=new Position2D(x=17, y=23), maxMemories = 3);
     */
 
-    sim = new Environment(name="simulating amazing!");
+    env = new Environment(name="simulating amazing!");
     world = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT, wrap=false);
     dog = world.addAgent(name="dog", position=new Position2D(x=25, y=25));
     cat = world.addAgent(name="cat", position=new Position2D(x=150, y=150));
@@ -185,6 +185,16 @@ class RelchTest : UnitTest {
      this.tearDown(t);
   }
 
+  proc testBoxWorldSim() {
+    var t = this.setUp("Box World Sim");
+
+    world = env.addWorld(world);
+    assertBoolEquals(msg="World is still correct type", expected=false, actual=world:BoxWorld == nil);
+    //assertStringEquals(msg="Dog is first agent", expected="dog", actual=world.agents[1].name);
+    //assertStringEquals(msg="Cat is second agent", expected="cat", actual=world.agents[2].name);
+    this.tearDown(t);
+  }
+
   proc testMaze() {
     var t = this.setUp("Maze World");
     var pos = new MazePosition(cellId=1);
@@ -237,6 +247,7 @@ class RelchTest : UnitTest {
     testSensors();
     testServos();
     testBoxWorld();
+    testBoxWorldSim();
     testMaze();
     //testTilers();
     //testWorld();
