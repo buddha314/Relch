@@ -62,7 +62,7 @@ class RelchTest : UnitTest {
     world = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT, wrap=false);
     dog = world.addAgent(name="dog", position=new Position2D(x=25, y=25));
     cat = world.addAgent(name="cat", position=new Position2D(x=150, y=150));
-    world.addAgentSensor(agent=dog, target=cat, sensor=world.getDefaultDistanceSensor());
+    //world.addAgentSensor(agent=dog, target=cat, sensor=world.getDefaultDistanceSensor());
     maze = new Maze(width=10, height=10, wrap=true);
     return super.setUp(name);
   }
@@ -112,20 +112,21 @@ class RelchTest : UnitTest {
 
   proc testSensors() {
     var t = this.setUp("Sensors");
-    //writeln(world.agents[1].sensors);
+    var catAngleSensor = world.getDefaultAngleSensor();
+    world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor);
     var sensor = world.agents[1].sensors[1],
         me = world.agents[sensor.meId],
         you = world.agents[sensor.youId];
+
     assertIntArrayEquals(msg="Dog's first sensor gives correct array"
-      ,expected=[0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      ,expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
       ,actual=sensor.v(me, you));
 
-    var catAngleSensor = world.getDefaultAngleSensor();
-    world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor);
+    world.addAgentSensor(agent=dog, target=cat, sensor=world.getDefaultDistanceSensor());
     world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo());
     var angleSensor = world.agents[1].sensors[2];
     assertIntArrayEquals(msg="Dog's angle sensor gives correct array"
-      ,expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+      ,expected=[0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
       ,actual=angleSensor.v(me, you));
 
     this.tearDown(t);
