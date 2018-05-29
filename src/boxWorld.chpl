@@ -44,7 +44,7 @@ class BoxWorld: World {
   }
 
   proc addAgent(name: string, position: Position2D, speed: real = 3.0) {
-    var agent = new BoxWorldAgent(name=name, position=position, speed=3.0);
+    var agent = new BoxWorldAgent(name=name, position=position, speed=speed);
     agent.id = this.agents.size+1;
     this.agents.push_back(agent);
     return agent;

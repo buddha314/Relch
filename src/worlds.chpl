@@ -1,6 +1,6 @@
 use physics, agents, sensors, mazeWorld, dtos;
 /*
- Provides some basic machinery, including default tilers for sensors
+ Provides some basic machinery
  */
 class World {
   var agents: [1..0] Agent;
@@ -126,7 +126,6 @@ class World {
    4. New Position: In several sims, the actual position is not part of the state space
       so use this to give the agent his new position
    */
-  //proc step(erpt: EpochReport, agent: Agent, action:[] int) {
   proc step(erpt: EpochReport, agent, action:[] int) {
     // Agent has to actually move now.
     for servo in agent.servos {

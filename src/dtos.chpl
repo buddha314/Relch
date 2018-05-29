@@ -2,7 +2,8 @@
 use Relch, agents;
 
 class DTO {
-  var id: int;
+  var id: int,
+      event: string;
   proc init(id: int) {
     this.id=id;
   };
@@ -14,6 +15,7 @@ class EpochDTO : DTO {
     proc init(id: int, steps:int, winner:string) {
       super.init(id=id);
       this.complete();
+      this.event = "epoch";
       this.steps = steps;
       this.winner = winner;
     }
@@ -25,6 +27,7 @@ class AgentDTO : DTO {
   proc init(id: int, name:string) {
     super.init(id=id);
     this.complete();
+    this.event="agent";
     this.name=name;
   }
 }
