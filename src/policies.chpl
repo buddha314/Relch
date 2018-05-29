@@ -147,13 +147,15 @@ class DQPolicy : Policy {
       learningRate: real,
       reportInterval: int,
       alphaR: real,
-      regularization: string;
+      regularization: string,
+      avoid: bool;
 
   //proc init(sensor: Sensor, avoid: bool=false) {
   proc init(epsilon: real
     ,momentum: real =0.0, epochs: int = 1000
     ,learningRate: real = 0.01, alphaR: real = 0
     ,regularization: string = "L2"
+    ,avoid: bool = false
   ) {
       super.init(onPolicy=true, epsilon=epsilon);
       this.complete();
@@ -164,6 +166,7 @@ class DQPolicy : Policy {
       this.reportInterval = this.epochs;
       this.alphaR = alphaR;
       this.regularization = regularization;
+      this.avoid = avoid;
   }
 
   proc finalize(agent: Agent) {

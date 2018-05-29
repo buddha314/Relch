@@ -18,8 +18,6 @@ var env = new Environment(name="simulatin' amazing!"),
 
  // Create the simulation
 env.world = boxWorld;
-//dog = sim.add(dog);
-//cat = sim.add(cat);
 
 dog = boxWorld.setAgentTarget(agent=dog, target=cat, sensor=catSensor): BoxWorldAgent;
 cat = boxWorld.setAgentTarget(agent=cat, target=dog, sensor=dogSensor, avoid=true): BoxWorldAgent;
