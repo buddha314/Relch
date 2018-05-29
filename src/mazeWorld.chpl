@@ -189,27 +189,27 @@ class MazeMotionServo: MotionServo {
     this.height=height;
   }
 
-  proc f(agent: MazeAgent, choice:[] int) {
+  proc f(agent: Agent, choice:[] int) {
     const o:[1..this.dim()] int = choice[this.optionIndexStart..this.optionIndexEnd];
-    //var sensor = agent.sensors[this.sensorId];
-    //const d: real = sensor.unbin(o);
+    var a = agent: MazeAgent;
+    if a == nil then halt("Maze Agents only in this Servo");
     for i in choice.domain {
       if choice[i] == 1 {
         if moves.get(i) == "N" {
-          agent.position.cellId -= this.width;
+          a.position.cellId -= this.width;
           break;
         } else if moves.get(i) == "S" {
-          agent.position.cellId += this.width;
+          a.position.cellId += this.width;
           break;
         } else if moves.get(i) == "E" {
-          agent.position.cellId += 1;
+          a.position.cellId += 1;
           break;
         } else if moves.get(i) == "W" {
-          agent.position.cellId -= 1;
+          a.position.cellId -= 1;
           break;
         }
       }
     }
-    return agent;
+    return true;
   }
 }

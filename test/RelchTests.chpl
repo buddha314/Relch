@@ -127,7 +127,6 @@ class RelchTest : UnitTest {
 
   proc testBoxWorld() {
     var t = this.setUp("Box World");
-    writeln("here 1");
     env.addWorld(world);
     var catAngleSensor = world.getDefaultAngleSensor();
     dog = world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
@@ -182,20 +181,26 @@ class RelchTest : UnitTest {
 
   proc testBoxWorldSim() {
     var t = this.setUp("Box World Sim");
-
     var catAngleSensor = world.getDefaultAngleSensor(),
         dogSensor = world.getDefaultAngleSensor();
 
-    world = env.addWorld(world): BoxWorld;
+    world = env.addWorld(world);
     assertBoolEquals(msg="World is still correct type", expected=false, actual=world:BoxWorld == nil);
     assertStringEquals(msg="Dog is first agent", expected="dog", actual=world.agents[1].name);
     assertStringEquals(msg="Cat is second agent", expected="cat", actual=world.agents[2].name);
 
+    dog = world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    dog = world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    dog = world.addAgentSensor(agent=dog, target=cat
+      ,sensor=world.getDefaultDistanceSensor(), reward=world.getDefaultProximityReward()): BoxWorldAgent;
+    dog = world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo());
+
+    // Set up the cat
     cat = world.addAgentServo(agent=cat, sensor=dogSensor, servo=world.getDefaultMotionServo()): BoxWorldAgent;
     cat = world.setAgentTarget(agent=cat, target=dog, sensor=dogSensor, avoid=true): BoxWorldAgent;
 
-    dog = world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
-    dog = world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo()): BoxWorldAgent;
+    //dog = world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    //dog = world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo()): BoxWorldAgent;
 
     for e in env.run(epochs=2, steps=3) do writeln(e);
     this.tearDown(t);

@@ -104,8 +104,7 @@ module Relch {
             // A chooses an action
             //writeln("\t\tagent choosing");
             var choice = agent.choose(options, currentState);
-            //writeln("\t\tagent acting");
-            //agent.act(choice);
+            //writeln(" ** agent choice ", choice);
             // DM rewards
             //writeln("\t\tstepping");
             //var (nextState, reward, done) = this.step(erpt=erpt, agent=agent, action=choice);

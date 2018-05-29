@@ -41,6 +41,7 @@ class World {
   proc setAgentTarget(agent: Agent, target: Agent, sensor: Sensor, avoid: bool=false) {
     if agent.id < 1 then this.addAgent(agent);
     if target.id < 1 then this.addAgent(target);
+    sensor.meId = agent.id;
     sensor.youId = target.id;
     agent.addTarget(target=target, sensor=sensor, avoid=avoid);
     return agent;
@@ -67,7 +68,7 @@ class World {
         sensor: Sensor,
         currentRow: int = 1; // We will populate the first row for sure
 
-    writeln(" ** default servo options");
+    //writeln(" ** default servo options");
     optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
     // Add a null action (should always be an option)
     sensor = agent.sensors[servo.sensorId];
@@ -125,6 +126,7 @@ class World {
    4. New Position: In several sims, the actual position is not part of the state space
       so use this to give the agent his new position
    */
+  //proc step(erpt: EpochReport, agent: Agent, action:[] int) {
   proc step(erpt: EpochReport, agent, action:[] int) {
     // Agent has to actually move now.
     for servo in agent.servos {

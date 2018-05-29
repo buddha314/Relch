@@ -1,21 +1,21 @@
 use policies, agents;
-  /* I really have no idea how I'm going to handle this yet */
 
 class MotionServo : Servo {
   proc init() {
     super.init();
     this.complete();
   }
-  proc f(agent: BoxWorldAgent, choice: [] int) {
+  proc f(agent: Agent, choice: [] int) {
     if agent: BoxWorldAgent == nil then halt("Not an agent with a position");
+    var a = agent: BoxWorldAgent;
     const o:[1..this.dim()] int = choice[this.optionIndexStart..this.optionIndexEnd];
-    var sensor = agent.sensors[this.sensorId];
+    var sensor = a.sensors[this.sensorId];
     const d: real = sensor.unbin(o);
     var p = new Position2D(
-       x=agent.position.x + agent.speed * cos(d)
-      ,y=agent.position.y + agent.speed * sin(d) );
-    agent.position = p;
-    return agent;
+       x=a.position.x + a.speed * cos(d)
+      ,y=a.position.y + a.speed * sin(d) );
+    a.position = p;
+    return true;
   }
 }
 
@@ -38,8 +38,10 @@ class Servo {
 
   proc init() {}
 
-  proc f(agent, choice: [] int) {
-    return agent;
+  proc f(agent: Agent, choice: [] int) {
+    writeln(" ** DEFAULT SERVO.f");
+    //return agent;
+    return true;
   }
 
   proc dim() {
