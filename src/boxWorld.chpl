@@ -70,33 +70,6 @@ class BoxWorld: World {
     return agent;
   }
 
-  /*
-   Gets the options on a single motion servo
-   */
-  proc getMotionServoOptions(agent: Agent, servo) {
-    var optDom: domain(2),
-        options: [optDom] int = 0,
-        sensor: Sensor,
-        currentRow: int = 1; // We will populate the first row for sure
-
-    writeln(" ** box motion servo options");
-    optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
-    // Add a null action (should always be an option)
-    sensor = agent.sensors[servo.sensorId];
-    options[currentRow,..] = 0;
-    // Build a one-hot for each option
-    for i in servo.optionIndexStart..servo.optionIndexEnd {
-      var a:[servo.optionIndexStart..servo.optionIndexEnd] int = 0;
-      a[i] = 1;
-      if this.canMove(agent=agent, sensor=sensor, choice=a) {
-        currentRow += 1;
-        optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
-        options[currentRow, ..] = a;
-      }
-    }
-    return options;
-  }
-
   proc randomPosition() {
     const x = rand(1, this.width),
           y = rand(1, this.height);

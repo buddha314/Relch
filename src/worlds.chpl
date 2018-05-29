@@ -61,12 +61,28 @@ class World {
    Gets the options on a single motion servo
    */
   //proc getMotionServoOptions(agent: Agent, servo: MotionServo) {
-  proc getMotionServoOptions(agent: Agent, servo) {
+  proc getMotionServoOptions(agent: Agent, servo: MotionServo) {
     var optDom: domain(2),
-        options:[optDom] int;
-    writeln(" default getMotionServoOptions");
-    return options;
-  }
+        options: [optDom] int = 0,
+        sensor: Sensor,
+        currentRow: int = 1; // We will populate the first row for sure
+
+    writeln(" ** default servo options");
+    optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
+    // Add a null action (should always be an option)
+    sensor = agent.sensors[servo.sensorId];
+    options[currentRow,..] = 0;
+    // Build a one-hot for each option
+    for i in servo.optionIndexStart..servo.optionIndexEnd {
+      var a:[servo.optionIndexStart..servo.optionIndexEnd] int = 0;
+      a[i] = 1;
+      if this.canMove(agent=agent, sensor=sensor, choice=a) {
+        currentRow += 1;
+        optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
+        options[currentRow, ..] = a;
+      }
+    }
+    return options;  }
 
   /* Returns a position from the original point along theta */
   proc moveAlong(from: Position2D, theta: real, speed: real) {
@@ -74,7 +90,7 @@ class World {
     return p;
   }
 
-  proc canMove(agent: Agent, servo: Servo, option:[] int) {
+  proc canMove(agent: Agent, sensor: Sensor, choice:[] int) {
     return true;
   }
 
