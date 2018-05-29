@@ -21,22 +21,6 @@ class Policy {
     return r;
   }
 
-  /*
-  proc add(sensor : Sensor) {
-    sensor.stateIndexStart = this.sensorDimension() + 1;
-    sensor.stateIndexEnd = sensor.stateIndexStart + sensor.tiler.nbins - 1;
-    this.sensors.push_back(sensor);
-  } */
-
-  /*
-  proc sensorDimension() {
-    var n: int = 0;
-    for s in this.sensors {
-      n += s.dim();
-    }
-    return n;
-  } */
-
   proc randomAction(options:[] int) {
     var c = randInt(1,options.shape[1]);
     const choice:[1..options.shape[2]] int = options[c,..];
@@ -60,42 +44,10 @@ class RandomPolicy : Policy {
     this.complete();
   }
 
-  //proc f(me: Agent, options:[] int, state:[] int) {
   proc f(options:[] int, state:[] int) throws {
     return this.randomAction(options);
   }
 
-}
-
-class QLearningPolicy : Policy {
-  var d: domain(2),
-      Q: [d] real,
-      E: [d] real;
-
-  proc init(nActions: int, nStates: int) {
-    super.init();
-    this.complete();
-    this.d = {1..nActions, 1..nStates};
-    fillRandom(this.Q);
-    this.E = 0.0;
-  }
-  proc f(options:[] int, state:[] int) throws {
-    // Need to translate the options into discrete rows
-    var choices: [1..options.shape[1]] real = 0.0;
-    // The states are discrete, but the input looks like [0 0 1 0]
-    //  meaning we are in state 3
-    var s:int = argmax(state);
-    for r in 1..options.shape[1] {
-      if options[r,r] == 1 {
-        choices[r] = this.Q[r,s];
-      } else {
-        choices[r] = 0.0;
-      }
-    }
-    var opt:[1..options.shape[2]] int;
-    opt = options[argmax(choices), ..];
-    return opt;
-  }
 }
 
 /*
@@ -105,8 +57,8 @@ class QLearningPolicy : Policy {
 class FollowTargetPolicy : Policy {
   var targetSensor : Sensor,
       avoid: bool;
-  proc init(sensor: Sensor, avoid: bool=false) {
-    super.init();
+  proc init(sensor: Sensor, onPolicy:bool = true, epsilon: real=0.0, avoid: bool=false) {
+    super.init(onPolicy=onPolicy, epsilon=epsilon);
     this.complete();
     //this.add(sensor);
     this.targetSensor = sensor;
@@ -116,6 +68,10 @@ class FollowTargetPolicy : Policy {
   //proc f(me: Agent, options:[] int, state: [] int) {
   proc f(options:[] int, state: [] int) throws {
     //writeln(" ** FOLLOW TARGET POLICY");
+    var rn:[1..1] real;
+    fillRandom(rn);
+    if this.epsilon > 0 && rn[1] < this.epsilon then return this.randomAction(options);
+
     var targetAngle = this.targetSensor.unbin(state[this.targetSensor.stateIndexStart..this.targetSensor.stateIndexEnd]);
     var thetas:[1..options.shape[1]] real;
     var t: [1..options.shape[2]] int;
@@ -204,6 +160,7 @@ class DQPolicy : Policy {
     // grab the first row
     var rn:[1..1] real;
     fillRandom(rn);
+    //if this.epsilon > 0 && rn[1] < this.epsilon then return this.randomAction(options);
     if this.epsilon > 0 && rn[1] < this.epsilon then return this.randomAction(options);
     //var a = this.model.predict(opstate);
     var a = this.model.predict(opstate.T);

@@ -56,8 +56,8 @@ class Agent {
   /*
   @TODO I don't like this because the Sensor now lives in two places.
    */
-  proc addTarget(target: Agent, sensor: Sensor, avoid: bool = false) {
-      this.policy = new FollowTargetPolicy(sensor=sensor, avoid=avoid);
+  proc addTarget(target: Agent, sensor: Sensor, epsilon: real, avoid: bool = false) {
+      this.policy = new FollowTargetPolicy(sensor=sensor, epsilon=epsilon, avoid=avoid);
       this.addSensor(sensor=sensor);
       return sensor;
   }

@@ -38,12 +38,12 @@ class World {
     return agent.setPolicy(policy);
   }
 
-  proc setAgentTarget(agent: Agent, target: Agent, sensor: Sensor, avoid: bool=false) {
+  proc setAgentTarget(agent: Agent, target: Agent, sensor: Sensor, epsilon:real=0.0, avoid: bool=false) {
     if agent.id < 1 then this.addAgent(agent);
     if target.id < 1 then this.addAgent(target);
     sensor.meId = agent.id;
     sensor.youId = target.id;
-    agent.addTarget(target=target, sensor=sensor, avoid=avoid);
+    agent.addTarget(target=target, sensor=sensor, epsilon=epsilon, avoid=avoid);
     return agent;
   }
 
