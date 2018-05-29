@@ -11,8 +11,8 @@ config const WORLD_WIDTH: int,
 
 var env = new Environment(name="simulatin' amazing!"),
     boxWorld = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT, wrap=false),
-    dog = boxWorld.addAgent(name="dog", position=new Position2D(x=25, y=25), speed=10.0): BoxWorldAgent,
-    cat = boxWorld.addAgent(name="cat", position=new Position2D(x=150, y=150)): BoxWorldAgent,
+    dog = boxWorld.addAgent(name="dog", position=new Position2D(x=25, y=25), speed=DOG_SPEED): BoxWorldAgent,
+    cat = boxWorld.addAgent(name="cat", position=new Position2D(x=150, y=150), speed=CAT_SPEED): BoxWorldAgent,
     catSensor = boxWorld.getDefaultAngleSensor(),
     dogSensor = boxWorld.getDefaultAngleSensor();
 
