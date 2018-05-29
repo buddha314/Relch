@@ -27,8 +27,7 @@ module Relch {
       for agent in this.world.agents do agent.reset();
     }
 
-    //proc presentOptions(agent: Agent) {
-    proc presentOptions(agent) {
+    proc presentOptions(agent: Agent) {
       /* Constructing options is kinda hard, right now just 1 for every
          element of the sensors */
       var optDom: domain(2),
@@ -40,17 +39,18 @@ module Relch {
         }
         var servo = agent.servos[s];
         if servo: MotionServo != nil {
+          //writeln(" presnet opts agent type ", agent.type:string);
           var opts = this.world.getMotionServoOptions(agent=agent, servo=servo:MotionServo);
-          writeln(" env opts ", opts.domain);
+          //writeln(" env opts ", opts);
           optDom = opts.domain;
           options = opts;
         }
+        //writeln("options ", options);
       }
 
       // Right now, this just constructs the state from the Agent as a pass
       // through.  Soon it will make decisions;
       //writeln("building state for ", agent.name);
-      //var state = buildAgentState(agent=agent);
       var state = this.world.buildAgentState(agent=agent);
       //var state: [1..3] int = [0, 0, 1];
 
@@ -78,7 +78,6 @@ module Relch {
         halt("No world set, aborting");
       }
       var finalized: bool = true;
-      //for agent in this.agents {
       for agent in this.world.agents {
         //writeln("finalizing ", agent.name);
         if !agent.finalized {
@@ -91,7 +90,6 @@ module Relch {
         //writeln("starting epoch ", i);
         var keepSteppin: bool = true,
             step: int = 1;
-        //for step in 1..steps {
         while keepSteppin {
           var sr = new StepReport(epoch=i, step=step);
         //writeln("\tstarting step ", step);

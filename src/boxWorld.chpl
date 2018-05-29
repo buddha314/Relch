@@ -36,7 +36,8 @@ class BoxWorld: World {
     }
   }
 
-  proc canMove(agent:BoxWorldAgent, sensor:Sensor, choice:[] int) {
+  //proc canMove(agent:BoxWorldAgent, sensor:Sensor, choice:[] int) {
+  proc canMove(agent, sensor:Sensor, choice:[] int) {
       var a = agent:BoxWorldAgent;
       var p = this.moveAlong(from=a.position, theta=sensor.unbin(choice), speed=agent.speed);
       return this.isValidPosition(p);
@@ -72,12 +73,13 @@ class BoxWorld: World {
   /*
    Gets the options on a single motion servo
    */
-  proc getMotionServoOptions(agent: BoxWorldAgent, servo: MotionServo) {
+  proc getMotionServoOptions(agent: Agent, servo) {
     var optDom: domain(2),
         options: [optDom] int = 0,
         sensor: Sensor,
         currentRow: int = 1; // We will populate the first row for sure
 
+    writeln(" ** box motion servo options");
     optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
     // Add a null action (should always be an option)
     sensor = agent.sensors[servo.sensorId];
@@ -94,34 +96,6 @@ class BoxWorld: World {
     }
     return options;
   }
-
-  proc presentOptions(agent: BoxWorldAgent) {
-    var optDom: domain(2),
-        options: [optDom] int;
-
-    for s in 1..agent.servos.size {
-      if s > 1 {
-        halt("No more than one servo supported at the moment");
-      }
-      var servo = agent.servos[s];
-      if servo: MotionServo != nil {
-        var opts = this.getMotionServoOptions(agent=agent, servo=servo:MotionServo);
-        optDom = opts.domain;
-        options = opts;
-      }
-    }
-
-    var state = this.buildAgentState(agent=agent);
-    return (options, state);
-  }
-
-  /*
-  proc step(erpt: EpochDTO, agent: BoxWorldAgent, action:[] int) {
-    var nextState:[1..0] int,
-        reward: real,
-        done:bool;
-    return (nextState, reward, done);
-  } */
 
   proc randomPosition() {
     const x = rand(1, this.width),

@@ -8,15 +8,11 @@ class World {
   proc init() {
   }
 
-  proc addAgent(agent:Agent) {
+  proc addAgent(agent) {
     agent.id = this.agents.size+1;
     this.agents.push_back(agent);
     return agent;
   }
-  /*
-  proc addAgent(agent: Agent, position: Position) {
-    return agent;
-  } */
 
   proc addAgentSensor(agent, target, sensor: Sensor) {
     if agent.id <1 then this.addAgent(agent);
@@ -42,8 +38,7 @@ class World {
     return agent.setPolicy(policy);
   }
 
-  //proc setAgentTarget(agent: Agent, target: Agent, sensor: Sensor, avoid: bool=false) {
-  proc setAgentTarget(agent, target, sensor: Sensor, avoid: bool=false) {
+  proc setAgentTarget(agent: Agent, target: Agent, sensor: Sensor, avoid: bool=false) {
     if agent.id < 1 then this.addAgent(agent);
     if target.id < 1 then this.addAgent(target);
     sensor.youId = target.id;
@@ -66,7 +61,7 @@ class World {
    Gets the options on a single motion servo
    */
   //proc getMotionServoOptions(agent: Agent, servo: MotionServo) {
-  proc getMotionServoOptions(agent, servo: MotionServo) {
+  proc getMotionServoOptions(agent: Agent, servo) {
     var optDom: domain(2),
         options:[optDom] int;
     writeln(" default getMotionServoOptions");
@@ -159,8 +154,7 @@ class World {
   /*
    This is here so ultimately the environment can edit the sensors
    */
-  //proc buildAgentState(agent: Agent) {
-  proc buildAgentState(agent) {
+  proc buildAgentState(agent: Agent) {
     //writeln("building state for ", agent.name);
     var state: [1..agent.sensorDimension()] int;
     for sensor in agent.sensors {
@@ -169,6 +163,7 @@ class World {
         var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent, you=you);
         //writeln("  a: ", a);
         state[a.domain] = a;
+      } else {
       }
     }
     //writeln("exiting build state for ", agent.name, " with state ", state);

@@ -88,13 +88,6 @@ class RelchTest : UnitTest {
     this.tearDown(t);
   }
 
-  proc testBuildSim() {
-    var t = this.setUp("Build a Basic BoxWorld Sim");
-    assertStringEquals(msg="Dog is first agent", expected="dog", actual=world.agents[1].name);
-    assertStringEquals(msg="Cat is second agent", expected="cat", actual=world.agents[2].name);
-    this.tearDown(t);
-  }
-
   proc testServos() {
     var t = this.setUp("Servos");
     // New servo
@@ -134,11 +127,13 @@ class RelchTest : UnitTest {
 
   proc testBoxWorld() {
     var t = this.setUp("Box World");
+    writeln("here 1");
+    env.addWorld(world);
     var catAngleSensor = world.getDefaultAngleSensor();
     dog = world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
     dog = world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
     dog = world.addAgentSensor(agent=dog, target=cat
-      ,sensor=world.getDefaultDistanceSensor(), reward=world.getDefaultProximityReward());
+      ,sensor=world.getDefaultDistanceSensor(), reward=world.getDefaultProximityReward()): BoxWorldAgent;
     dog = world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo());
 
     var optAnswer = Matrix(
@@ -156,7 +151,7 @@ class RelchTest : UnitTest {
      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
 
      var stateAnswer = Vector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-     var (options, currentState) = world.presentOptions(agent=dog);
+     var (options, currentState) = env.presentOptions(agent=dog);
      assertIntArrayEquals(msg="Dog has correct options", expected=optAnswer, actual=options);
 
      //writeln("dog currentState ", currentState);
@@ -188,11 +183,21 @@ class RelchTest : UnitTest {
   proc testBoxWorldSim() {
     var t = this.setUp("Box World Sim");
 
-    world = env.addWorld(world);
+    var catAngleSensor = world.getDefaultAngleSensor(),
+        dogSensor = world.getDefaultAngleSensor();
+
+    world = env.addWorld(world): BoxWorld;
     assertBoolEquals(msg="World is still correct type", expected=false, actual=world:BoxWorld == nil);
+    assertStringEquals(msg="Dog is first agent", expected="dog", actual=world.agents[1].name);
+    assertStringEquals(msg="Cat is second agent", expected="cat", actual=world.agents[2].name);
+
+    cat = world.addAgentServo(agent=cat, sensor=dogSensor, servo=world.getDefaultMotionServo()): BoxWorldAgent;
+    cat = world.setAgentTarget(agent=cat, target=dog, sensor=dogSensor, avoid=true): BoxWorldAgent;
+
+    dog = world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    dog = world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo()): BoxWorldAgent;
+
     for e in env.run(epochs=2, steps=3) do writeln(e);
-    //assertStringEquals(msg="Dog is first agent", expected="dog", actual=world.agents[1].name);
-    //assertStringEquals(msg="Cat is second agent", expected="cat", actual=world.agents[2].name);
     this.tearDown(t);
   }
 
@@ -244,7 +249,6 @@ class RelchTest : UnitTest {
   proc run() {
     super.run();
     testWorldProperties();
-    testBuildSim();
     testSensors();
     testServos();
     testBoxWorld();
