@@ -61,7 +61,6 @@ class World {
   /*
    Gets the options on a single motion servo
    */
-  //proc getMotionServoOptions(agent: Agent, servo: MotionServo) {
   proc getMotionServoOptions(agent: Agent, servo: MotionServo) {
     var optDom: domain(2),
         options: [optDom] int = 0,

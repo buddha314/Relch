@@ -19,45 +19,8 @@ class RelchTest : UnitTest {
       cat: BoxWorldAgent,
       maze = new Maze(width=10, height=10, wrap=true);
 
-  /*
-  var hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true),
-      angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05),
-      sim = new Environment(name="simulating awesome!"),
-      boxWorld = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT),
-      drizella = new StepTiler(nbins=N_STEPS),
-      whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false), // Does not wrap
-      aSensor = new AngleSensor(name="s1", tiler=angler),
-      dSensor = new DistanceSensor(name="d1", tiler=hundredYardTiler),
-      catAngleSensor = new AngleSensor(name="find the cat", tiler=angler),
-      catDistanceSensor = new DistanceSensor(name="find the cat", tiler=hundredYardTiler),
-      dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler),
-      dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler),
-      fitBit = new StepSensor(name="fit bit", steps=N_STEPS),
-      motionServo = new Servo(tiler=angler),
-      dory = new Agent(name="Dory", position=new Position2D(x=17, y=23), maxMemories = 3);
-  */
 
   proc setUp(name: string = "setup") {
-    /*
-    hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true);
-    angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05);
-    drizella = new StepTiler(nbins=N_STEPS);
-    whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false); // Does not wrap
-    dog = new Agent(name="dog", position=new Position2D(x=25, y=25));
-    cat = new Agent(name="cat", position=new Position2D(x=50, y=50));
-    aSensor = new AngleSensor(name="s1", tiler=angler);
-    dSensor = new DistanceSensor(name="d1", tiler=hundredYardTiler);
-    catAngleSensor = new AngleSensor(name="find the cat", tiler=angler);
-    catDistanceSensor = new DistanceSensor(name="find the cat", tiler=hundredYardTiler);
-    dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler);
-    dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
-    fitBit = new StepSensor(name="fit bit", steps=N_STEPS);
-    sim = new Environment(name="simulating awesome!");
-    boxWorld = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT);
-    motionServo = new Servo(tiler=angler);
-    dory = new Agent(name="Dory", position=new Position2D(x=17, y=23), maxMemories = 3);
-    */
-
     env = new Environment(name="simulating amazing!");
     world = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT, wrap=false);
     dog = world.addAgent(name="dog", position=new Position2D(x=25, y=25));
@@ -208,6 +171,7 @@ class RelchTest : UnitTest {
 
   proc testMaze() {
     var t = this.setUp("Maze World");
+    env.addWorld(maze);
     var pos = new MazePosition(cellId=1);
     var theseus = maze.addAgent(name="theseus", position=new MazePosition(1)),
         csense = maze.getDefaultCellSensor();
@@ -219,7 +183,6 @@ class RelchTest : UnitTest {
 
     theseus = maze.addAgentSensor(agent=theseus, target=new SecretAgent()
       , sensor=csense, reward=exitReward);
-      //, sensor=csense);
 
     exitReward.finalize();
     theseus = maze.addAgentServo(agent=theseus, servo=maze.getDefaultMotionServo()
@@ -230,7 +193,7 @@ class RelchTest : UnitTest {
         stateAnswer: [1..100] int = 0;
     stateAnswer[1] = 1;
 
-    var (options, currentState) = maze.presentOptions(theseus);
+    var (options, currentState) = env.presentOptions(theseus);
     assertIntArrayEquals(msg="Theseus has correct options", expected=optAnswer, actual=options );
     assertIntArrayEquals(msg="Theseus has correct state", expected=stateAnswer, actual=currentState);
     //writeln("theseus position: ", theseus.position);

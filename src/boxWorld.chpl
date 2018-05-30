@@ -32,12 +32,12 @@ class BoxWorld: World {
               && position.y >= 0 && position.y <= this.height {
       return true;
     } else {
+      //writeln("** BAD POINT ", position.x, ",", position.y);
       return false;
     }
   }
 
-  //proc canMove(agent:BoxWorldAgent, sensor:Sensor, choice:[] int) {
-  proc canMove(agent, sensor:Sensor, choice:[] int) {
+  proc canMove(agent: Agent, sensor:Sensor, choice:[] int) {
       var a = agent:BoxWorldAgent;
       var p = this.moveAlong(from=a.position, theta=sensor.unbin(choice), speed=agent.speed);
       return this.isValidPosition(p);

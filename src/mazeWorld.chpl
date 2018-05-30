@@ -77,62 +77,13 @@ class Maze: World {
     return s;
   }
 
-  proc canMove(agent: MazeAgent, dir: string) {
-    //return this.board.canMove(c);
-    return this.canMove(position=agent.position, dir=dir);
+
+  proc canMove(agent: Agent, sensor:Sensor, choice:[] int) {
+    var ma = agent:MazeAgent;
+    var dir = this.moves.get(argmax(choice) - choice.domain.low +1);
+    return this.board.canMove(fromId=ma.position.cellId, dir=dir);
   }
 
-  proc canMove(position:MazePosition, dir: string) {
-    return this.board.canMove(fromId=position.cellId, dir=dir);
-  }
-
-  /*
-  Only NEWS motion allowed
-   */
-  proc getMotionServoOptions(agent:MazeAgent, servo:Servo){
-    var optDom: domain(2),
-      options: [optDom] int = 0,
-      sensor: Sensor,
-      currentRow: int = 1; // We will populate the first row for sure
-
-    optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
-    // Add a null action (should always be an option)
-    sensor = agent.sensors[servo.sensorId];
-    options[currentRow,..] = 0;
-    // Build a one-hot for each option
-    if servo: MazeMotionServo != nil {
-      for i in servo.optionIndexStart..servo.optionIndexEnd {
-        var dir = this.moves.get(i-servo.optionIndexStart+1);
-        if this.canMove(agent=agent, dir=dir) {
-          var a:[servo.optionIndexStart..servo.optionIndexEnd] int = 0;
-          a[i] = 1;
-          currentRow += 1;
-          optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
-          options[currentRow, ..] = a;
-        }
-      }
-    }
-    return options;
-  }
-
-  proc presentOptions(agent: MazeAgent) {
-    var optDom: domain(2),
-        options: [optDom] int;
-    for s in 1..agent.servos.size {
-      if s > 1 {
-        halt("No more than one servo supported at the moment");
-      }
-      var servo = agent.servos[s];
-      if servo: MazeMotionServo != nil {
-        var opts = this.getMotionServoOptions(agent=agent, servo=servo:MazeMotionServo);
-        optDom = opts.domain;
-        options = opts;
-      }
-    }
-
-    var state = this.buildAgentState(agent=agent);
-    return (options, state);
-  }
 }
 
 class MazePosition: Position {
