@@ -9,10 +9,13 @@ config const MAZE_WIDTH: int,
 
 var env = new Environment(name="simulating amazing!"),
     maze = new Maze(width=10, height=10, wrap=false),
-    theseus = maze.addAgent(name="theseus", position=new MazePosition(1)),
+    theseus = maze.addAgent(name="Theseus", position=new MazePosition(1)),
     csense = maze.getDefaultCellSensor(),
     exitReward = new Reward(value=10, penalty=-1),
-    exitState:[1..1, 1..100] int=0;
+    exitState:[1..1, 1..MAZE_WIDTH*MAZE_HEIGHT] int=0;
+
+exitState[1, EXIT_POSITION] = 1;
+exitReward = exitReward.buildTargets(targets=exitState);
 
 env.addWorld(maze);
 

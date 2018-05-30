@@ -28,30 +28,6 @@ class Maze: World {
     return agent;
   }
 
-  /*
-  proc addAgentSensor(agent: MazeAgent, target: Agent, sensor: Sensor) {
-    writeln(" ** maze add agent sensor");
-    if agent.id <1 then this.addAgent(agent);
-    if target.id <1 then this.addAgent(target);
-    sensor.meId = agent.id;
-    sensor.youId = target.id;
-    agent.addSensor(sensor=sensor);
-    return agent;
-  } */
-
-
-  /*
-  proc addAgentSensor(agent: MazeAgent, target: Agent, sensor: Sensor, reward: Reward) {
-    writeln("maze world sensor reward");
-    if agent.id <1 then this.addAgent(agent);
-    if target.id <1 then this.addAgent(target);
-    sensor.meId = agent.id;
-    sensor.youId = target.id;
-    agent.addSensor(sensor=sensor);
-    return agent;
-  } */
-
-
   proc addAgentServo(agent: MazeAgent, servo: Servo, sensor: Sensor) {
     if agent.id < 1 then this.addAgent(agent);
     // Sensor has not been assigned, need to add it, then get last sensor added
@@ -100,6 +76,10 @@ class MazeAgent: Agent {
     super.init(name=name, maxMemories=maxMemories);
     this.complete();
     this.position=position;
+  }
+
+  proc DTO() {
+    return new MazeAgentDTO(id=this.id, name=this.name, cellId=this.position.cellId);
   }
 }
 

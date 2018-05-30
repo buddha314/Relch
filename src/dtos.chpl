@@ -42,3 +42,12 @@ class BoxWorldAgentDTO : AgentDTO {
     this.y = y;
   }
 }
+
+class MazeAgentDTO : AgentDTO {
+  var cellId: int;
+  proc init(id: int, name:string, cellId: int) {
+    super.init(id=id, name=name);
+    this.complete();
+    this.cellId = cellId;
+  }
+}
