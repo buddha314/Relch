@@ -1,5 +1,6 @@
 use Relch,
     NumSuch,
+    LinearAlgebra,
     Charcoal;
 
 class RelchTest : UnitTest {
@@ -12,42 +13,20 @@ class RelchTest : UnitTest {
         N_STEPS: int = 5;
 
   /* We use these again and again for testing */
-  var hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true),
-      angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05),
-      sim = new Environment(name="simulating awesome!"),
-      boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT),
-      drizella = new StepTiler(nbins=N_STEPS),
-      whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false), // Does not wrap
-      dog = new Agent(name="dog", position=new Position(x=25, y=25)),
-      cat = new Agent(name="cat", position=new Position(x=50, y=50)),
-      aSensor = new AngleSensor(name="s1", tiler=angler),
-      dSensor = new DistanceSensor(name="d1", tiler=hundredYardTiler),
-      catAngleSensor = new AngleSensor(name="find the cat", tiler=angler),
-      catDistanceSensor = new DistanceSensor(name="find the cat", tiler=hundredYardTiler),
-      dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler),
-      dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler),
-      fitBit = new StepSensor(name="fit bit", steps=N_STEPS),
-      motionServo = new Servo(tiler=angler),
-      dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
+  var env = new Environment(name="simulating amazing!"),
+      world = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT),
+      dog: BoxWorldAgent,
+      cat: BoxWorldAgent,
+      maze = new Maze(width=10, height=10, wrap=true);
+
 
   proc setUp(name: string = "setup") {
-    hundredYardTiler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=true);
-    angler = new AngleTiler(nbins=N_ANGLES, overlap=0.05);
-    drizella = new StepTiler(nbins=N_STEPS);
-    whiteBoyTyler = new LinearTiler(nbins=N_DISTS, x1=0, x2=100, overlap=0.1, wrap=false); // Does not wrap
-    dog = new Agent(name="dog", position=new Position(x=25, y=25));
-    cat = new Agent(name="cat", position=new Position(x=50, y=50));
-    aSensor = new AngleSensor(name="s1", tiler=angler);
-    dSensor = new DistanceSensor(name="d1", tiler=hundredYardTiler);
-    catAngleSensor = new AngleSensor(name="find the cat", tiler=angler);
-    catDistanceSensor = new DistanceSensor(name="find the cat", tiler=hundredYardTiler);
-    dogAngleSensor = new AngleSensor(name="find the dog", tiler=angler);
-    dogDistanceSensor = new DistanceSensor(name="find the dog", tiler=hundredYardTiler);
-    fitBit = new StepSensor(name="fit bit", steps=N_STEPS);
-    sim = new Environment(name="simulating awesome!");
-    boxWorld = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
-    motionServo = new Servo(tiler=angler);
-    dory = new Agent(name="Dory", position=new Position(x=17, y=23), maxMemories = 3);
+    env = new Environment(name="simulating amazing!");
+    world = new BoxWorld(width=WORLD_WIDTH, height=WORLD_HEIGHT, wrap=false);
+    dog = world.addAgent(name="dog", position=new Position2D(x=25, y=25));
+    cat = world.addAgent(name="cat", position=new Position2D(x=150, y=150));
+    //world.addAgentSensor(agent=dog, target=cat, sensor=world.getDefaultDistanceSensor());
+    maze = new Maze(width=10, height=10, wrap=true);
     return super.setUp(name);
   }
 
@@ -60,339 +39,191 @@ class RelchTest : UnitTest {
     this.complete();
   }
 
-  proc testRunDefault() {
-    var t = this.setUp("RunDefault");
+  proc testWorldProperties() {
+    var t= this.setUp("World Properties");
+    assertBoolEquals(msg="Point outside the world", expected=false
+      ,actual=world.isValidPosition(new Position2D(x=WORLD_WIDTH+10, y=WORLD_HEIGHT+10)));
+    assertBoolEquals(msg="Point outside the world", expected=true
+          ,actual=world.isValidPosition(new Position2D(x=WORLD_WIDTH-10, y=WORLD_HEIGHT-10)));
 
-    //catAngleSensor.add(angler);
-    //catAngleSensor.target=cat;
-    //var sim = new Environment(name="steppin out", epochs=N_EPOCHS, steps=N_STEPS),
-    //var followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor);
-    var motionServo = new Servo(tiler=boxWorld.defaultAngleTiler);
-    sim.world = boxWorld;
-    //dog.policy = followCatPolicy;
-    dog.addTarget(cat, boxWorld.defaultAngleSensor);
-    dog.add(motionServo);
-    sim.add(dog);
-    sim.run(epochs=N_EPOCHS, steps=N_STEPS);
-    assertIntEquals(msg="Dog remembers right amount of things"
-      ,expected=N_EPOCHS * N_STEPS, actual=dog.nMemories);
-    assertIntEquals(msg="Dog got walked", expected=N_STEPS, actual=dog.currentStep);
-    //assertRealEquals(msg="Dog got biscuit", expected=10.0, actual=dog.rewards[dog.rewards.domain.high]);
-    return this.tearDown(t);
-  }
-
-  proc testTilers() {
-    var t = this.setUp("Tilers");
-    var eo:[1..N_DISTS] int = [1,1,0,0,0,0,0];
-    var eo2:[1..N_DISTS] int = [1,0,0,0,0,0,0];
-    var eo3:[1..N_DISTS] int = [1,0,0,0,0,0,1];
-    assertIntArrayEquals(msg="LinearTiler correctly sees overlaps", expected=eo, actual=hundredYardTiler.bin(14.2));
-    assertIntArrayEquals(msg="LinearTiler correctly sees non-overlaps", expected=eo2, actual=hundredYardTiler.bin(3.14));
-    assertRealApproximates(msg="LinearTiler correcly unbins x", expected=7.14286, actual=hundredYardTiler.unbin(eo));
-    assertIntArrayEquals(msg="LinearTiler correctly sees right wrap correctly", expected=eo3, actual=hundredYardTiler.bin(100.05));
-    assertIntArrayEquals(msg="LinearTiler correctly sees left wrap correctly", expected=eo3, actual=hundredYardTiler.bin(0.05));
-    assertIntArrayEquals(msg="LinearTiler correctly sees left wrap correctly (negative)", expected=eo3, actual=hundredYardTiler.bin(-0.05));
-
-    assertIntArrayEquals(msg="White boys can't wrap", expected=eo2, actual=whiteBoyTyler.bin(-0.05));
-
-    var ao:[1..N_ANGLES] int = [1,0,0,0,1];
-    var ao2:[1..N_ANGLES] int = [0,0,1,0,0];
-    var ao3:[1..N_ANGLES] int = [0,0,0,0,1];
-    assertIntArrayEquals(msg="Angler sees -pi correctly", expected=ao, actual=angler.bin(-pi));
-    assertIntArrayEquals(msg="Angler sees origin correctly", expected=ao2, actual=angler.bin(0));
-    assertRealApproximates(msg="Angler unbins correctly", expected=2.51327, actual=angler.unbin(ao3));
-
-    dog.currentStep = 3;
-    assertIntArrayEquals(msg="Step tiler recogizes the correct step", expected=[0,0,1,0,0], actual=drizella.v(dog));
-    return this.tearDown(t);
-  }
-
-  proc testSensors() {
-    var t = this.setUp("Sensors");
-    var sim = new Environment(name="simulation amazing", epochs=10, steps=5);
-    sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
-
-    class Seagull : Agent {
-      proc init(name:string, position: Position) {
-          super.init( name=name,position=position );
-          this.complete();
-      }
-    }
-    var mike = new Seagull(name="mike", position=new Position(x=100, y=100));
-    var pondo = new Seagull(name="pando", position=new Position(x=110, y=110));
-    var kevin = new Seagull(name="kevin", position=new Position(x=100, y=110));
-    var gord = new Seagull(name="gord", position=new Position(x=100, y=110));
-
-    sim.add(mike);
-    sim.add(pondo);
-    sim.add(kevin);
-    sim.add(gord);
-    var aflocka = new Herd(name="aflocka", position=new Position(), species=Seagull);
-
-    var s1flockangle: [1..N_ANGLES] int = [0, 0, 0, 1, 0],
-        s2flockdist:  [1..N_DISTS] int = [1, 0, 0, 0, 0, 0, 0],
-        s1gordangle: [1..N_DISTS] int = [0, 0, 0, 1, 0],
-        s2gorddist: [1..N_DISTS] int = [1,0,0,0,0,0,0];
-
-    assertIntArrayEquals(msg="Sensor 1 picks up angle to flock"
-      , expected=s1flockangle, actual=aSensor.v(mike, aflocka.findCentroid(sim.agents)));
-    assertIntArrayEquals(msg="Sensor 1 picks up dist to flock"
-      , expected=s2flockdist, actual=dSensor.v(mike, aflocka.findCentroid(sim.agents)));
-
-    var nn = aflocka.findPositionOfNearestMember(dog, sim.agents);
-    assertRealEquals("Sensor finds that mike is closest to dog (x)", expected=100.0,actual=nn.x);
-    assertRealEquals("Sensor finds that mike is closest to dog (y)", expected=100.0,actual=nn.y);
-    var nm = aflocka.findNearestMember(dog, sim.agents);
-    assertStringEquals("Sensor finds that mike is closest to dog (agent)", expected="mike",actual=nm.name);
-    return this.tearDown(t);
-  }
-
-  proc testAgentRelativeMethods() {
-    var t = this.setUp("Agent RelativeMethods");
-    var d: real = 35.3553;
-    assertRealApproximates(msg="Distance from dog to cat is correct"
-      , expected=d, actual=dog.distanceFromMe(cat)
-      , error=1.0e-3);
-
-    // cat starts at (50, 50)
-    assertRealApproximates(msg="Angle to cat is pi/4", expected=pi/4, actual = dog.angleFromMe(cat));
-    // 2nd Q (0, 50)
-    cat.position.x = 0.0;
-    assertRealApproximates(msg="Angle to cat is 3pi/4", expected=3*pi/4, actual = dog.angleFromMe(cat));
-    // 3rd Q (0,0)
-    cat.position.y = 0;
-    assertRealApproximates(msg="Angle to cat is -3pi/4", expected=-3*pi/4, actual = dog.angleFromMe(cat));
-    // 4th Q (50, 0)
-    cat.position.x = 50;
-    assertRealApproximates(msg="Angle to cat is -pi/4", expected=-pi/4, actual = dog.angleFromMe(cat));
-
-    cat.moveAgentAlong(pi/6);
-    assertRealApproximates(msg="Cat moved along pi/6 (x)", expected=52.5981, actual=cat.position.x, error=1e-03);
-    assertRealApproximates(msg="Cat moved along pi/6 (y)", expected=1.5, actual=cat.position.y);
-    return this.tearDown(t);
-  }
-
-  proc testBuildSim() {
-    var t = this.setUp("BuildSim");
-    var sim = new Environment(name="simulation amazing");
-    sim.world = new World(width=WORLD_WIDTH, height=WORLD_HEIGHT);
-
-    dog = sim.add(dog);
-    assertIntEquals(msg="Dog has simId 1", expected=1, actual=dog.simId);
-    cat = sim.add(cat);
-    assertIntEquals(msg="Cat has simId 2", expected=2, actual=cat.simId);
-
-    dog = sim.setAgentTarget(agent=dog, target=cat, sensor=boxWorld.getDefaultAngleSensor());
-
-    /*
-    class Seagull : Agent {
-      proc init(name:string, position: Position) {
-          super.init( name=name,position=position );
-          this.complete();
-      }
-    }
-    var mike = new Seagull(name="mike", position=new Position(x=100, y=100));
-    var pondo = new Seagull(name="pando", position=new Position(x=110, y=110));
-    var kevin = new Seagull(name="kevin", position=new Position(x=100, y=110));
-    var gord = new Seagull(name="gord", position=new Position(x=100, y=110));
-
-    sim.add(mike);
-    sim.add(pondo);
-    sim.add(kevin);
-    sim.add(gord);
-    var aflocka = new Herd(name="aflocka", position=new Position(), species=Seagull);
-    var centroid = aflocka.findCentroid(sim.agents);
-    assertRealEquals("centroid has correct x", expected=102.5, actual=centroid.x);
-    assertRealEquals("centroid has correct y", expected=107.5, actual=centroid.y);
-    return this.tearDown(t);
-    */
-  }
-
-  proc testPolicies() {
-    var t = this.setUp("Policies");
-    // Reset position for safety of the animals involved
-    var p = new Policy();
-    var rp = new RandomPolicy();
-    catAngleSensor.target = cat;
-    /*
-    var ftp = new FollowTargetPolicy(sensor=catAngleSensor);
-    assertIntEquals(msg="Follow Target Policy has correct sensory dims"
-      , expected=N_ANGLES, actual=ftp.sensorDimension());
-    assertIntEquals(msg="Follow Target Policy sensor has correct state index start"
-      , expected=1, actual=ftp.targetSensor.stateIndexStart);
-    assertIntEquals(msg="Follow Target Policy sensor has correct state index end"
-        , expected=5, actual=ftp.targetSensor.stateIndexEnd);
-     */
-    // Q Learning
-    var nActions: int = 4,
-        nStates :int = 5;
-    var qstate: [1..nStates] int = 0,
-        qactions: [1..4, 1..N_ANGLES] int = 0;
-    qactions[1,1] = 1;
-    qactions[2,2] = 1;
-    qactions[3,4] = 1;
-    qactions[4,5] = 1;
-
-      // Build a matrix so we know the answer
-    var Q = Matrix(
-        [0.1, 0.2, 0.1, 0.4, 0.5],
-        [0.3, 0.1, 0.9, 0.8, 0.1],
-        [0.6, 0.5, 0.6, 0.3, 0.1],
-        [0.4, 0.7, 0.5, 0.7, 0.4] );
-    var qp = new QLearningPolicy(nActions=nActions, nStates=nStates);
-    qp.Q = Q;
-
-    qstate[3] = 1;  // Just doing state 3 now.
-    assertIntArrayEquals(msg="Standard Policy gives first row of options"
-      , expected=[1,0,0,0,0]
-      , actual=p.f(options=qactions, state=qstate));
-    var rc = rp.f(options=qactions, state=qstate);
-    assertIntEquals(msg="Random Policy returns the correct dimension",expected=N_ANGLES, actual=rc.size);
-
-    /*
-    var ftpc = ftp.f(options=qactions, state=qstate);
-    // Note, the most direct angle is [0,0,1,0,0] but is not a choice in qactions
-    assertIntArrayEquals(msg="Follow Target takes min angle option", expected=[0,1,0,0,0], actual=ftpc);
-     */
-
-    var qchoice = qp.f(options=qactions, state=qstate);
-    assertIntArrayEquals(msg="QLearn Correct choice is taken", expected=[0,1,0,0,0], actual=qchoice);
-
-    // Deep Q Network policy using Dory
-    // Run this from Dory's perspective, if she has one
-    dory.addSensor(target=cat, sensor=catAngleSensor);
-    dory.add(motionServo);
-    try! dory.add(new Memory(state = [1,0,0,0,0], action=[1,0,0,0,0], reward=1.1));
-    try! dory.add(new Memory(state = [0,1,0,0,0], action=[0,0,0,1,0], reward=2.2));
-    try! dory.add(new Memory(state = [0,0,1,0,0], action=[0,0,1,0,0], reward=3.3));
-
-    var dqp = new DQPolicy(sensor = catAngleSensor);
-    dqp.epochs = 500;
-    dory.setPolicy(dqp);
-    dory.finalize();  // Finalizes the policy
-    dory.learn();
-    var dopts = Matrix([0,1,0,0,0], [0,0,0,1,0]);
-    var o = dqp.f(options=dopts, state=[0,1,0,1,0]);
-    assertIntArrayEquals(msg="Option 2 is chosen (may be random)"
-      , expected=[0,0,0,1,0], actual=o);
-
-    return this.tearDown(t);
+    assertRealEquals(msg="Dog has correct x position", expected=25, actual=dog.position.x);
+    assertRealEquals(msg="Cat has correct x position", expected=150, actual=cat.position.x);
+    this.tearDown(t);
   }
 
   proc testServos() {
     var t = this.setUp("Servos");
-    var motionServo = new Servo(tiler=angler);
-    dog.add(motionServo);
-    dog.act([1,0,0,0,0]);
-    assertRealApproximates(msg="Dog moved to correct x", expected=22.5729, actual=dog.position.x, error=1e-03);
-    assertRealApproximates(msg="Dog moved to correct y", expected=23.2366, actual=dog.position.y, error=1e-03);
-    // Now give larger option to check on servo subsetting
-    dog.act([1,0,0,0,0,1,1,1]);
-    assertRealApproximates(msg="Dog moved to correct x (overloaded option)", expected=20.1459, actual=dog.position.x, error=1e-03);
-    assertRealApproximates(msg="Dog moved to correct y (overloaded option)", expected=21.4733, actual=dog.position.y, error=1e-03);
-    this.tearDown(t=t);
+    // New servo
+    dog = world.addAgentServo(agent=dog, servo=new MotionServo(), sensor=world.getDefaultAngleSensor());
+    var servo=dog.servos;
+
+    var options = world.getMotionServoOptions(agent=dog, servo=dog.servos[1]: MotionServo);
+    assertIntEquals(msg="Interior point has 12 options", expected=12, actual=options.shape[1]);
+    dog.position = new Position2D(x=0, y=25);
+    var options2 = world.getMotionServoOptions(agent=dog, servo=dog.servos[1]: MotionServo);
+    assertIntEquals(msg="Boundary point has only 6 options", expected=6, actual=options2.shape[1]);
+
+    this.tearDown(t);
   }
 
-  proc testWorld() {
-    var t = this.setUp("World");
-    assertRealEquals(msg="World has correct radius", expected=sqrt(WORLD_WIDTH**2 + WORLD_HEIGHT**2), actual=boxWorld.radius);
-    this.tearDown(t=t);
+  proc testSensors() {
+    var t = this.setUp("Sensors");
+    var catAngleSensor = world.getDefaultAngleSensor();
+    world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor);
+    var sensor = world.agents[1].sensors[1],
+        me = world.agents[sensor.meId],
+        you = world.agents[sensor.youId];
+
+    assertIntArrayEquals(msg="Dog's first sensor gives correct array"
+      ,expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+      ,actual=sensor.v(me, you));
+
+    world.addAgentSensor(agent=dog, target=cat, sensor=world.getDefaultDistanceSensor());
+    world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo());
+    var angleSensor = world.agents[1].sensors[2];
+    assertIntArrayEquals(msg="Dog's angle sensor gives correct array"
+      ,expected=[0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      ,actual=angleSensor.v(me, you));
+
+    this.tearDown(t);
   }
 
-  proc testPresentOptions() {
-    var t = this.setUp("Present Options");
+  proc testBoxWorld() {
+    var t = this.setUp("Box World");
+    env.addWorld(world);
+    var catAngleSensor = world.getDefaultAngleSensor();
+    dog = world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    dog = world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    dog = world.addAgentSensor(agent=dog, target=cat
+      ,sensor=world.getDefaultDistanceSensor(), reward=world.getDefaultProximityReward()): BoxWorldAgent;
+    dog = world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo());
 
-    //catAngleSensor.target = cat;
-    var motionServo = new Servo(tiler=angler),
-        sim = new Environment(name="simulation amazing", epochs=10, steps=5),
-        followCatPolicy = new FollowTargetPolicy(sensor=catAngleSensor),
-        optAnswer1 = eye(N_ANGLES, int);
+    var optAnswer = Matrix(
+     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
 
-    // Add world to sim otherwise seg fault in isValidPosition
-    sim.world = boxWorld;
-    dog.addSensor(target=cat, sensor=boxWorld.defaultAngleSensor);
-    dog.policy=followCatPolicy;
-    dog.add(motionServo);
-    var (options, state) = sim.presentOptions(dog);
-    // Using default tiler for state which is 11 wide now
-    assertIntArrayEquals(msg="State is correct from Present Options"
-      , expected=[0,0,0,0,0,0,1,0,0,0,0], actual=state);
-    dog.add(new Servo(tiler=hundredYardTiler));
-    var (options2, state2) = sim.presentOptions(dog);
-    assertIntEquals(msg="Options 2 has the correct n rows", expected=35, actual=options2.shape[1]);
-    assertIntEquals(msg="Options 2 has the correct n cols", expected=12, actual=options2.shape[2]);
-    //writeln("options 2\n", options2);
-    this.tearDown(t=t);
+     var stateAnswer = Vector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+     var (options, currentState) = env.presentOptions(agent=dog);
+     assertIntArrayEquals(msg="Dog has correct options", expected=optAnswer, actual=options);
+
+     //writeln("dog currentState ", currentState);
+     assertIntArrayEquals(msg="Dog has correct state", expected=stateAnswer, actual=currentState);
+
+     var choice = dog.choose(options, currentState);
+     assertIntArrayEquals(msg="Dog has correct choice"
+       , expected=[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], actual=choice);
+     var (nextState, reward, done) = world.step(erpt=new EpochReport(id=1), agent=dog, action=choice);
+     assertBoolEquals(msg="Dog is not done", expected=false, actual=done);
+     assertRealApproximates(msg="Dog x has moved", expected=27.5238, actual=dog.position.x, error=1e-4);
+     assertIntEquals(msg="Dog state is not empty", expected=39, actual = nextState.size);
+     assertRealEquals(msg="Dog gets a negativiy biscuit", expected=-1.0, actual=reward);
+     // Note, the dog moves at speed 3 but the bins are larger than that,
+     //  so there does not appear to be a difference in state.
+     assertIntArrayEquals(msg="Dog have moved but state has not", expected=stateAnswer, actual=nextState);
+     //writeln("dog next state: ", nextState-stateAnswer);
+
+     // Crank up the speed to see the tiling change
+     dog.speed = 50;
+     var (nextStateFast, rewardFast, doneFast) = world.step(erpt=new EpochReport(id=2), agent=dog, action=choice);
+     assertRealApproximates(msg="Dog y has moved fast", expected=53.654, actual=dog.position.y, error=1e-4);
+     var stateAnswerFast = Vector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+     assertIntArrayEquals(msg="Dog have moved fast and state changed", expected=stateAnswerFast, actual=nextStateFast);
+
+     this.tearDown(t);
   }
 
-  proc testRewards() {
-    var t = this.setUp("Rewards"),
-        target:[1..2, 1..7] int;
+  proc testBoxWorldSim() {
+    var t = this.setUp("Box World Sim");
+    var catAngleSensor = world.getDefaultAngleSensor(),
+        dogSensor = world.getDefaultAngleSensor();
 
-    target[1,..] = [0,0,0,0,1,0,0];
-    target[2,..] = [0,1,0,0,0,0,0];
+    world = env.addWorld(world);
+    assertBoolEquals(msg="World is still correct type", expected=false, actual=world:BoxWorld == nil);
+    assertStringEquals(msg="Dog is first agent", expected="dog", actual=world.agents[1].name);
+    assertStringEquals(msg="Cat is second agent", expected="cat", actual=world.agents[2].name);
 
-    catDistanceSensor.target = cat;
-    var targetState:[1..7] int = [0,0,1,0,0,0,0];
-    var catchCatReward = new Reward(target=target, sensor=catDistanceSensor);
-    // First make it fail
-    assertRealEquals(msg="Penalty for step is -1.0", expected=-1.0
-      , actual=catchCatReward.f(targetState));
-    assertBoolEquals(msg="Sensor is not done", expected=false, actual=catDistanceSensor.done);
+    dog = world.addAgentSensor(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    dog = world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    dog = world.addAgentSensor(agent=dog, target=cat
+      ,sensor=world.getDefaultDistanceSensor(), reward=world.getDefaultProximityReward()): BoxWorldAgent;
+    dog = world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo());
 
-    // Now make it pass
-    target[2,..] = [0,0,1,0,0,0,0];
-    catchCatReward.target = target;
-    assertRealEquals(msg="Reward for state is 10.0", expected=10.0
-      , actual=catchCatReward.f(targetState));
-    assertBoolEquals(msg="Sensor is done", expected=true, actual=catDistanceSensor.done);
+    // Set up the cat
+    cat = world.addAgentServo(agent=cat, sensor=dogSensor, servo=world.getDefaultMotionServo()): BoxWorldAgent;
+    cat = world.setAgentTarget(agent=cat, target=dog, sensor=dogSensor, avoid=true): BoxWorldAgent;
 
-    // Test ProximityReward
-    var near = hundredYardTiler.bin(23);
-    var far = hundredYardTiler.bin(71);
-    // Cat has no index yet, not attached to a Policy
-    catDistanceSensor.stateIndexStart = 1;
-    catDistanceSensor.stateIndexEnd = hundredYardTiler.nbins;
-    var imNotTouchingYou = new ProximityReward(proximity=45, sensor=catDistanceSensor, reward=15.0, stepPenalty=-5);
+    //dog = world.setAgentTarget(agent=dog, target=cat, sensor=catAngleSensor): BoxWorldAgent;
+    //dog = world.addAgentServo(agent=dog, sensor=catAngleSensor, servo=world.getDefaultMotionServo()): BoxWorldAgent;
 
-    assertRealEquals(msg="Dog is near to the cat, gets 15.0"
-      ,expected=15.0, actual=imNotTouchingYou.f(near, catDistanceSensor));
-    assertBoolEquals(msg="Dog touched cat", expected=true, actual=catDistanceSensor.done);
-
-    assertRealEquals(msg="Dog is far from the cat, gets -5.0"
-      ,expected=-5.0, actual=imNotTouchingYou.f(far, catDistanceSensor));
-
-    this.tearDown(t=t);
+    for e in env.run(epochs=2, steps=3) do writeln(e);
+    this.tearDown(t);
   }
 
-  proc testMemory() {
-    var t = this.setUp("Memories can't wait");
+  proc testMaze() {
+    var t = this.setUp("Maze World");
+    env.addWorld(maze);
+    var pos = new MazePosition(cellId=1);
+    var theseus = maze.addAgent(name="theseus", position=new MazePosition(1)),
+        csense = maze.getDefaultCellSensor();
 
-    dory.addSensor(target=cat, sensor=catAngleSensor);
-    dory.add(motionServo);
-    try! dory.add(new Memory(state = [1,0,0,0,0], action=[1,0,0,0,0], reward=1.1));
-    try! dory.add(new Memory(state = [0,1,0,0,0], action=[0,0,0,1,0], reward=2.2));
-    try! dory.add(new Memory(state = [0,0,1,0,0], action=[0,0,1,0,0], reward=3.3));
+    var exitReward = new Reward(value=10, penalty=-1);
+    var exitState:[1..1, 1..100] int=0;
+    exitState[1,11]=1;
+    exitReward = exitReward.buildTargets(targets=exitState);
 
-    assertRealEquals(msg="First memory is of reward 1.1"
-      ,expected=1.1, actual=dory.memories[1].reward);
-    dory.add(new Memory(state = [0,0,0,1,0], action=[0,0,1,0,0], reward=4.4));
-    assertRealEquals(msg="First memory has cycled to reward 4.4"
-      , expected=4.4 ,actual=dory.memories[1].reward);
+    theseus = maze.addAgentSensor(agent=theseus, target=new SecretAgent()
+      , sensor=csense, reward=exitReward);
 
-    assertIntEquals(msg="Memory dim is correct", expected=10, actual=dory.memories[1].dim());
-    assertIntArrayEquals(msg="First memory has correct action and state space"
-      ,expected=[0,0,1,0,0,0,0,0,1,0], actual=dory.memories[1].v());
-    this.tearDown(t=t);
+    exitReward.finalize();
+    theseus = maze.addAgentServo(agent=theseus, servo=maze.getDefaultMotionServo()
+      ,sensor=csense);
+    maze.setAgentPolicy(agent=theseus, policy=new RandomPolicy());
+
+    var optAnswer = Matrix( [0,0,0,0],[0,1,0,0], [0,0,0,1] ),
+        stateAnswer: [1..100] int = 0;
+    stateAnswer[1] = 1;
+
+    var (options, currentState) = env.presentOptions(theseus);
+    assertIntArrayEquals(msg="Theseus has correct options", expected=optAnswer, actual=options );
+    assertIntArrayEquals(msg="Theseus has correct state", expected=stateAnswer, actual=currentState);
+    //writeln("theseus position: ", theseus.position);
+    //writeln("theseus state: ", currentState);
+
+    var choice = theseus.choose(options, currentState);
+    assertIntEquals(msg="Theseus choice is 4 long", expected=4, actual=choice.size);
+    //writeln("maze choice: ", choice);
+    // Since Theseus is using a random policy, we force his choice for the test
+    var (nextState, reward, done) = world.step(erpt=new EpochReport(id=1), agent=theseus, action=[0,0,0,1]);
+    assertRealEquals(msg="Theseus gets reward for stepping south", expected=10.0, actual=reward);
+    assertBoolEquals(msg="Theseus ain't done yet", expected=true, actual=done);
+    var nextStateAnswer: [1..100] int = 0;
+    nextStateAnswer[11] = 1;
+    assertIntArrayEquals(msg="Theseus has take the correct step", expected=nextStateAnswer, actual=nextState);
+
+
+    this.tearDown(t);
   }
 
   proc run() {
     super.run();
-    testBuildSim();
-    //testWorld();
+    testWorldProperties();
+    testSensors();
+    testServos();
+    testBoxWorld();
+    testBoxWorldSim();
+    testMaze();
     //testTilers();
-    //testSensors();
-    //testServos();
+    //testWorld();
     //testAgentRelativeMethods();
     //testMemory();
     //testPresentOptions();

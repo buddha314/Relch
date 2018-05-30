@@ -1,208 +1,189 @@
-use Chingon,
-    Random;
-
-
-config const GREEDY_EPSILON: real;  // epsilon
-
-
+use physics, agents, sensors, mazeWorld, dtos;
 /*
- Probably too abstract
+ Provides some basic machinery
  */
 class World {
-  proc init() { }
-}
+  var agents: [1..0] Agent;
 
-/*
-Will have rewards and stuff eventually
- */
-class GridWorld : GameBoard {
-  //var absorbingStates: BiMap,
-  var states: BiMap,
-      terminalStates: BiMap,
-      stepPenalty: int,
-      deathPenalty: int,
-      goalReward: int,
-      initialState: string;
-
-  proc init(w:int, h:int, terminalStates: BiMap) {
-    super.init(w=w, h=h);
-
-    this.states = new BiMap();
-    this.states = this.verts;
-
-    this.terminalStates = new BiMap();
-    this.terminalStates = terminalStates;
-
-    this.complete();
+  proc init() {
   }
 
-  proc writeThis(f) {
-    const EMPTY_CELL = " * ",
-          GOAL_CELL = " G ",
-          START_CELL = " S ",
-          TERMINAL_CELL = " X ",
-          HALLWAY = "-",
-          H_WALL = " | ";
+  proc addAgent(agent) {
+    agent.id = this.agents.size+1;
+    this.agents.push_back(agent);
+    return agent;
+  }
 
-    f <~> this.X.domain.dims() <~> "\n";
-    for x in 1..this.verts.size() {
-      //f <~> this.seq2grid(x) <~> " ";
-      if this.terminalStates.keys.member(this.verts.get(x)) {
-        f <~> TERMINAL_CELL;
-      } else if this.verts.get(x) == this.initialState {
-        f <~> START_CELL;
+  proc addAgentSensor(agent, target, sensor: Sensor) {
+    if agent.id <1 then this.addAgent(agent);
+    if target.id <1 then this.addAgent(target);
+    sensor.meId = agent.id;
+    sensor.youId = target.id;
+    agent.addSensor(sensor=sensor);
+    return agent;
+  }
+
+  /*
+   Add a sensor with a reward attached
+   */
+  proc addAgentSensor(agent, target, sensor:Sensor, reward: Reward) {
+    if agent.id < 1 then this.addAgent(agent);
+    if target.id < 1 then this.addAgent(target);
+    sensor.youId = target.id;
+    agent.addSensor(target=target, sensor=sensor, reward=reward);
+    return agent;
+  }
+
+  proc setAgentPolicy(agent: Agent, policy: Policy) {
+    return agent.setPolicy(policy);
+  }
+
+  proc setAgentTarget(agent: Agent, target: Agent, sensor: Sensor, epsilon:real=0.0, avoid: bool=false) {
+    if agent.id < 1 then this.addAgent(agent);
+    if target.id < 1 then this.addAgent(target);
+    sensor.meId = agent.id;
+    sensor.youId = target.id;
+    agent.addTarget(target=target, sensor=sensor, epsilon=epsilon, avoid=avoid);
+    return agent;
+  }
+
+  proc randomPosition() {
+    return this.randomPosition();
+  }
+
+  /*
+   This world decides if that position is valid
+   */
+  proc isValidPosition(position: Position ) {
+    return false;
+  }
+
+  /*
+   Gets the options on a single motion servo
+   */
+  proc getMotionServoOptions(agent: Agent, servo: MotionServo) {
+    var optDom: domain(2),
+        options: [optDom] int = 0,
+        sensor: Sensor,
+        currentRow: int = 1; // We will populate the first row for sure
+
+    //writeln(" ** default servo options");
+    optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
+    // Add a null action (should always be an option)
+    sensor = agent.sensors[servo.sensorId];
+    options[currentRow,..] = 0;
+    // Build a one-hot for each option
+    for i in servo.optionIndexStart..servo.optionIndexEnd {
+      var a:[servo.optionIndexStart..servo.optionIndexEnd] int = 0;
+      a[i] = 1;
+      if this.canMove(agent=agent, sensor=sensor, choice=a) {
+        currentRow += 1;
+        optDom = {1..currentRow, servo.optionIndexStart..servo.optionIndexEnd};
+        options[currentRow, ..] = a;
+      }
+    }
+    return options;  }
+
+  /* Returns a position from the original point along theta */
+  proc moveAlong(from: Position2D, theta: real, speed: real) {
+    const p = new Position2D(x=from.x + speed*cos(theta), y=from.y + speed*sin(theta) );
+    return p;
+  }
+
+  proc canMove(agent: Agent, sensor: Sensor, choice:[] int) {
+    return true;
+  }
+
+  proc dispenseReward(agent: Agent, state: [] int) {
+    var r: real = 0.0;
+    for reward in agent.rewards {
+      r += reward.f(state);
+    }
+    return r;
+  }
+
+
+  // If any sensor is done, you are done
+  // Otherwise all sensors must be done
+  proc areYouThroughYet(erpt: EpochReport, agent: Agent, any: bool = true) {
+    var r: bool = false;
+    if any {
+      for reward in agent.rewards {
+        if reward.accomplished then erpt.winner = agent.name;
+        if reward.accomplished then return true;
+      }
+    }
+    return r;
+  }
+
+
+  /*
+   This needs to return these things:
+   1. The new state (e.g. relative positions to other objects), [] int
+   2. Reward: real
+   3. Done: bool, should the simumlation stop now?
+   4. New Position: In several sims, the actual position is not part of the state space
+      so use this to give the agent his new position
+   */
+  proc step(erpt: EpochReport, agent, action:[] int) {
+    // Agent has to actually move now.
+    for servo in agent.servos {
+      servo.f(agent=agent, choice=action);
+    }
+    var nextState = this.buildAgentState(agent=agent);
+    var reward = dispenseReward(agent=agent, state=nextState);
+    var done = areYouThroughYet(erpt=erpt, agent=agent, any=true);
+    return (nextState, reward, done);
+  }
+
+  proc getDefaultAngleSensor() {
+    return new AngleSensor(name="Default Angle Sensor", tiler=this.defaultAngleTiler);
+  }
+
+  /*
+   Uses the default linear tiler over the radius of the world
+   */
+  proc getDefaultDistanceSensor() {
+    return new DistanceSensor(name="Default Distance Sensor", tiler=this.defaultLinearTiler);
+  }
+
+  proc getDefaultMotionServo() {
+    return new MotionServo();
+  }
+
+  /*
+   Default is to be within 1 tile of the target
+   */
+  proc getDefaultProximityReward() {
+    //return new ProximityReward(proximity=3);
+    return new ProximityReward(proximity=1);
+  }
+
+  proc findCentroid(herd: Herd) {
+    return this.findCentroid(herd=herd, agents=this.agents);
+  }
+
+  proc findCentroid(herd: Herd, agents: [] Agent) {
+    return new Position();
+  }
+
+  /*
+   This is here so ultimately the environment can edit the sensors
+   */
+  proc buildAgentState(agent: Agent) {
+    //writeln("building state for ", agent.name);
+    var state: [1..agent.sensorDimension()] int;
+    for sensor in agent.sensors {
+      if sensor.youId > 0 {
+        ref you = this.agents[sensor.youId];
+        var a:[sensor.stateIndexStart..sensor.stateIndexEnd] int = sensor.v(me=agent, you=you);
+        //writeln("  a: ", a);
+        state[a.domain] = a;
       } else {
-        f <~> EMPTY_CELL;
       }
-      if this.SD.member(x, x+1) {
-        f <~> HALLWAY;
-      } else {
-        f <~> " ";
-      }
-      if x % this.width == 0 {
-        f <~> "\n";
-        // back track to do the separating rows
-        if x < this.verts.size() {
-          for k in (x-this.width + 1)..x {
-            if this.SD.member(k, k + this.width) {
-              f <~> H_WALL;
-            } else {
-              f <~> "   ";
-            }
-            f <~> " ";
-          }
-          f <~> "\n";
-        }
-      }
-
     }
+    //writeln("exiting build state for ", agent.name, " with state ", state);
+    return state;
   }
 
-  proc isTerminalState(state: string): bool {
-    return this.terminalStates.keys.member(state);
-  }
-
-  proc step(currentState: string, action: string) {
-    var reward: real = this.stepPenalty;
-    var newState: string;
-    if action == "N" {
-        newState = this.verts.get(this.verts.get(currentState) - this.width);
-    } else if action == "E" {
-        newState = this.verts.get(this.verts.get(currentState) + 1);
-    } else if action == "W" {
-        newState = this.verts.get(this.verts.get(currentState) - 1);
-    } else if action == "S" {
-        newState = this.verts.get(this.verts.get(currentState) + this.width);
-    }
-    if !this.neighbors(currentState).keys.member(newState) {
-      writeln("Illegal State chosen!  %s is not a neighbor of %s".format(newState, currentState));
-      writeln("current neighbors: ", this.neighbors(currentState).keys);
-      halt();
-    }
-    if this.isTerminalState(newState) {
-      reward = terminalStates.get(newState);
-      //writeln("I just terminated %s -> %n".format(newState, reward));
-    }
-    return (reward, newState);
-  }
-
-}
-
-class Episode {
-  var id: int,
-      path: [1..0] Observation,
-      value: int;
-  proc init(id: int) {
-    this.id = id;
-  }
-
-  proc finalObservation() {
-    return this.path[this.path.domain.last];
-  }
-
-  proc finalReward() {
-    return this.finalObservation().reward;
-  }
-
-  proc finalState() {
-    return this.finalObservation().state;
-  }
-
-  proc finalValue() {
-    return this.finalObservation().reward;
-  }
-
-  proc writeThis(f) {
-    f <~> "Episode %n had final state %s for value %n".format(this.id, this.finalState(), this.finalValue());
-  }
-}
-
-class Observation {
-  var state: string, // S'
-      reward: real,    // Reward
-      episodeEnd: bool;
-
-  proc init(state: string, reward: real, episodeEnd: bool=false ) {
-    this.state = state;
-    this.reward = reward;
-    this.episodeEnd = episodeEnd;
-  }
-}
-
-class Qoutcome {
- var agent: int,
-     state: string,
-     action: string,
-     reward: real;
-
- proc init(agent:int =1, state:string, action:string, reward: real) {
-   this.agent = agent;
-   this.state = state;
-   this.action = action;
-   this.reward = reward;
- }
-
- proc readWriteThis(f) {
-   f <~> "state, action, reward:  %8s  %8s  %{#.###}".format(this.state, this.action, this.reward);
- }
-}
-
-proc initializeStateActionRandom(states: BiMap, actions: BiMap) {
-  var D = {1..states.size(), 1..actions.size()},
-      Y: [D] real = 0.5,
-      X: [D] real;
-  fillRandom(X);
-  const Z: [D] real = X-Y;
-  return new NamedMatrix(X=Z, rows=states, cols=actions);
-}
-
-proc initializeEligibilityTrace(states: BiMap, actions: BiMap) {
-  var D = {1..states.size(), 1..actions.size()},
-      X: [D] real = 0;
-  return new NamedMatrix(X=X, rows=states, cols=actions);
-}
-
-proc policy(currentState: string, B: GridWorld, Q: NamedMatrix) {
-  const options = B.availableActions(currentState);
-
-  var ps: [1..1] real;
-  var returnedAction: string;
-  fillRandom(ps);
-  if ps[1] < 1 - GREEDY_EPSILON {
-    var actionMap = new BiMap();
-    var actionQValues: [1..0] real;
-    var k: int = 1;
-    for o in options {
-      actionMap.add(o, k);
-      actionQValues.push_back(Q.get(currentState, o));
-      k += 1;
-    }
-    returnedAction = actionMap.get(argmax(actionQValues));
-  } else {
-    var s: [1..0] string;
-    for t in options do s.push_back(t);
-    var tmp = choice(s);
-    returnedAction = tmp[1];
-  }
-  return returnedAction;
 }
