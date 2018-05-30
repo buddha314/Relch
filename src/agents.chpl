@@ -275,6 +275,12 @@ class SecretAgent: Agent {
   proc init() {
     super.init(name="Secret Agent");
     this.complete();
+    this.policy = new Policy();
+  }
+
+  proc finalize() {
+    this.finalized = true;
+    return true;
   }
 }
 

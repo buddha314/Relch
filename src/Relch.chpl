@@ -92,9 +92,9 @@ module Relch {
             step: int = 1;
         while keepSteppin {
           var sr = new StepReport(epoch=i, step=step);
-        //writeln("\tstarting step ", step);
+          //writeln("\tstarting step ", step);
           for agent in this.world.agents{
-            //writeln("\t\tagent: ", agent);
+            //writeln("\t\tagent: ", agent.name);
             if agent.done then continue;
             agent.currentStep = step;
             // DM presents options
@@ -105,9 +105,7 @@ module Relch {
             //writeln("\t\tagent choosing");
             var choice = agent.choose(options, currentState);
             //writeln(" ** agent choice ", choice);
-            // DM rewards
             //writeln("\t\tstepping");
-            //var (nextState, reward, done) = this.step(erpt=erpt, agent=agent, action=choice);
             var (nextState, reward, done) = this.world.step(erpt=erpt, agent=agent, action=choice);
             // Add the memory
             try! agent.add(new Memory(state=nextState, action=choice, reward=reward));

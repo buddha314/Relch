@@ -30,6 +30,7 @@ class BoxWorld: World {
       return true;
     } else if position.x >= 0 && position.x < this.width
               && position.y >= 0 && position.y <= this.height {
+      writeln("allowing position ", position);
       return true;
     } else {
       //writeln("** BAD POINT ", position.x, ",", position.y);

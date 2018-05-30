@@ -15,7 +15,7 @@ class Policy {
 
   //proc f(me: Agent, options:[] int, state:[] int) {
   proc f(options:[] int, state:[] int) throws {
-    writeln(" ** in default policy");
+    //writeln(" ** in default policy");
     var r:[1..options.shape[2]] int;
     r = options[1,..];
     return r;

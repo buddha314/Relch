@@ -39,4 +39,9 @@ dog: dogChaseCat.chpl
 doq: doQat.chpl
 	$(CC) -M../src $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o sim $< ; \
 	./sim -f doq.cfg; \
-	rm sim 
+	rm sim
+
+theseus: theseus.chpl
+	$(CC) -M../src $(MODULES) $(FLAGS) ${INCLUDES} ${LIBS} -o sim $< ; \
+	./sim -f theseus.cfg; \
+	rm sim
