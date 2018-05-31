@@ -11,7 +11,7 @@ config const MAZE_WIDTH: int,
              LEARNING_EPSILON: real;
 
 var env = new Environment(name="simulating amazing!"),
-    maze = new Maze(width=10, height=10, wrap=false),
+    maze = new Maze(width=MAZE_WIDTH, height=MAZE_HEIGHT, wrap=false),
     theseus = maze.addAgent(name="Theseus", position=new MazePosition(STARTING_POSITION)),
     csense = maze.getDefaultCellSensor(),
     exitReward = new Reward(value=EXIT_REWARD, penalty=STEP_PENALTY),
@@ -20,6 +20,7 @@ var env = new Environment(name="simulating amazing!"),
 exitState[1, EXIT_POSITION] = 1;
 exitReward = exitReward.buildTargets(targets=exitState);
 
+//writeln("Maze.DTO() ", maze.DTO());
 env.addWorld(maze);
 
 theseus = maze.addAgentSensor(agent=theseus, target=new SecretAgent()
