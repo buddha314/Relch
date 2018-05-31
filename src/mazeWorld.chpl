@@ -60,6 +60,10 @@ class Maze: World {
     return this.board.canMove(fromId=ma.position.cellId, dir=dir);
   }
 
+  proc DTO() {
+    return this.board.DTO();
+  }
+
 }
 
 class MazePosition: Position {

@@ -210,6 +210,9 @@ class RelchTest : UnitTest {
     nextStateAnswer[11] = 1;
     assertIntArrayEquals(msg="Theseus has take the correct step", expected=nextStateAnswer, actual=nextState);
 
+    assertIntEquals(msg="Maze DTO has 100 nodes", expected=100, actual = maze.DTO().nodes.size);
+    assertIntEquals(msg="Maze DTO has 360 links", expected=360, actual = maze.DTO().links.size);
+    //writeln("maze.DTO() ", maze.DTO());
 
     this.tearDown(t);
   }
