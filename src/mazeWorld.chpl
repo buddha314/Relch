@@ -70,16 +70,23 @@ class MazePosition: Position {
 }
 
 class MazeAgent: Agent {
-  var position: MazePosition;
-  proc init(name: string, position:MazePosition=new MazePosition("A1")
+  var position: MazePosition,
+      initialPosition: int;
+  proc init(name: string, position:MazePosition
     , maxMemories:int=10000) {
     super.init(name=name, maxMemories=maxMemories);
     this.complete();
     this.position=position;
+    this.initialPosition = position.cellId;
   }
 
   proc DTO() {
     return new MazeAgentDTO(id=this.id, name=this.name, cellId=this.position.cellId);
+  }
+
+  proc reset() {
+    this.position.cellId = initialPosition;
+    super.reset();
   }
 }
 

@@ -152,6 +152,7 @@ class DQPolicy : Policy {
 
   proc f(options:[] int, state:[] int) throws {
     var opstate = concatRight(options, state);
+    //writeln(" ** DQ opstate", opstate);
     if opstate.shape[2] != this.model.inputDim() then
       throw new DimensionMatchError(msg="Wrong input size to model on f()"
         ,expected=this.model.inputDim(), actual=opstate.shape[2]);
@@ -164,6 +165,7 @@ class DQPolicy : Policy {
     if this.epsilon > 0 && rn[1] < this.epsilon then return this.randomAction(options);
     //var a = this.model.predict(opstate);
     var a = this.model.predict(opstate.T);
+    writeln(" ** DQ a ", a);
     var r:[1..options.shape[2]] int;
     r = options[argmax(a[1,..]), ..];
     return r;
