@@ -10,6 +10,7 @@ Reinforcment Learning in Chapel.  Some experiments, probably won't last long but
 * [This talk](https://www.microsoft.com/en-us/research/video/tutorial-introduction-to-reinforcement-learning-with-function-approximation/?from=http%3A%2F%2Fresearch.microsoft.com%2Fapps%2Fvideo%2F%3Fid%3D259577) by Sutton was very useful to me.
 * The Sutton and Barto book as [associated code](http://www.incompleteideas.net/book/code/code.html)  Also there is a [matlab version](http://waxworksmath.com/Authors/N_Z/Sutton/sutton.html) which is marginally more legible than Lisp
 * David Silver has all of his lectures as a [Youtube Series](https://www.youtube.com/playlist?list=PL7-jPKtc4r78-wCZcQn5IqyuWhBZ8fOxT)
+* Q-Learning Alg is [here](http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching_files/control.pdf) SLide 42
 
 
 # Notes
